@@ -26,8 +26,8 @@ class SeaMapTest : public ::testing::Test {
     sea_map_.emplace_back(MODSMapElement{10, 124.0f});
     init_pos << 0, 0;
     MctsParameters::DISCOUNT_FACTOR = 1.0;
-    MctsParameters::LOWER_BOUND = 1.0;
-    MctsParameters::UPPER_BOUND = 124.0;
+    //MctsParameters::LOWER_BOUND = 1.0;
+    //MctsParameters::UPPER_BOUND = 124.0;
   }
 
   // void TearDown() override {}
@@ -66,29 +66,9 @@ void print_solution(std::vector<Eigen::Vector2i> &pos_history, SeaMap &sea_map) 
   std::cout << out.str() << std::endl;
 }
 
-TEST_F(SeaMapTest, general) {
-  RandomGenerator::random_generator_ = std::mt19937(1000);
-  Mcts<MoDeepSeaState, UctStatistic, UctStatistic, RandomHeuristic> mcts;
-  auto state = std::make_shared<MoDeepSeaState>(sea_map_, init_pos);
-  std::vector<Reward> rewards;
-  JointAction jt;
-  jt.resize(1);
-  std::vector<Eigen::Vector2i> pos_history;
-  pos_history.emplace_back(state->get_ego_pos());
-  while (!state->is_terminal()) {
-    mcts.search(*state, 50000, 10000);
-    jt[0] = mcts.returnBestAction();
-    state = state->execute(jt, rewards);
-    pos_history.emplace_back(state->get_ego_pos());
-  }
-  print_solution(pos_history, sea_map_);
-  // ASSERT_TRUE(false);
-  //mcts.printTreeToDotFile("test_mo_deep_sea");
-}
-
 TEST_F(SeaMapTest, move) {
   MoDeepSeaState init_state(sea_map_, init_pos);
-  std::vector<Reward> rewards;
+  std::vector<Reward> rewards(1, Reward(2));
   JointAction jt;
   jt.resize(1);
   jt[0] = 3; //Right
@@ -116,5 +96,26 @@ TEST_F(SeaMapTest, move) {
   state = state->execute(jt, rewards);
   ASSERT_EQ(state->get_ego_pos(), Eigen::Vector2i(2, 1));
   ASSERT_TRUE(state->is_terminal());
-  ASSERT_EQ(rewards[0], sea_map_[1].reward);
+  ASSERT_EQ(rewards[0](0), sea_map_[1].reward);
+}
+
+
+TEST_F(SeaMapTest, general) {
+  RandomGenerator::random_generator_ = std::mt19937(1000);
+  Mcts<MoDeepSeaState, UctStatistic, UctStatistic, RandomHeuristic> mcts;
+  auto state = std::make_shared<MoDeepSeaState>(sea_map_, init_pos);
+  std::vector<Reward> rewards(1, Reward(2));
+  JointAction jt;
+  jt.resize(1);
+  std::vector<Eigen::Vector2i> pos_history;
+  pos_history.emplace_back(state->get_ego_pos());
+  while (!state->is_terminal()) {
+    mcts.search(*state, 50000, 1000);
+    jt[0] = mcts.returnBestAction();
+    state = state->execute(jt, rewards);
+    pos_history.emplace_back(state->get_ego_pos());
+  }
+  print_solution(pos_history, sea_map_);
+  // ASSERT_TRUE(false);
+  //mcts.printTreeToDotFile("test_mo_deep_sea");
 }

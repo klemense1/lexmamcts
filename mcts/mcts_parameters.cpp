@@ -14,7 +14,7 @@ double MctsParameters::EXPLORATION_CONSTANT = 0.7;
 double MctsParameters::MAX_SEARCH_TIME_RANDOM_HEURISTIC = 1;
 double MctsParameters::MAX_NUMBER_OF_ITERATIONS_RANDOM_HEURISTIC = 1000;
 
-Eigen::VectorXf MctsParameters::LOWER_BOUND = Eigen::Vector2f(1.0f,0.0f);
-Eigen::VectorXf MctsParameters::UPPER_BOUND = Eigen::Vector2f(124.0f, 100.0f);
+Eigen::VectorXf MctsParameters::LOWER_BOUND = Eigen::Vector2f(1.0f, -100.0f);
+Eigen::VectorXf MctsParameters::UPPER_BOUND = Eigen::Vector2f(124.0f, 1);
 
 } // namespace mcts

@@ -13,11 +13,11 @@ std::shared_ptr<MoDeepSeaState> MoDeepSeaState::execute(const JointAction &joint
   new_pos << std::min(std::max(tmp_pos(0), 0), sea_map[clamped_col].row),
       clamped_col;
   std::shared_ptr<MoDeepSeaState> new_state = std::make_shared<MoDeepSeaState>(sea_map, new_pos, step_counter + 1);
-  rewards.resize(1);
+  rewards.resize(2);
   if (new_state->is_terminal()) {
-    rewards[0] = sea_map[new_pos(1)].reward;
+    rewards[0] << sea_map[new_pos(1)].reward, -step_counter;
   } else {
-    rewards[0] = 0.0f;
+    rewards[0] << 0.0f, 0.0f;
   }
   return new_state;
 }
