@@ -6,16 +6,15 @@
 
 #include "mcts/mcts_parameters.h"
 
-
 namespace mcts {
 
-    double MctsParameters::DISCOUNT_FACTOR = 0.9;
-    double MctsParameters::EXPLORATION_CONSTANT = 0.7;
+double MctsParameters::DISCOUNT_FACTOR = 0.9;
+double MctsParameters::EXPLORATION_CONSTANT = 0.7;
 
-    double MctsParameters::MAX_SEARCH_TIME_RANDOM_HEURISTIC = 1;
-    double MctsParameters::MAX_NUMBER_OF_ITERATIONS_RANDOM_HEURISTIC = 1000;
+double MctsParameters::MAX_SEARCH_TIME_RANDOM_HEURISTIC = 1;
+double MctsParameters::MAX_NUMBER_OF_ITERATIONS_RANDOM_HEURISTIC = 1000;
 
-    double MctsParameters::LOWER_BOUND = -1010;
-    double MctsParameters::UPPER_BOUND = 95;
-    
+Eigen::VectorXf MctsParameters::LOWER_BOUND = Eigen::Vector2f(1.0f,0.0f);
+Eigen::VectorXf MctsParameters::UPPER_BOUND = Eigen::Vector2f(124.0f, 100.0f);
+
 } // namespace mcts

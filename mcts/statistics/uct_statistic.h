@@ -40,10 +40,17 @@ class UctStatistic : public mcts::NodeStatistic<UctStatistic>, mcts::RandomGener
   ActionIdx choose_next_action(const S &state, std::vector<int> &unexpanded_actions) {
     if (unexpanded_actions.empty()) {
       // Select an action based on the UCB formula
-      std::vector<double> values;
+      std::vector<Eigen::VectorXf> values;
       calculate_ucb_values(ucb_statistics_, values);
       // find largest index
-      ActionIdx selected_action = std::distance(values.begin(), std::max_element(values.begin(), values.end()));
+      ActionIdx selected_action = std::distance(values.begin(), std::max_element(values.begin(), values.end(),
+                                                                                 [](Eigen::VectorXf &a,
+                                                                                    Eigen::VectorXf &b) -> bool {
+                                                                                   return std::lexicographical_compare(a.begin(),
+                                                                                                                       a.end(),
+                                                                                                                       b.begin(),
+                                                                                                                       b.end());
+                                                                                 }));
       return selected_action;
 
     } else {
@@ -82,7 +89,7 @@ class UctStatistic : public mcts::NodeStatistic<UctStatistic>, mcts::RandomGener
     //Action Value update step
     UcbPair &ucb_pair =
         ucb_statistics_[collected_reward_.first]; // we remembered for which action we got the reward, must be the same as during backprop, if we linked parents and childs correctly
-    //action value: Q'(s,a) = Q(s,a) + (latest_return - Q'(s,a))/N
+    //action value: Q'(s,a) = Q'(s,a) + (latest_return - Q'(s,a))/N
     latest_return_ = collected_reward_.second + k_discount_factor * changed_uct_statistic.latest_return_;
     ucb_pair.action_count_ += 1;
     ucb_pair.action_value_ =
@@ -115,33 +122,35 @@ class UctStatistic : public mcts::NodeStatistic<UctStatistic>, mcts::RandomGener
   }
 
   typedef struct UcbPair {
+    //TODO: Size of reward vector for init needed!
     UcbPair() : action_count_(0), action_value_(0.0f) {};
     unsigned action_count_;
     Eigen::VectorXf action_value_;
   } UcbPair;
   typedef std::map<ActionIdx, UcbPair> ActionUCBMap;
 
-  void calculate_ucb_values(const ActionUCBMap &ucb_statistics, std::vector<double> &values) const {
+  void calculate_ucb_values(const ActionUCBMap &ucb_statistics, std::vector<Eigen::VectorXf> &values) const {
     values.resize(ucb_statistics.size());
 
     for (size_t idx = 0; idx < ucb_statistics.size(); ++idx) {
-      double
-          action_value_normalized = (ucb_statistics.at(idx).action_value_ - lower_bound) / (upper_bound - lower_bound);
-      MCTS_EXPECT_TRUE(action_value_normalized >= 0);
-      MCTS_EXPECT_TRUE(action_value_normalized <= 1);
-      values[idx] = action_value_normalized
+      Eigen::VectorXf
+          action_value_normalized =
+          (ucb_statistics.at(idx).action_value_ - lower_bound).cwiseQuotient(upper_bound - lower_bound);
+      //MCTS_EXPECT_TRUE(action_value_normalized >= 0);
+      //MCTS_EXPECT_TRUE(action_value_normalized <= 1);
+      values[idx] = action_value_normalized.array()
           + 2 * k_exploration_constant * sqrt((2 * log(total_node_visits_)) / (ucb_statistics.at(idx).action_count_));
     }
   }
 
-  double value_;
-  double latest_return_;   // tracks the return during backpropagation
+  Eigen::VectorXf value_;
+  Eigen::VectorXf latest_return_;   // tracks the return during backpropagation
   ActionUCBMap ucb_statistics_; // first: action selection count, action-value
   unsigned int total_node_visits_;
 
   // PARAMS
-  const double upper_bound;
-  const double lower_bound;
+  const Eigen::VectorXf upper_bound;
+  const Eigen::VectorXf lower_bound;
   const double k_discount_factor;
   const double k_exploration_constant;
 

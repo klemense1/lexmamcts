@@ -7,6 +7,7 @@
 #ifndef MCTS_PARAMETERS_H
 #define MCTS_PARAMETERS_H
 
+#include "Eigen/Core"
 
 namespace mcts{
 
@@ -21,8 +22,8 @@ namespace mcts{
         static double MAX_SEARCH_TIME_RANDOM_HEURISTIC;
         static double MAX_NUMBER_OF_ITERATIONS_RANDOM_HEURISTIC;
 
-        static double LOWER_BOUND;
-        static double UPPER_BOUND;
+        static Eigen::VectorXf LOWER_BOUND;
+        static Eigen::VectorXf UPPER_BOUND;
     };
 } // namespace mcts
 

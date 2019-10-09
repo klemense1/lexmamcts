@@ -37,7 +37,7 @@ public:
         const ActionIdx num_actions = node->get_state()->get_num_actions(S::ego_agent_idx);
 
         std::vector<Reward> accum_rewards(num_agents);
-        std::vector<Reward> step_rewards(state->get_agent_idx().size());
+        std::vector<Reward> step_rewards(num_agents);
         const double k_discount_factor = mcts::MctsParameters::DISCOUNT_FACTOR; 
         double modified_discount_factor = k_discount_factor;
         int num_iterations = 0;
@@ -53,13 +53,13 @@ public:
              accum_rewards += step_rewards;
              modified_discount_factor = modified_discount_factor*k_discount_factor;
 
-         };
+         }
         // generate an extra node statistic for each agent
         std::vector<SE> statistics(num_agents,SE(num_actions));
         for (AgentIdx ai = 0; ai < num_agents; ++ai)
         {
             statistics.at(ai).set_heuristic_estimate(accum_rewards.at(ai));
-         }
+        }
 
         return  statistics;
     }
