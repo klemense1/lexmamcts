@@ -99,7 +99,6 @@ TEST_F(SeaMapTest, move) {
   ASSERT_EQ(rewards[0](0), sea_map_[1].reward);
 }
 
-
 TEST_F(SeaMapTest, general) {
   RandomGenerator::random_generator_ = std::mt19937(1000);
   Mcts<MoDeepSeaState, UctStatistic, UctStatistic, RandomHeuristic> mcts;
@@ -108,18 +107,23 @@ TEST_F(SeaMapTest, general) {
   JointAction jt;
   jt.resize(1);
   std::vector<Eigen::Vector2i> pos_history;
+  pos_history.clear();
   pos_history.emplace_back(state->get_ego_pos());
   while (!state->is_terminal()) {
-    mcts.search(*state, 50000, 1000);
+    mcts.search(*state, 50000, 10000);
     jt[0] = mcts.returnBestAction();
     state = state->execute(jt, rewards);
     pos_history.emplace_back(state->get_ego_pos());
   }
+  std::cout << "Positions:" << std::endl;
   for (auto p : pos_history) {
     std::cout << p << ", ";
   }
   std::cout << std::endl;
+  std::cout << "END" << std::endl;
   print_solution(pos_history, sea_map_);
-  //ASSERT_TRUE(false);
+  ASSERT_EQ(pos_history.size(), 20);
+  ASSERT_EQ((pos_history.end() - 1)->operator()(0), 10);
+  ASSERT_EQ((pos_history.end() - 1)->operator()(1), 9);
   //mcts.printTreeToDotFile("test_mo_deep_sea");
 }

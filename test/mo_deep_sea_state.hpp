@@ -29,13 +29,10 @@ class MoDeepSeaState : public mcts::StateInterface<MoDeepSeaState> {
   virtual const std::vector<AgentIdx> get_agent_idx() const;
   virtual std::string sprintf() const;
   virtual ~MoDeepSeaState();
-
+  const Eigen::Vector2i &get_ego_pos() const;
  private:
   SeaMap sea_map;
   Eigen::Vector2i ego_pos;
- public:
-  const Eigen::Vector2i &get_ego_pos() const;
- private:
   int step_counter;
   // Up, Down, Left, Right
   const Eigen::Vector2i MODSActions[4] = {Eigen::Vector2i(-1, 0), Eigen::Vector2i(1, 0), Eigen::Vector2i(0, -1), Eigen::Vector2i(0, 1)};
