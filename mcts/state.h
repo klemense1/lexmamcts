@@ -12,6 +12,7 @@
 #include <algorithm>
 #include <functional>
 #include <iostream>
+#include "Eigen/Core"
 #include "common.h"
 
 
@@ -22,7 +23,7 @@ typedef std::size_t ActionIdx;
 typedef unsigned char AgentIdx;
 typedef std::vector<ActionIdx> JointAction;
 
-typedef double Reward;
+typedef Eigen::VectorXf Reward;
 
     template <typename T>
 inline std::vector<T> operator+(const std::vector<T>& a, const std::vector<T>& b)
