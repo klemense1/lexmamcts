@@ -21,8 +21,8 @@ class UctStatistic : public mcts::NodeStatistic<UctStatistic>, mcts::RandomGener
 
   UctStatistic(ActionIdx num_actions) :
       NodeStatistic<UctStatistic>(num_actions),
-      value_(0.0f),
-      latest_return_(0.0),
+      value_(mcts::MctsParameters::UPPER_BOUND.size()),
+      latest_return_(mcts::MctsParameters::UPPER_BOUND.size()),
       ucb_statistics_([&]() -> ActionUCBMap {
         ActionUCBMap map;
         for (auto ai = 0; ai < num_actions; ++ai) { map[ai] = UcbPair(); }
@@ -123,7 +123,7 @@ class UctStatistic : public mcts::NodeStatistic<UctStatistic>, mcts::RandomGener
 
   typedef struct UcbPair {
     //TODO: Size of reward vector for init needed!
-    UcbPair() : action_count_(0), action_value_(0.0f) {};
+    UcbPair() : action_count_(0), action_value_(mcts::MctsParameters::UPPER_BOUND.size()) {};
     unsigned action_count_;
     Eigen::VectorXf action_value_;
   } UcbPair;

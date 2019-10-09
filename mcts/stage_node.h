@@ -172,7 +172,7 @@ struct container_hash {
         }
         else
         {   // EXPAND NEW NODE BASED ON NEW JOINT ACTION
-            std::vector<Reward> rewards;
+            std::vector<Reward> rewards(state_->get_agent_idx().size(), Reward(mcts::MctsParameters::LOWER_BOUND.size()));
             next_node = std::make_shared<StageNode<S,SE, SO, H>,StageNodeSPtr, std::shared_ptr<S>,
                     const JointAction&, const unsigned int&> (get_shared(), state_->execute(joint_action, rewards),joint_action,depth_+1);
             children_[joint_action] = next_node;
