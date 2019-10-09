@@ -14,7 +14,7 @@
 #include <iostream>
 #include "Eigen/Core"
 #include "common.h"
-
+#include "mcts_parameters.h"
 
 namespace mcts {
 
@@ -23,7 +23,7 @@ typedef std::size_t ActionIdx;
 typedef unsigned char AgentIdx;
 typedef std::vector<ActionIdx> JointAction;
 
-typedef Eigen::VectorXf Reward;
+typedef Eigen::Matrix<float, REWARD_DIM, 1> Reward;
 
     template <typename T>
 inline std::vector<T> operator+(const std::vector<T>& a, const std::vector<T>& b)

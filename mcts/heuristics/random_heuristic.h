@@ -25,7 +25,7 @@ public:
             const ActionIdx num_actions = node->get_state()->get_num_actions(S::ego_agent_idx); 
             std::vector<SE> statistics(num_agents,SE(num_actions));
             for (AgentIdx ai = 0; ai < num_agents; ++ai){
-                statistics.at(ai).set_heuristic_estimate(Reward::Zero(mcts::MctsParameters::UPPER_BOUND.size()));
+              statistics.at(ai).set_heuristic_estimate(Reward::Zero());
             }
             return  statistics;
         }
@@ -36,8 +36,8 @@ public:
         const AgentIdx num_agents = node->get_state()->get_agent_idx().size();
         const ActionIdx num_actions = node->get_state()->get_num_actions(S::ego_agent_idx);
 
-        std::vector<Reward> accum_rewards(num_agents, Reward(mcts::MctsParameters::LOWER_BOUND.size()));
-        std::vector<Reward> step_rewards(num_agents, Reward(mcts::MctsParameters::LOWER_BOUND.size()));
+    std::vector<Reward> accum_rewards(num_agents, Reward::Zero());
+    std::vector<Reward> step_rewards(num_agents, Reward::Zero());
         const double k_discount_factor = mcts::MctsParameters::DISCOUNT_FACTOR; 
         double modified_discount_factor = k_discount_factor;
         int num_iterations = 0;

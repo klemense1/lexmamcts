@@ -68,7 +68,7 @@ void print_solution(std::vector<Eigen::Vector2i> &pos_history, SeaMap &sea_map) 
 
 TEST_F(SeaMapTest, move) {
   MoDeepSeaState init_state(sea_map_, init_pos);
-  std::vector<Reward> rewards(1, Reward(2));
+  std::vector<Reward> rewards(1, Reward::Zero());
   JointAction jt;
   jt.resize(1);
   jt[0] = 3; //Right
@@ -104,7 +104,7 @@ TEST_F(SeaMapTest, general) {
   RandomGenerator::random_generator_ = std::mt19937(1000);
   Mcts<MoDeepSeaState, UctStatistic, UctStatistic, RandomHeuristic> mcts;
   auto state = std::make_shared<MoDeepSeaState>(sea_map_, init_pos);
-  std::vector<Reward> rewards(1, Reward(2));
+  std::vector<Reward> rewards(1, Reward::Zero());
   JointAction jt;
   jt.resize(1);
   std::vector<Eigen::Vector2i> pos_history;
@@ -115,7 +115,11 @@ TEST_F(SeaMapTest, general) {
     state = state->execute(jt, rewards);
     pos_history.emplace_back(state->get_ego_pos());
   }
+  for (auto p : pos_history) {
+    std::cout << p << ", ";
+  }
+  std::cout << std::endl;
   print_solution(pos_history, sea_map_);
-  // ASSERT_TRUE(false);
+  //ASSERT_TRUE(false);
   //mcts.printTreeToDotFile("test_mo_deep_sea");
 }

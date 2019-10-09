@@ -9,22 +9,24 @@
 
 #include "Eigen/Core"
 
-namespace mcts{
+namespace mcts {
 
-    struct MctsParameters{
+static constexpr int REWARD_DIM = 2;
+typedef Eigen::Matrix<float, REWARD_DIM, 1> ObjectiveVec;
+struct MctsParameters {
 
-        //MCTS
-        static double DISCOUNT_FACTOR;
-        static double EXPLORATION_CONSTANT;
+  //MCTS
+  static double DISCOUNT_FACTOR;
+  static double EXPLORATION_CONSTANT;
 
-        static double RANDOM_GENERATOR_SEED;
-        static double MAX_NUMBER_OF_ITERATIONS;
-        static double MAX_SEARCH_TIME_RANDOM_HEURISTIC;
-        static double MAX_NUMBER_OF_ITERATIONS_RANDOM_HEURISTIC;
+  static double RANDOM_GENERATOR_SEED;
+  static double MAX_NUMBER_OF_ITERATIONS;
+  static double MAX_SEARCH_TIME_RANDOM_HEURISTIC;
+  static double MAX_NUMBER_OF_ITERATIONS_RANDOM_HEURISTIC;
 
-        static Eigen::VectorXf LOWER_BOUND;
-        static Eigen::VectorXf UPPER_BOUND;
-    };
+  static ObjectiveVec LOWER_BOUND;
+  static ObjectiveVec UPPER_BOUND;
+};
 } // namespace mcts
 
 
