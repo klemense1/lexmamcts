@@ -34,3 +34,16 @@ cc_test(
         "@gtest//:main",
     ],
 )
+
+cc_test(
+    name = "crossing_state_test",
+    srcs = [
+        "crossing_state.hpp",
+        "crossing_state_test.cpp",
+    ],
+    copts = ["-Iexternal/gtest/include"],
+    deps = [
+        "//mcts",
+        "@gtest//:main",
+    ],
+)
