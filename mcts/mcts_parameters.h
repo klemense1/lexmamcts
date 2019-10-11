@@ -11,7 +11,6 @@
 
 namespace mcts {
 
-static constexpr int REWARD_DIM = 4;
 typedef Eigen::Matrix<float, REWARD_DIM, 1> ObjectiveVec;
 struct MctsParameters {
 
