@@ -36,8 +36,7 @@ class CrossingState : public mcts::StateInterface<CrossingState> {
       ego_state_(),
       terminal_(false),
       automata_(automata),
-      label_evaluator_(label_evaluator),
-      time_penalty_(0.0f) {
+      label_evaluator_(label_evaluator) {
     for (auto &state : other_agent_states_) {
       state = AgentState();
     }
@@ -47,14 +46,12 @@ class CrossingState : public mcts::StateInterface<CrossingState> {
                 const AgentState &ego_state,
                 const bool &terminal,
                 const std::vector<EvaluatorRuleLTL> &automata,
-                const std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> label_evaluator,
-                const float time_penalty) :
+                const std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> label_evaluator) :
       other_agent_states_(other_agent_states),
       ego_state_(ego_state),
       terminal_(terminal),
       automata_(automata),
-      label_evaluator_(label_evaluator),
-      time_penalty_(time_penalty) {};
+      label_evaluator_(label_evaluator) {};
   ~CrossingState() {};
 
   std::shared_ptr<CrossingState> clone() const {
@@ -105,11 +102,7 @@ class CrossingState : public mcts::StateInterface<CrossingState> {
       }
     }
 
-    if (terminal) {
-      rewards[0](static_cast<int>(RewardPriority::TIME)) = -time_penalty_;
-    }
-
-    //rewards[0](static_cast<int>(RewardPriority::TIME)) += -1.0f;
+    rewards[0](static_cast<int>(RewardPriority::TIME)) += -1.0f;
     // Extra penalty for driving backwards
     rewards[0](static_cast<int>(RewardPriority::TIME)) +=
         aconv(joint_action[ego_agent_idx]) == ActionType::BACKWARD ? -1.0f : 0.0f;
@@ -118,8 +111,7 @@ class CrossingState : public mcts::StateInterface<CrossingState> {
                                            next_ego_state,
                                            terminal,
                                            next_automata,
-                                           label_evaluator_,
-                                           time_penalty_ + 1.0f);
+                                           label_evaluator_);
   }
 
   ActionIdx get_num_actions(AgentIdx agent_idx) const {
@@ -184,7 +176,6 @@ class CrossingState : public mcts::StateInterface<CrossingState> {
   bool terminal_;
   std::vector<EvaluatorRuleLTL> automata_;
   std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> label_evaluator_;
-  float time_penalty_;
 };
 
 const int CrossingState::crossing_point;
