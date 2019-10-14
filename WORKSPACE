@@ -22,3 +22,12 @@ http_archive(
         "https://bitbucket.org/eigen/eigen/get/tip.zip",
     ],
 )
+
+http_archive(
+    name = "spot",
+    build_file = "@//test/external:spot.BUILD",
+    patch_cmds = ["./configure"],
+    sha256 = "dcb7aa684725304afb3d435f26f25b51fbd6e9a6ef610e16163cc0030ad5eab4",
+    strip_prefix = "spot-2.8.1",
+    urls = ["http://www.lrde.epita.fr/dload/spot/spot-2.8.1.tar.gz"],
+)
