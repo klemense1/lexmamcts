@@ -4,8 +4,8 @@
 // For a copy, see <https://opensource.org/licenses/MIT>.
 // ========================================================
 
-#ifndef SIMPLESTATE_H
-#define SIMPLESTATE_H
+#ifndef CROSSINGSTATE_HPP
+#define CROSSINGSTATE_HPP
 
 #include <map>
 #include <iostream>
