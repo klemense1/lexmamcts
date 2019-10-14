@@ -32,13 +32,13 @@ TEST(CrossingTest, general) {
   // SETUP RULES
   std::vector<EvaluatorRuleLTL> automata;
   // Finally arrive at goal (Liveness)
-  automata.emplace_back("F ego_goal_reached", -100.f, RewardType::GOAL);
+  automata.emplace_back("F ego_goal_reached", -100.f, RewardPriority::GOAL);
   // Do not collide with others (Safety)
-  automata.emplace_back("G !collision", -1000.f, RewardType::SAFETY);
+  automata.emplace_back("G !collision", -1000.f, RewardPriority::SAFETY);
   // Arrive before others (Guarantee)
   // Currently not possible because ego can't drive faster than others
   // TODO: Add more actions for ego
-  //automata.emplace_back("!other_goal_reached U ego_goal_reached", -1000.f, RewardType::GOAL);
+  //automata.emplace_back("!other_goal_reached U ego_goal_reached", -1000.f, RewardPriority::GOAL);
 
 
   auto state = std::make_shared<CrossingState>(automata);

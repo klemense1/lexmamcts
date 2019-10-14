@@ -7,7 +7,7 @@
 namespace modules {
 namespace models {
 namespace behavior {
-EvaluatorRuleLTL::EvaluatorRuleLTL(spot::formula ltl_formula, float weight, RewardType type) :
+EvaluatorRuleLTL::EvaluatorRuleLTL(spot::formula ltl_formula, float weight, RewardPriority type) :
     weight_(weight), ltl_formula_(ltl_formula), type_(type) {
 
   spot::translator trans;
@@ -29,7 +29,7 @@ EvaluatorRuleLTL::EvaluatorRuleLTL(spot::formula ltl_formula, float weight, Rewa
   reset_state();
 }
 
-EvaluatorRuleLTL::EvaluatorRuleLTL(std::string ltl_formula_str, float weight, RewardType type) :
+EvaluatorRuleLTL::EvaluatorRuleLTL(std::string ltl_formula_str, float weight, RewardPriority type) :
     EvaluatorRuleLTL(spot::parse_infix_psl(ltl_formula_str).f, weight, type) {}
 
 float EvaluatorRuleLTL::evaluate(EvaluationMap &labels) {
@@ -82,7 +82,7 @@ float EvaluatorRuleLTL::final_reward() {
   }
   return penalty;
 }
-RewardType EvaluatorRuleLTL::get_type() const {
+RewardPriority EvaluatorRuleLTL::get_type() const {
   return type_;
 }
 }

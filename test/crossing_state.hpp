@@ -134,12 +134,12 @@ class CrossingState : public mcts::StateInterface<CrossingState> {
     }
 
     if (terminal) {
-      rewards[0](static_cast<int>(RewardType::TIME)) = -time_penalty_;
+      rewards[0](static_cast<int>(RewardPriority::TIME)) = -time_penalty_;
     }
 
-    //rewards[0](static_cast<int>(RewardType::TIME)) += -1.0f;
+    //rewards[0](static_cast<int>(RewardPriority::TIME)) += -1.0f;
     // Extra penalty for driving backwards
-    rewards[0](static_cast<int>(RewardType::TIME)) +=
+    rewards[0](static_cast<int>(RewardPriority::TIME)) +=
         aconv(joint_action[ego_agent_idx]) == ActionType::BACKWARD ? -1.0f : 0.0f;
 
     return std::make_shared<CrossingState>(next_other_agent_states,
