@@ -12,44 +12,12 @@
 #include <random>
 
 #include "evaluator_rule_ltl.hpp"
+#include "test/crossing_test/common.hpp"
+#include "test/crossing_test/evaluator_label_base.hpp"
 
 using namespace mcts;
 using namespace modules::models::behavior;
 
-enum class Actions {
-  WAIT = 0,
-  FORWARD = 1,
-  BACKWARD = -1,
-  NUM = 3
-};
-
-const std::map<ActionIdx, Actions> idx_to_action = {
-    {0, Actions::WAIT},
-    {1, Actions::FORWARD},
-    {2, Actions::BACKWARD}
-};
-
-const std::map<Actions, ActionIdx> action_to_idx = {
-    {Actions::WAIT, 0},
-    {Actions::FORWARD, 1},
-    {Actions::BACKWARD, 2}
-};
-
-Actions aconv(const ActionIdx &action) {
-  return idx_to_action.at(action);
-}
-
-ActionIdx aconv(const Actions &action) {
-  return action_to_idx.at(action);
-}
-
-typedef struct AgentState {
-  AgentState() : x_pos(0), last_action(Actions::WAIT) {}
-  AgentState(const int &x, const Actions &last_action) :
-      x_pos(x), last_action(last_action) {}
-  int x_pos;
-  Actions last_action;
-} AgentState;
 
 // A simple environment with a 1D state, only if both agents select different actions, they get nearer to the terminal state
 class CrossingState : public mcts::StateInterface<CrossingState> {
@@ -57,26 +25,35 @@ class CrossingState : public mcts::StateInterface<CrossingState> {
   static const unsigned int num_other_agents = 1;
 
  public:
-  CrossingState(std::vector<EvaluatorRuleLTL> &automata) :
-      other_agent_states_(),
+
+  static const int state_x_length = 21;
+  static const int ego_goal_reached_position = 19;
+  static const int crossing_point = (state_x_length - 1) / 2 + 1;
+
+  CrossingState(const std::vector<EvaluatorRuleLTL> &automata,
+                const std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> label_evaluator) :
+      other_agent_states_(num_other_agents),
       ego_state_(),
       terminal_(false),
       automata_(automata),
+      label_evaluator_(label_evaluator),
       time_penalty_(0.0f) {
     for (auto &state : other_agent_states_) {
       state = AgentState();
     }
   }
 
-  CrossingState(const std::array<AgentState, num_other_agents> &other_agent_states,
+  CrossingState(const std::vector<AgentState> &other_agent_states,
                 const AgentState &ego_state,
                 const bool &terminal,
-                std::vector<EvaluatorRuleLTL> &automata,
+                const std::vector<EvaluatorRuleLTL> &automata,
+                const std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> label_evaluator,
                 const float time_penalty) :
       other_agent_states_(other_agent_states),
       ego_state_(ego_state),
       terminal_(terminal),
       automata_(automata),
+      label_evaluator_(label_evaluator),
       time_penalty_(time_penalty) {};
   ~CrossingState() {};
 
@@ -103,7 +80,7 @@ class CrossingState : public mcts::StateInterface<CrossingState> {
     const AgentState next_ego_state
         (ego_state_.x_pos + static_cast<int>(aconv(joint_action[ego_agent_idx])), aconv(joint_action[ego_agent_idx]));
 
-    std::array<AgentState, num_other_agents> next_other_agent_states;
+    std::vector<AgentState> next_other_agent_states(num_other_agents);
     for (size_t i = 0; i < other_agent_states_.size(); ++i) {
       const auto &old_state = other_agent_states_[i];
       int new_x = old_state.x_pos + static_cast<int>(Actions::FORWARD);
@@ -111,19 +88,14 @@ class CrossingState : public mcts::StateInterface<CrossingState> {
     }
 
     // REWARD GENERATION
-    const bool goal_reached = next_ego_state.x_pos >= ego_goal_reached_position;
-    bool collision = false;
-    for (const auto &state: next_other_agent_states) {
-      if (next_ego_state.x_pos == crossing_point && state.x_pos == crossing_point) {
-        collision = true;
-      }
-    }
-    const bool terminal = goal_reached || collision || ego_out_of_map;
     EvaluationMap labels;
     std::vector<EvaluatorRuleLTL> next_automata(automata_);
-    labels["ego_goal_reached"] = goal_reached;
-    labels["collision"] = collision;
     labels["other_goal_reached"] = (next_other_agent_states[0].x_pos >= ego_goal_reached_position);
+    World next_world(ego_state_, other_agent_states_);
+    for (auto le : label_evaluator_) {
+      labels[le->get_label_str()] = le->evaluate(next_world);
+    }
+    const bool terminal = labels["ego_goal_reached"] || labels["collision"] || ego_out_of_map;
     rewards.resize(num_other_agents + 1);
     rewards[0] = Reward::Zero();
     for (auto aut : next_automata) {
@@ -146,6 +118,7 @@ class CrossingState : public mcts::StateInterface<CrossingState> {
                                            next_ego_state,
                                            terminal,
                                            next_automata,
+                                           label_evaluator_,
                                            time_penalty_ + 1.0f);
   }
 
@@ -206,15 +179,14 @@ class CrossingState : public mcts::StateInterface<CrossingState> {
 
  private:
 
-  const int state_x_length = 21;
-  const int ego_goal_reached_position = 19;
-  const int crossing_point = (state_x_length - 1) / 2 + 1;
-
-  std::array<AgentState, num_other_agents> other_agent_states_;
+  std::vector<AgentState> other_agent_states_;
   AgentState ego_state_;
   bool terminal_;
   std::vector<EvaluatorRuleLTL> automata_;
+  std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> label_evaluator_;
   float time_penalty_;
 };
 
+const int CrossingState::crossing_point;
+const int CrossingState::ego_goal_reached_position;
 #endif

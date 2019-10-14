@@ -5,15 +5,17 @@
 #define UNIT_TESTING
 #define DEBUG
 #define PLAN_DEBUG_INFO
-#define REWARD_DIM 4
 
 #include "gtest/gtest.h"
-
+#include "common.hpp"
 #include "mcts/mcts.h"
 #include "mcts/statistics/uct_statistic.h"
 #include "mcts/heuristics/random_heuristic.h"
 #include "mcts/random_generator.h"
+
 #include "test/crossing_test/crossing_state.hpp"
+#include "test/crossing_test/evaluator_label_collision.hpp"
+#include "test/crossing_test/evaluator_label_goal_reached.hpp"
 
 std::mt19937  mcts::RandomGenerator::random_generator_;
 ObjectiveVec MctsParameters::LOWER_BOUND = Eigen::Vector4f(-1000.0f, -1000.0f, -100.0f, -1000.0f);
@@ -29,6 +31,11 @@ TEST(CrossingTest, general) {
   RandomGenerator::random_generator_ = std::mt19937(1000);
   Mcts<CrossingState, UctStatistic, UctStatistic, RandomHeuristic> mcts;
 
+  // SETUP LABEL EVALUATORS
+  std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> label_evaluators;
+  label_evaluators.emplace_back(std::make_shared<EvaluatorLabelCollision>("collision", CrossingState::crossing_point));
+  label_evaluators.emplace_back(std::make_shared<EvaluatorLabelGoalReached>("ego_goal_reached",
+                                                                            CrossingState::ego_goal_reached_position));
   // SETUP RULES
   std::vector<EvaluatorRuleLTL> automata;
   // Finally arrive at goal (Liveness)
@@ -41,7 +48,7 @@ TEST(CrossingTest, general) {
   //automata.emplace_back("!other_goal_reached U ego_goal_reached", -1000.f, RewardPriority::GOAL);
 
 
-  auto state = std::make_shared<CrossingState>(automata);
+  auto state = std::make_shared<CrossingState>(automata, label_evaluators);
 
   std::vector<Reward> rewards(1, Reward::Zero());
   JointAction jt(2, (int) Actions::FORWARD);
