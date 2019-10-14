@@ -43,6 +43,7 @@ public:
     void printTreeToDotFile(std::string filename="tree");
 
     void set_heuristic_function(const H& heuristic) {heuristic_ = heuristic;}
+  const StageNodeSPtr &get_root() const;
 
 private:
 
@@ -148,7 +149,10 @@ template<class S, class SE, class SO, class H>
 void Mcts<S,SE,SO,H>::printTreeToDotFile(std::string filename){ 
     root_->printTree(filename);
 }
-
+template<class S, class SE, class SO, class H>
+const std::shared_ptr<StageNode<S, SE, SO, H>> &Mcts<S, SE, SO, H>::get_root() const {
+  return root_;
+}
 
 } // namespace mcts
 

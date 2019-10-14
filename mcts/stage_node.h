@@ -44,7 +44,8 @@ struct container_hash {
         using StageNodeSPtr = std::shared_ptr<StageNode<S,SE,SO, H>>;
         using StageNodeWPtr = std::weak_ptr<StageNode<S,SE,SO, H>>;
         typedef std::unordered_map<JointAction,StageNodeSPtr,container_hash<JointAction>> StageChildMap;
-        typedef std::unordered_map<JointAction,std::vector<Reward>,container_hash<JointAction>> StageRewardMap; //< remembers joint rewards 
+      typedef std::unordered_map<JointAction, std::vector<Reward>, container_hash<JointAction>>
+          StageRewardMap; //< remembers joint rewards
         //of state execute to avoid rerunning execute during node selection
 
         // Environment State
@@ -87,8 +88,9 @@ struct container_hash {
         double getEgoAgentValue();
         int getEgoNodeVisits();
         double getActionValue(int action);
+      const StageChildMap &get_children() const;
 
-        static void reset_counter();
+      static void reset_counter();
 
         MCTS_TEST
     };
@@ -319,7 +321,15 @@ struct container_hash {
 
             }
         }
-    };
+    }
+template<class S, class SE, class SO, class H>
+const std::unordered_map<JointAction, std::shared_ptr<StageNode<S, SE, SO, H>>, container_hash<JointAction>> &StageNode<
+    S,
+    SE,
+    SO,
+    H>::get_children() const {
+  return children_;
+};
 
 } // namespace mcts
  

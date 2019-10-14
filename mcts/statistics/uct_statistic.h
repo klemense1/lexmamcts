@@ -67,12 +67,20 @@ class UctStatistic : public mcts::NodeStatistic<UctStatistic>, mcts::RandomGener
     // Lexicographical ordering of the UCT value vectors
     auto max = std::max_element(ucb_statistics_.begin(), ucb_statistics_.end(),
                                 [](ActionUCBMap::value_type &a, ActionUCBMap::value_type &b) -> bool {
-                                  return std::lexicographical_compare(a.second.action_value_.begin(),
-                                                                      a.second.action_value_.end(),
-                                                                      b.second.action_value_.begin(),
-                                                                      b.second.action_value_.end());
-                                });
-    return max->first;
+                                  if (a.second.action_count_ == 0) {
+                                    return true;
+                                  } else if (b.second.action_count_ == 0) {
+                                    return false;
+                                  } else {
+                                    return std::lexicographical_compare(a.second.action_value_.begin(),
+                                                                        a.second.action_value_.end(),
+                                                                        b.second.action_value_.begin(),
+                                                                        b.second.action_value_.end());
+                                  }
+                                }
+    );
+    return max->
+        first;
   }
 
   void update_from_heuristic(const NodeStatistic<UctStatistic> &heuristic_statistic) {
@@ -122,7 +130,7 @@ class UctStatistic : public mcts::NodeStatistic<UctStatistic>, mcts::RandomGener
   }
 
   typedef struct UcbPair {
-    UcbPair() : action_count_(0), action_value_() {};
+    UcbPair() : action_count_(0), action_value_(ObjectiveVec::Zero()) {};
     unsigned action_count_;
     ObjectiveVec action_value_;
   } UcbPair;
@@ -147,7 +155,7 @@ class UctStatistic : public mcts::NodeStatistic<UctStatistic>, mcts::RandomGener
   ActionUCBMap ucb_statistics_; // first: action selection count, action-value
   unsigned int total_node_visits_;
 
-  // PARAMS
+// PARAMS
   const ObjectiveVec upper_bound;
   const ObjectiveVec lower_bound;
   const double k_discount_factor;
