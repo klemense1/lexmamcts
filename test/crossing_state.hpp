@@ -137,11 +137,10 @@ class CrossingState : public mcts::StateInterface<CrossingState> {
       rewards[0](static_cast<int>(RewardType::TIME)) = -time_penalty_;
     }
 
-    //rewards[0](static_cast<int>(RewardType::INMAP)) += -1000.0f * ego_out_of_map;
     //rewards[0](static_cast<int>(RewardType::TIME)) += -1.0f;
+    // Extra penalty for driving backwards
     rewards[0](static_cast<int>(RewardType::TIME)) +=
         aconv(joint_action[ego_agent_idx]) == ActionType::BACKWARD ? -1.0f : 0.0f;
-    //ego_cost = collision * 1.0f;
 
     return std::make_shared<CrossingState>(next_other_agent_states,
                                            next_ego_state,
@@ -207,7 +206,7 @@ class CrossingState : public mcts::StateInterface<CrossingState> {
 
  private:
 
-  const int state_x_length = 21; /* 21 is crossing point (41-1)/2+1 */
+  const int state_x_length = 21;
   const int ego_goal_reached_position = 19;
   const int crossing_point = (state_x_length - 1) / 2 + 1;
 

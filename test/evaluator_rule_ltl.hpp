@@ -17,13 +17,10 @@ namespace behavior {
 
 typedef std::map<std::string, bool> EvaluationMap;
 
-//TODO:Fix order
 enum RewardType {
-  INMAP = 0,
-  SAFETY = 1,
-  GOAL = 2,
-  TIME = 3,
-  //LEGAL = 5,
+  SAFETY = 0,
+  GOAL,
+  TIME,
 };
 
 class EvaluatorRuleLTL {

@@ -7,7 +7,6 @@
 #define PLAN_DEBUG_INFO
 #define REWARD_DIM 4
 
-#include <fenv.h>
 #include "gtest/gtest.h"
 
 #include "mcts/mcts.h"
@@ -20,9 +19,6 @@ std::mt19937  mcts::RandomGenerator::random_generator_;
 ObjectiveVec MctsParameters::LOWER_BOUND = Eigen::Vector4f(-1000.0f, -1000.0f, -100.0f, -1000.0f);
 ObjectiveVec MctsParameters::UPPER_BOUND = Eigen::Vector4f(0.0f, 0.0f, 0.0f, 0.0f);
 
-//ObjectiveVec MctsParameters::LOWER_BOUND;
-//ObjectiveVec MctsParameters::UPPER_BOUND;
-
 double MctsParameters::DISCOUNT_FACTOR = 0.9;
 double MctsParameters::EXPLORATION_CONSTANT = 1.0;
 
@@ -30,24 +26,27 @@ double MctsParameters::MAX_SEARCH_TIME_RANDOM_HEURISTIC = 1;
 double MctsParameters::MAX_NUMBER_OF_ITERATIONS_RANDOM_HEURISTIC = 1000;
 
 TEST(CrossingTest, general) {
-  feenableexcept(FE_INVALID | FE_OVERFLOW);
   RandomGenerator::random_generator_ = std::mt19937(1000);
-  //MctsParameters::LOWER_BOUND << -3000.0f;
-  //MctsParameters::UPPER_BOUND << 0.0f;
   Mcts<CrossingState, UctStatistic, UctStatistic, RandomHeuristic> mcts;
+
+  // SETUP RULES
   std::vector<EvaluatorRuleLTL> automata;
   // Finally arrive at goal (Liveness)
   automata.emplace_back("F ego_goal_reached", -100.f, RewardType::GOAL);
   // Do not collide with others (Safety)
   automata.emplace_back("G !collision", -1000.f, RewardType::SAFETY);
   // Arrive before others (Guarantee)
+  // Currently not possible because ego can't drive faster than others
+  // TODO: Add more actions for ego
   //automata.emplace_back("!other_goal_reached U ego_goal_reached", -1000.f, RewardType::GOAL);
+
+
   auto state = std::make_shared<CrossingState>(automata);
+
   std::vector<Reward> rewards(1, Reward::Zero());
   JointAction jt(2, (int) Actions::FORWARD);
-  //jt.resize(1);
   std::vector<int> pos_history;
-  pos_history.clear();
+
   pos_history.emplace_back(state->get_ego_pos());
   while (!state->is_terminal()) {
     mcts.search(*state, 50000, 10000);
@@ -56,59 +55,16 @@ TEST(CrossingTest, general) {
     std::cout << rewards[0] << std::endl;
     pos_history.emplace_back(state->get_ego_pos());
   }
-  std::cout << "Positions:" << std::endl;
+
+  std::cout << "Ego positions:" << std::endl;
   for (auto p : pos_history) {
     std::cout << p << ", ";
   }
-  std::cout << std::endl;
-  std::cout << "END" << std::endl;
+
+  EXPECT_TRUE(state->ego_goal_reached());
 }
 
-/*TEST(CrossingTest, SinglePlan) {
-  RandomGenerator::random_generator_ = std::mt19937(1000);
-  MctsParameters::LOWER_BOUND << -3000.0f;
-  MctsParameters::UPPER_BOUND << 0.0f;
-  Mcts<CrossingState, UctStatistic, UctStatistic, RandomHeuristic> mcts;
-  std::vector<EvaluatorRuleLTL> automata;
-  // Finally arrive at goal (Liveness)
-  automata.emplace_back("F ego_goal_reached", -100.f, RewardType::GOAL);
-  // Do not collide with others (Safety)
-  automata.emplace_back("G !collision", -1000.f, RewardType::SAFETY);
-  // Arrive before others (Guarantee)
-  //automata.emplace_back("!other_goal_reached U ego_goal_reached", -1000.f, RewardType::GOAL);
-  auto init_state = std::make_shared<CrossingState>(automata);
-  std::vector<Reward> rewards(1, Reward::Zero());
-  JointAction jt(1, (int) Actions::FORWARD);
-  //jt.resize(1);
-  mcts.search(*init_state, 50000, 10000);
-  jt[0] = mcts.returnBestAction();
-  mcts.printTreeToDotFile("/tmp/tree");
-  auto stage_node = mcts.get_root();
-  auto state = stage_node->get_state();
-  std::vector<int> pos_history;
-  pos_history.clear();
-  pos_history.emplace_back(state->get_ego_pos());
-  while (!state->is_terminal()) {
-    jt[0] = stage_node->get_best_action();
-    try {
-      stage_node = stage_node->get_children().at(jt);
-    } catch (...){
-      std::cout << "Policy END";
-      break;
-    }
-    state = stage_node->get_state();
-    //std::cout << rewards[0] << std::endl;
-    pos_history.emplace_back(state->get_ego_pos());
-  }
-  std::cout << "Positions:" << std::endl;
-  for (auto p : pos_history) {
-    std::cout << p << ", ";
-  }
-  std::cout << std::endl;
-  std::cout << "END" << std::endl;
-}*/
-
-TEST(CrossingTest, lexiorder) {
+TEST(CrossingTest, LexicographicOrder) {
   std::vector<Eigen::Vector2i> v;
   v.emplace_back(1, 2);
   v.emplace_back(2, 1);
