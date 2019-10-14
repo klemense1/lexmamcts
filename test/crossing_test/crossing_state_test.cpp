@@ -13,7 +13,7 @@
 #include "mcts/statistics/uct_statistic.h"
 #include "mcts/heuristics/random_heuristic.h"
 #include "mcts/random_generator.h"
-#include "test/crossing_state.hpp"
+#include "test/crossing_test/crossing_state.hpp"
 
 std::mt19937  mcts::RandomGenerator::random_generator_;
 ObjectiveVec MctsParameters::LOWER_BOUND = Eigen::Vector4f(-1000.0f, -1000.0f, -100.0f, -1000.0f);
