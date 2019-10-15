@@ -20,7 +20,9 @@ class EvaluatorLabelCollision : public EvaluatorLabelBase<World> {
 bool EvaluatorLabelCollision::evaluate(const World &state) const {
   bool collision = false;
   for (const auto &agent: state.second) {
-    if (state.first.x_pos == crossing_point_ && agent.x_pos == crossing_point_) {
+    if ((state.first.x_pos - static_cast<int>(aconv(state.first.last_action))) < crossing_point_ &&
+        state.first.x_pos >= crossing_point_ &&
+        agent.x_pos == crossing_point_) {
       collision = true;
     }
   }
