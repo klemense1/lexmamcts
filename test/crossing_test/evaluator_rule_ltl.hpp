@@ -19,7 +19,7 @@ typedef std::map<std::string, bool> EvaluationMap;
 
 enum RewardPriority {
   SAFETY = 0,
-  GOAL,
+  GOAL = 0,
   TIME,
 };
 
@@ -27,14 +27,14 @@ class EvaluatorRuleLTL {
  public:
   EvaluatorRuleLTL(spot::formula ltl_formula, float weight, RewardPriority type);
   EvaluatorRuleLTL(std::string ltl_formula_str, float weight, RewardPriority type);
-  EvaluatorRuleLTL(const EvaluatorRuleLTL &evaluator_rule_ltl) = default;
+  //EvaluatorRuleLTL(const EvaluatorRuleLTL &evaluator_rule_ltl) = default;
   float evaluate(EvaluationMap &labels);
   float final_reward();
   void reset_state();
  private:
   static bool bdd_eval(bdd cond, const std::set<int> &vars);
   float weight_;
-  spot::state *current_state;
+  uint32_t current_state;
   spot::twa_graph_ptr aut;
   std::set<std::string> alphabet;
   spot::formula ltl_formula_;

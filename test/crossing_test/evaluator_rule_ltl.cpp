@@ -2,6 +2,7 @@
 // Created by luis on 07.10.19.
 //
 
+#include "spot/twa/bddprint.hh"
 #include "evaluator_rule_ltl.hpp"
 
 namespace modules {
@@ -36,7 +37,7 @@ float EvaluatorRuleLTL::evaluate(EvaluationMap &labels) {
   std::set<int> bddvars = std::set<int>();
   spot::bdd_dict_ptr bddDictPtr = aut->get_dict();
   // Self looping behavior
-  spot::state *next_state = current_state;
+  uint32_t next_state = current_state;
   for (const auto ap_str : alphabet) {
     // Ensure the the label is decided
     assert(labels.find(ap_str) != labels.end());
@@ -48,9 +49,11 @@ float EvaluatorRuleLTL::evaluate(EvaluationMap &labels) {
     }
   }
   bool transition_found = false;
-  for (auto transition :  aut->succ(current_state)) {
-    if (EvaluatorRuleLTL::bdd_eval(transition->cond(), bddvars)) {
-      next_state = transition->dst()->clone();
+  for (auto transition :  aut->out(current_state)) {
+    if (EvaluatorRuleLTL::bdd_eval(transition.cond, bddvars)) {
+      //std::cout << std::endl << "  edge(" << current_state << " -> " << transition.dst << ")\n    label = ";
+      //spot::bdd_print_formula(std::cout, aut->get_dict(), transition.cond);
+      next_state = transition.dst;
       transition_found = true;
       break;
     }
@@ -60,7 +63,7 @@ float EvaluatorRuleLTL::evaluate(EvaluationMap &labels) {
 }
 
 void EvaluatorRuleLTL::reset_state() {
-  current_state = aut->get_init_state()->clone();
+  current_state = aut->get_init_state_number();
 }
 
 bool EvaluatorRuleLTL::bdd_eval(bdd cond, const std::set<int> &vars) {
