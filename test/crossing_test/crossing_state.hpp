@@ -85,27 +85,30 @@ class CrossingState : public mcts::StateInterface<CrossingState> {
     }
 
     // REWARD GENERATION
+    // TODO: Put all labels in evaluator obejcts
+    // TODO: Composite label evaluator
+    // State labelling
     EvaluationMap labels;
     std::vector<EvaluatorRuleLTL> next_automata(automata_);
     labels["other_goal_reached"] = (next_other_agent_states[0].x_pos >= ego_goal_reached_position);
-    World next_world(ego_state_, other_agent_states_);
+    World next_world(next_ego_state, next_other_agent_states);
     for (auto le : label_evaluator_) {
       labels[le->get_label_str()] = le->evaluate(next_world);
     }
     const bool terminal = labels["ego_goal_reached"] || labels["collision"] || ego_out_of_map;
+
+    // Reward calculation
     rewards.resize(num_other_agents + 1);
     rewards[0] = Reward::Zero();
-    for (auto aut : next_automata) {
+    for (auto &aut : next_automata) {
       rewards[0](aut.get_type()) += aut.evaluate(labels);
+      // For non-safety properties, we need state-based acceptance
       if (terminal) {
         rewards[0](aut.get_type()) += aut.final_reward();
       }
     }
 
     rewards[0](static_cast<int>(RewardPriority::TIME)) += -1.0f;
-    // Extra penalty for driving backwards
-    rewards[0](static_cast<int>(RewardPriority::TIME)) +=
-        aconv(joint_action[ego_agent_idx]) == ActionType::BACKWARD ? -1.0f : 0.0f;
 
     return std::make_shared<CrossingState>(next_other_agent_states,
                                            next_ego_state,
