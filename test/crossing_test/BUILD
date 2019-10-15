@@ -7,6 +7,8 @@ filegroup(
         "evaluator_label_base.hpp",
         "evaluator_label_collision.hpp",
         "evaluator_label_goal_reached.hpp",
+        "evaluator_label_hold_at_xing.hpp",
+        "evaluator_label_other_near.hpp",
         "evaluator_rule_ltl.cpp",
         "evaluator_rule_ltl.hpp",
     ],
