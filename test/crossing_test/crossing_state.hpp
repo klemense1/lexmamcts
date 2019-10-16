@@ -18,37 +18,33 @@
 using namespace mcts;
 using namespace modules::models::behavior;
 
+typedef std::vector<std::vector<EvaluatorRuleLTL>> Automata;
 
 // A simple environment with a 1D state, only if both agents select different actions, they get nearer to the terminal state
 class CrossingState : public mcts::StateInterface<CrossingState> {
- private:
-  static const unsigned int num_other_agents = 1;
 
  public:
-
+  static const unsigned int num_other_agents = 1;
   static const int state_x_length = 21;
   static const int ego_goal_reached_position = 19;
   static const int crossing_point = (state_x_length - 1) / 2 + 1;
 
-  CrossingState(const std::vector<EvaluatorRuleLTL> &automata,
+  CrossingState(Automata &automata,
                 const std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> label_evaluator) :
-      other_agent_states_(num_other_agents),
-      ego_state_(),
+      agent_states_(num_other_agents + 1),
       terminal_(false),
       automata_(automata),
       label_evaluator_(label_evaluator) {
-    for (auto &state : other_agent_states_) {
+    for (auto &state : agent_states_) {
       state = AgentState();
     }
   }
 
-  CrossingState(const std::vector<AgentState> &other_agent_states,
-                const AgentState &ego_state,
+  CrossingState(const std::vector<AgentState> &agent_states,
                 const bool &terminal,
-                const std::vector<EvaluatorRuleLTL> &automata,
+                Automata &automata,
                 const std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> label_evaluator) :
-      other_agent_states_(other_agent_states),
-      ego_state_(ego_state),
+      agent_states_(agent_states),
       terminal_(terminal),
       automata_(automata),
       label_evaluator_(label_evaluator) {};
@@ -60,69 +56,78 @@ class CrossingState : public mcts::StateInterface<CrossingState> {
 
   template<typename ActionType = Actions>
   ActionType get_last_action(const AgentIdx &agent_idx) const {
-    if (agent_idx == ego_agent_idx) {
-      return ego_state_.last_action;
-    } else {
-      return other_agent_states_[agent_idx - 1].last_action;
-    }
+    return agent_states_[agent_idx].last_action;
   }
 
-  std::shared_ptr<CrossingState> execute(const JointAction &joint_action, std::vector<Reward> &rewards) const {
-    // normally we map each single action value in joint action with a map to the floating point action. Here, not required
-    int new_x_ego = ego_state_.x_pos + static_cast<int>(aconv(joint_action[ego_agent_idx]));
-    bool ego_out_of_map = false;
-    if (new_x_ego < 0) {
-      ego_out_of_map = true;
-    }
-    const AgentState next_ego_state
-        (ego_state_.x_pos + static_cast<int>(aconv(joint_action[ego_agent_idx])), aconv(joint_action[ego_agent_idx]));
+  std::shared_ptr<CrossingState> execute(const JointAction &joint_action, std::vector<Reward> &rewards) {
 
-    std::vector<AgentState> next_other_agent_states(num_other_agents);
-    for (size_t i = 0; i < other_agent_states_.size(); ++i) {
-      const auto &old_state = other_agent_states_[i];
-      int new_x = old_state.x_pos + static_cast<int>(Actions::FORWARD);
-      next_other_agent_states[i] = AgentState((new_x >= 0) ? new_x : 0, Actions::FORWARD);
+    EvaluationMap labels;
+    Automata next_automata(automata_);
+    World next_world;
+    bool terminal;
+    std::vector<AgentState> next_agent_states(num_other_agents + 1);
+    rewards.resize(num_other_agents + 1);
+
+    // CALCULATE NEXT STATE
+    for (size_t i = 0; i < agent_states_.size(); ++i) {
+      const auto &old_state = agent_states_[i];
+      int new_x = old_state.x_pos + static_cast<int>(aconv(joint_action[i]));
+      next_agent_states[i] = AgentState(new_x, aconv(joint_action[i]));
+    }
+    labels["ego_out_of_map"] = false;
+    if (agent_states_[ego_agent_idx].x_pos < 0) {
+      labels["ego_out_of_map"] = true;
     }
 
     // REWARD GENERATION
-    // TODO: Put all labels in evaluator obejcts
-    // TODO: Composite label evaluator
-    // State labelling
-    EvaluationMap labels;
-    std::vector<EvaluatorRuleLTL> next_automata(automata_);
-    labels["other_goal_reached"] = (next_other_agent_states[0].x_pos >= ego_goal_reached_position);
-    World next_world(next_ego_state, next_other_agent_states);
-    for (auto le : label_evaluator_) {
-      labels[le->get_label_str()] = le->evaluate(next_world);
-    }
-    const bool terminal = labels["ego_goal_reached"] || labels["collision"] || ego_out_of_map;
+    // For each agent
+    for (size_t agent_idx = 0; agent_idx < rewards.size(); ++agent_idx) {
+      // Labeling
+      std::vector<AgentState> next_other_agents(next_agent_states);
+      // TODO: Improve efficiency
+      next_other_agents.erase(next_other_agents.begin() + agent_idx);
+      // Create perspective from current agent
+      next_world = World(next_agent_states[agent_idx], next_other_agents);
 
-    // Reward calculation
-    rewards.resize(num_other_agents + 1);
-    rewards[0] = Reward::Zero();
-    for (auto &aut : next_automata) {
-      rewards[0](aut.get_type()) += aut.evaluate(labels);
-      // For non-safety properties, we need state-based acceptance
-      if (terminal) {
-        rewards[0](aut.get_type()) += aut.final_reward();
+      for (auto le : label_evaluator_) {
+        labels[le->get_label_str()] = le->evaluate(next_world);
       }
+      assert(ego_agent_idx == 0);
+      if (agent_idx == ego_agent_idx) {
+        terminal = labels["goal_reached"] || labels["collision"] || labels["ego_out_of_map"];
+      }
+      rewards[agent_idx] = Reward::Zero();
+
+      // Automata transit
+      for (EvaluatorRuleLTL &aut : (next_automata[agent_idx])) {
+        rewards[agent_idx](aut.get_type()) += aut.evaluate(labels);
+        // For non-safety properties, we need state-based acceptance
+        if (terminal) {
+          rewards[agent_idx](aut.get_type()) += aut.final_reward();
+        }
+      }
+      rewards[agent_idx](static_cast<int>(RewardPriority::TIME)) += -1.0f;
+      switch (aconv(joint_action[agent_idx])) {
+        case Actions::FORWARD :rewards[agent_idx](static_cast<int>(RewardPriority::EFFICIENCY)) = -1.0f;
+          break;
+        case Actions::WAIT:rewards[agent_idx](static_cast<int>(RewardPriority::EFFICIENCY)) = 0.0f;
+          break;
+        case Actions::BACKWARD:rewards[agent_idx](static_cast<int>(RewardPriority::EFFICIENCY)) = -1.0f;
+          break;
+        default:rewards[agent_idx](static_cast<int>(RewardPriority::EFFICIENCY)) = 0.0f;
+          break;
+      }
+      labels.clear();
     }
 
-    rewards[0](static_cast<int>(RewardPriority::TIME)) += -1.0f;
-
-    return std::make_shared<CrossingState>(next_other_agent_states,
-                                           next_ego_state,
+    return std::make_shared<CrossingState>(next_agent_states,
                                            terminal,
                                            next_automata,
                                            label_evaluator_);
   }
 
   ActionIdx get_num_actions(AgentIdx agent_idx) const {
-    if (agent_idx == ego_agent_idx) {
-      return static_cast<size_t>(Actions::NUM); // WAIT, FORWARD, BACKWARD
-    } else {
-      return static_cast<size_t>(1);
-    }
+    return static_cast<size_t>(Actions::NUM);
   }
 
   bool is_terminal() const {
@@ -130,54 +135,40 @@ class CrossingState : public mcts::StateInterface<CrossingState> {
   }
 
   const std::vector<AgentIdx> get_agent_idx() const {
-    std::vector<AgentIdx> agent_idx(1);
+    std::vector<AgentIdx> agent_idx(num_other_agents + 1);
     std::iota(agent_idx.begin(), agent_idx.end(), 0);
     return agent_idx; // adapt to number of agents
   }
 
   std::string sprintf() const {
     std::stringstream ss;
-    ss << "Ego: x=" << ego_state_.x_pos;
-    int i = 0;
-    for (const auto &st : other_agent_states_) {
-      ss << ", Ag" << i << ": x=" << st.x_pos;
-      i++;
+    ss << "Ego: x=" << agent_states_[ego_agent_idx].x_pos;
+    for (size_t i = 1; i < agent_states_.size(); ++i) {
+      ss << ", Ag" << i << ": x=" << agent_states_[i].x_pos;
     }
     ss << std::endl;
     return ss.str();
   }
 
   bool ego_goal_reached() const {
-    return ego_state_.x_pos >= ego_goal_reached_position;
-  }
-
-  int min_distance_to_ego() const {
-    int min_dist = std::numeric_limits<int>::max();
-    for (int i = 0; i < other_agent_states_.size(); ++i) {
-      const auto dist = distance_to_ego(i);
-      if (min_dist > dist) {
-        min_dist = dist;
-      }
-    }
-    return min_dist;
+    return agent_states_[ego_agent_idx].x_pos >= ego_goal_reached_position;
   }
 
   inline int distance_to_ego(const AgentIdx &other_agent_idx) const {
-    return ego_state_.x_pos - other_agent_states_[other_agent_idx].x_pos;
+    return agent_states_[ego_agent_idx].x_pos - agent_states_[other_agent_idx + 1].x_pos;
   }
 
   typedef Actions ActionType;
 
   int get_ego_pos() const {
-    return ego_state_.x_pos;
+    return agent_states_[ego_agent_idx].x_pos;
   }
 
  private:
 
-  std::vector<AgentState> other_agent_states_;
-  AgentState ego_state_;
+  std::vector<AgentState> agent_states_;
   bool terminal_;
-  std::vector<EvaluatorRuleLTL> automata_;
+  Automata automata_;
   std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> label_evaluator_;
 };
 

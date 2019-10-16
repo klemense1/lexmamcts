@@ -21,6 +21,7 @@ enum RewardPriority {
   SAFETY = 0,
   GOAL = 0,
   TIME,
+  EFFICIENCY,
 };
 
 class EvaluatorRuleLTL {

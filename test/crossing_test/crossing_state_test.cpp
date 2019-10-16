@@ -20,10 +20,10 @@
 #include "test/crossing_test/evaluator_label_other_near.hpp"
 
 std::mt19937  mcts::RandomGenerator::random_generator_;
-ObjectiveVec MctsParameters::LOWER_BOUND = Eigen::Vector4f(-1000.0f, -1000.0f, -100.0f, -1000.0f);
+ObjectiveVec MctsParameters::LOWER_BOUND = Eigen::Vector4f(-2000.0f, -40.0f, -100.0f, -1.0f);
 ObjectiveVec MctsParameters::UPPER_BOUND = Eigen::Vector4f(0.0f, 0.0f, 0.0f, 0.0f);
 
-double MctsParameters::DISCOUNT_FACTOR = 0.9;
+double MctsParameters::DISCOUNT_FACTOR = 1.0;
 double MctsParameters::EXPLORATION_CONSTANT = 1.0;
 
 double MctsParameters::MAX_SEARCH_TIME_RANDOM_HEURISTIC = 1;
@@ -34,32 +34,37 @@ class CrossingTest : public ::testing::Test {
   void SetUp() override {
     RandomGenerator::random_generator_ = std::mt19937(1000);
 
-
     // SETUP LABEL EVALUATORS
     label_evaluators.emplace_back(std::make_shared<EvaluatorLabelCollision>("collision",
                                                                             CrossingState::crossing_point));
-    label_evaluators.emplace_back(std::make_shared<EvaluatorLabelGoalReached>("ego_goal_reached",
+    label_evaluators.emplace_back(std::make_shared<EvaluatorLabelGoalReached>("goal_reached",
                                                                               CrossingState::ego_goal_reached_position));
     label_evaluators.emplace_back(std::make_shared<EvaluatorLabelHoldAtXing>("at_hp_xing",
                                                                              CrossingState::crossing_point));
     label_evaluators.emplace_back(std::make_shared<EvaluatorLabelOtherNear>("other_near"));
     // SETUP RULES
-    // Finally arrive at goal (Liveness)
-    automata.emplace_back("F ego_goal_reached", -100.f, RewardPriority::GOAL);
+    automata.resize(CrossingState::num_other_agents + 1);
     // Do not collide with others (Safety)
-    automata.emplace_back("G !collision", -1000.f, RewardPriority::SAFETY);
+    automata[0].emplace_back("G !collision", -1000.f, RewardPriority::SAFETY);
+    // Finally arrive at goal (Liveness)
+    automata[0].emplace_back("F goal_reached", -1000.f, RewardPriority::GOAL);
+    // Copy rules to other agents
+    for (size_t i = 1; i < automata.size(); ++i) {
+      automata[i] = Automata::value_type(automata[0]);
+    }
+    // Rules only for ego
     // Arrive before others (Guarantee)
     // Currently not possible because ego can't drive faster than others
     // TODO: Add more actions for ego
     //automata.emplace_back("!other_goal_reached U ego_goal_reached", -1000.f, RewardPriority::GOAL);
-    automata.emplace_back("G((at_hp_xing & other_near) -> (X at_hp_xing))", -500.0f, RewardPriority::SAFETY);
+    automata[0].emplace_back("G((at_hp_xing & other_near) -> (X at_hp_xing))", -500.0f, RewardPriority::SAFETY);
 
     state = std::make_shared<CrossingState>(automata, label_evaluators);
     rewards = std::vector<Reward>(1, Reward::Zero());
     jt = JointAction(2, (int) Actions::FORWARD);
   }
   std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> label_evaluators;
-  std::vector<EvaluatorRuleLTL> automata;
+  Automata automata;
   std::vector<Reward> rewards;
   JointAction jt;
   std::vector<int> pos_history;
@@ -68,13 +73,19 @@ class CrossingTest : public ::testing::Test {
 };
 
 TEST_F(CrossingTest, general) {
+  const int MAX_STEPS = 40;
+  RandomGenerator::random_generator_ = std::mt19937(1000);
+  int steps = 0;
   pos_history.emplace_back(state->get_ego_pos());
-  while (!state->is_terminal()) {
-    mcts.search(*state, 50000, 10000);
+  while (!state->is_terminal() && steps < MAX_STEPS) {
+    mcts.search(*state, 50000, 20000);
     jt[0] = mcts.returnBestAction();
     state = state->execute(jt, rewards);
-    std::cout << rewards[0] << std::endl;
+    for (auto r : rewards) {
+      std::cout << r << std::endl;
+    }
     pos_history.emplace_back(state->get_ego_pos());
+    ++steps;
   }
 
   std::cout << "Ego positions:" << std::endl;
@@ -82,15 +93,17 @@ TEST_F(CrossingTest, general) {
     std::cout << p << ", ";
   }
 
+  EXPECT_LT(steps, MAX_STEPS);
   EXPECT_TRUE(state->ego_goal_reached());
 }
 
 TEST_F(CrossingTest, giveWay) {
-  std::vector<AgentState> other_agent_states(1);
-  other_agent_states[0].x_pos = 8;
-  other_agent_states[0].last_action = Actions::FORWARD;
-  state = std::make_shared<CrossingState>(other_agent_states,
-                                          AgentState(7, Actions::FORWARD),
+  std::vector<AgentState> agent_states(2);
+  agent_states[0].x_pos = 7;
+  agent_states[0].last_action = Actions::FORWARD;
+  agent_states[1].x_pos = 8;
+  agent_states[1].last_action = Actions::FORWARD;
+  state = std::make_shared<CrossingState>(agent_states,
                                           false,
                                           automata,
                                           label_evaluators);
