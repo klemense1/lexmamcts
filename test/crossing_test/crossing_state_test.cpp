@@ -19,16 +19,6 @@
 #include "test/crossing_test/evaluator_label_hold_at_xing.hpp"
 #include "test/crossing_test/evaluator_label_other_near.hpp"
 
-std::mt19937  mcts::RandomGenerator::random_generator_;
-ObjectiveVec MctsParameters::LOWER_BOUND = Eigen::Vector4f(-2000.0f, -40.0f, -100.0f, -1.0f);
-ObjectiveVec MctsParameters::UPPER_BOUND = Eigen::Vector4f(0.0f, 0.0f, 0.0f, 0.0f);
-
-double MctsParameters::DISCOUNT_FACTOR = 1.0;
-double MctsParameters::EXPLORATION_CONSTANT = 1.0;
-
-double MctsParameters::MAX_SEARCH_TIME_RANDOM_HEURISTIC = 1;
-double MctsParameters::MAX_NUMBER_OF_ITERATIONS_RANDOM_HEURISTIC = 1000;
-
 class CrossingTest : public ::testing::Test {
  protected:
   void SetUp() override {

@@ -5,8 +5,6 @@
 #ifndef MAMCTS_TEST_CROSSING_TEST_COMMON_HPP_
 #define MAMCTS_TEST_CROSSING_TEST_COMMON_HPP_
 
-#define REWARD_DIM 4
-
 #include <map>
 #include "mcts/state.h"
 
