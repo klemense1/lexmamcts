@@ -15,8 +15,17 @@
 #include "test/crossing_test/common.hpp"
 #include "test/crossing_test/evaluator_label_base.hpp"
 
+#define NUM_OTHER_AGENTS 1
+#define EGO_GOAL_POS 19
+#define X_LNGTH 21
+#define XING_POINT (X_LNGTH - 1) / 2 + 1
+
 using namespace mcts;
 using namespace modules::models::behavior;
+
+namespace mcts {
+class Viewer;
+}
 
 typedef std::vector<std::vector<EvaluatorRuleLTL>> Automata;
 
@@ -24,10 +33,10 @@ typedef std::vector<std::vector<EvaluatorRuleLTL>> Automata;
 class CrossingState : public mcts::StateInterface<CrossingState> {
 
  public:
-  static const unsigned int num_other_agents = 1;
-  static const int state_x_length = 21;
-  static const int ego_goal_reached_position = 19;
-  static const int crossing_point = (state_x_length - 1) / 2 + 1;
+  static const unsigned int num_other_agents = NUM_OTHER_AGENTS;
+  static const int state_x_length = X_LNGTH;
+  static const int ego_goal_reached_position = EGO_GOAL_POS;
+  static const int crossing_point = XING_POINT;
 
   CrossingState(Automata &automata,
                 const std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> label_evaluator) :
@@ -164,6 +173,12 @@ class CrossingState : public mcts::StateInterface<CrossingState> {
     return agent_states_[ego_agent_idx].x_pos;
   }
 
+  const std::vector<AgentState> &get_agent_states() const {
+    return agent_states_;
+  }
+
+  void draw(Viewer *viewer) const;
+
  private:
 
   std::vector<AgentState> agent_states_;
@@ -172,6 +187,4 @@ class CrossingState : public mcts::StateInterface<CrossingState> {
   std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> label_evaluator_;
 };
 
-const int CrossingState::crossing_point;
-const int CrossingState::ego_goal_reached_position;
 #endif

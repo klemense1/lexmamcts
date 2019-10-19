@@ -31,3 +31,34 @@ http_archive(
     strip_prefix = "spot-2.8.1",
     urls = ["http://www.lrde.epita.fr/dload/spot/spot-2.8.1.tar.gz"],
 )
+
+new_local_repository(
+    name = "python_linux",
+    build_file_content = """
+cc_library(
+    name = "python-lib",
+    srcs = glob(["lib/libpython3.*", "libs/python3.lib", "libs/python36.lib"]),
+    hdrs = glob(["include/**/*.h", "include/*.h"]),
+    includes = ["include/python3.6m", "include", "include/python3.7m", "include/python3.5m"],
+    visibility = ["//visibility:public"],
+)
+    """,
+    path = "./python/venv/",
+)
+
+http_archive(
+    name = "pybind11",
+    build_file_content = """
+cc_library(
+    name = "pybind11",
+    hdrs = glob([
+        "include/**/**/*.h",
+    ]),
+    linkopts = ["-pthread"],
+    visibility = ["//visibility:public"],
+    strip_include_prefix = "include/"
+)
+""",
+    strip_prefix = "pybind11-2.3.0",
+    urls = ["https://github.com/pybind/pybind11/archive/v2.3.0.zip"],
+)

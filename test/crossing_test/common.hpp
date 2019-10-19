@@ -34,11 +34,11 @@ const std::map<Actions, ActionIdx> action_to_idx = {
     {Actions::BACKWARD, 2}
 };
 
-Actions aconv(const ActionIdx &action) {
+static inline Actions aconv(const ActionIdx &action) {
   return idx_to_action.at(action);
 }
 
-ActionIdx aconv(const Actions &action) {
+static inline ActionIdx aconv(const Actions &action) {
   return action_to_idx.at(action);
 }
 
