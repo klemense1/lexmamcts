@@ -12,63 +12,64 @@
 #include <iostream>
 #include <chrono>
 
- namespace mcts {
+namespace mcts {
 // assumes all agents have equal number of actions and the same node statistic
-class RandomHeuristic :  public mcts::Heuristic<RandomHeuristic>, mcts::RandomGenerator
-{
-public:
+class RandomHeuristic : public mcts::Heuristic<RandomHeuristic>, mcts::RandomGenerator {
+ public:
     template<class S, class SE, class SO, class H>
-    std::vector<SE> get_heuristic_values(const std::shared_ptr<StageNode<S,SE,SO,H>> &node) {
+    std::vector<SE> get_heuristic_values(const std::shared_ptr<StageNode<S, SE, SO, H>> &node) {
         //catch case where newly expanded state is terminal
-        if(node->get_state()->is_terminal()){
+        if (node->get_state()->is_terminal()) {
             const AgentIdx num_agents = node->get_state()->get_agent_idx().size();
-            const ActionIdx num_actions = node->get_state()->get_num_actions(S::ego_agent_idx); 
-            std::vector<SE> statistics(num_agents,SE(num_actions));
-            for (AgentIdx ai = 0; ai < num_agents; ++ai){
-              statistics.at(ai).set_heuristic_estimate(Reward::Zero());
+            const ActionIdx num_actions = node->get_state()->get_num_actions(S::ego_agent_idx);
+            std::vector<SE> statistics(num_agents, SE(num_actions));
+            for (AgentIdx ai = 0; ai < num_agents; ++ai) {
+                statistics.at(ai).set_heuristic_estimate(Reward::Zero());
             }
-            return  statistics;
+            return statistics;
         }
-        
+
         namespace chr = std::chrono;
         auto start = std::chrono::high_resolution_clock::now();
         std::shared_ptr<S> state = node->get_state()->clone();
         const AgentIdx num_agents = node->get_state()->get_agent_idx().size();
         const ActionIdx num_actions = node->get_state()->get_num_actions(S::ego_agent_idx);
 
-    std::vector<Reward> accum_rewards(num_agents, Reward::Zero());
-    std::vector<Reward> step_rewards(num_agents, Reward::Zero());
-        const double k_discount_factor = mcts::MctsParameters::DISCOUNT_FACTOR; 
+        std::vector<Reward> accum_rewards(num_agents, Reward::Zero());
+        std::vector<Reward> step_rewards(num_agents, Reward::Zero());
+        const double k_discount_factor = mcts::MctsParameters::DISCOUNT_FACTOR;
         double modified_discount_factor = k_discount_factor;
         int num_iterations = 0;
-        while((!state->is_terminal())&&(num_iterations<max_iterations_random_heuristic)&&(std::chrono::duration_cast<std::chrono::milliseconds>( std::chrono::high_resolution_clock::now() - start ).count() < max_search_time_random_heuristic ))
-        {
-             auto new_state = state->execute(random_joint_action(num_actions, num_agents), step_rewards);
-             state = new_state->clone();
-             num_iterations +=1;
-             // discount the rewards of the current step
-             for(uint i=0; i<step_rewards.size(); i++){
-                 step_rewards.at(i) = step_rewards.at(i)*modified_discount_factor;
-             }
-             accum_rewards += step_rewards;
-             modified_discount_factor = modified_discount_factor*k_discount_factor;
+        while ((!state->is_terminal()) && (num_iterations < max_iterations_random_heuristic)
+            && (std::chrono::duration_cast<std::chrono::milliseconds>(
+                std::chrono::high_resolution_clock::now() - start).count() < max_search_time_random_heuristic)) {
+            auto new_state = state->execute(random_joint_action(num_actions, num_agents), step_rewards);
+            state = new_state->clone();
+            num_iterations += 1;
+            // discount the rewards of the current step
+            for (uint i = 0; i < step_rewards.size(); i++) {
+                step_rewards.at(i) = step_rewards.at(i) * modified_discount_factor;
+            }
+            accum_rewards += step_rewards;
+            modified_discount_factor = modified_discount_factor * k_discount_factor;
 
-         }
+        }
+        Reward coop_sum = Reward::Zero();
+        coop_sum = std::accumulate(accum_rewards.begin(), accum_rewards.end(), coop_sum);
+        coop_sum = coop_sum * coop_factor;
         // generate an extra node statistic for each agent
-        std::vector<SE> statistics(num_agents,SE(num_actions));
-        for (AgentIdx ai = 0; ai < num_agents; ++ai)
-        {
-            statistics.at(ai).set_heuristic_estimate(accum_rewards.at(ai));
+        std::vector<SE> statistics(num_agents, SE(num_actions));
+        for (AgentIdx ai = 0; ai < num_agents; ++ai) {
+            statistics.at(ai).set_heuristic_estimate(coop_sum + (1.0f - coop_factor) * accum_rewards.at(ai));
         }
 
-        return  statistics;
+        return statistics;
     }
 
-    JointAction random_joint_action(ActionIdx num_actions, AgentIdx num_agents)
-    {
-        std::uniform_int_distribution<ActionIdx> random_action_selection(0,num_actions-1);
+    JointAction random_joint_action(ActionIdx num_actions, AgentIdx num_agents) {
+        std::uniform_int_distribution<ActionIdx> random_action_selection(0, num_actions - 1);
 
-        auto gen = [&](){
+        auto gen = [&]() {
             return random_action_selection(random_generator_);
         };
 
@@ -78,10 +79,10 @@ public:
     }
     const double max_search_time_random_heuristic = mcts::MctsParameters::MAX_SEARCH_TIME_RANDOM_HEURISTIC;
     const double max_iterations_random_heuristic = mcts::MctsParameters::MAX_NUMBER_OF_ITERATIONS_RANDOM_HEURISTIC;
-
+    const double coop_factor = mcts::MctsParameters::COOP_FACTOR;
 
 };
 
- } // namespace mcts
+} // namespace mcts
 
 #endif

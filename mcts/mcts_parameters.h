@@ -29,6 +29,8 @@ struct MctsParameters {
 
   static ObjectiveVec LOWER_BOUND;
   static ObjectiveVec UPPER_BOUND;
+
+  static double COOP_FACTOR;
 };
 } // namespace mcts
 
