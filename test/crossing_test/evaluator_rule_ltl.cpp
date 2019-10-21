@@ -77,7 +77,7 @@ bool EvaluatorRuleLTL::bdd_eval(bdd cond, const std::set<int> &vars) {
   }
   return bdd_node == bddtrue;
 }
-float EvaluatorRuleLTL::final_reward() {
+float EvaluatorRuleLTL::final_reward() const {
   float penalty = 0.0f;
   // Check if formula has liveness property and is in accepting state
   if (!ltl_formula_.is_syntactic_safety() && !aut->state_is_accepting(current_state)) {

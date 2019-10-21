@@ -30,7 +30,7 @@ class EvaluatorRuleLTL {
   EvaluatorRuleLTL(std::string ltl_formula_str, float weight, RewardPriority type);
   //EvaluatorRuleLTL(const EvaluatorRuleLTL &evaluator_rule_ltl) = default;
   float evaluate(EvaluationMap &labels);
-  float final_reward();
+    float final_reward() const;
   void reset_state();
  private:
   static bool bdd_eval(bdd cond, const std::set<int> &vars);

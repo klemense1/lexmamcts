@@ -63,6 +63,8 @@ public:
 
     std::shared_ptr<Implementation> execute(const JointAction &joint_action, std::vector<Reward>& rewards) const;
 
+    std::vector<Reward> get_final_reward() const;
+
     std::shared_ptr<Implementation> clone() const;
 
     ActionIdx get_num_actions(AgentIdx agent_idx) const;
@@ -113,6 +115,11 @@ inline const std::vector<AgentIdx> StateInterface<Implementation>::get_agent_idx
 template<typename Implementation>
 inline std::string StateInterface<Implementation>::sprintf() const {
     return impl().sprintf();
+}
+
+template<typename Implementation>
+inline std::vector<Reward> StateInterface<Implementation>::get_final_reward() const {
+    return impl().get_final_reward();
 }
 
 
