@@ -8,8 +8,8 @@
 namespace modules {
 namespace models {
 namespace behavior {
-EvaluatorRuleLTL::EvaluatorRuleLTL(spot::formula ltl_formula, float weight, RewardPriority type) :
-    weight_(weight), ltl_formula_(ltl_formula), type_(type) {
+EvaluatorRuleLTL::EvaluatorRuleLTL(spot::formula ltl_formula, float weight, RewardPriority type, float final_reward) :
+    weight_(weight), final_reward_(final_reward), ltl_formula_(ltl_formula), type_(type) {
 
   spot::translator trans;
   if (ltl_formula.is_syntactic_safety()) {
@@ -30,8 +30,8 @@ EvaluatorRuleLTL::EvaluatorRuleLTL(spot::formula ltl_formula, float weight, Rewa
   reset_state();
 }
 
-EvaluatorRuleLTL::EvaluatorRuleLTL(std::string ltl_formula_str, float weight, RewardPriority type) :
-    EvaluatorRuleLTL(spot::parse_infix_psl(ltl_formula_str).f, weight, type) {}
+EvaluatorRuleLTL::EvaluatorRuleLTL(std::string ltl_formula_str, float weight, RewardPriority type, float final_reward) :
+    EvaluatorRuleLTL(spot::parse_infix_psl(ltl_formula_str).f, weight, type, final_reward) {}
 
 float EvaluatorRuleLTL::evaluate(EvaluationMap &labels) {
   std::set<int> bddvars = std::set<int>();
@@ -77,8 +77,8 @@ bool EvaluatorRuleLTL::bdd_eval(bdd cond, const std::set<int> &vars) {
   }
   return bdd_node == bddtrue;
 }
-float EvaluatorRuleLTL::final_reward() const {
-  float penalty = 0.0f;
+float EvaluatorRuleLTL::get_final_reward() const {
+    float penalty = final_reward_;
   // Check if formula has liveness property and is in accepting state
   if (!ltl_formula_.is_syntactic_safety() && !aut->state_is_accepting(current_state)) {
     penalty = weight_;

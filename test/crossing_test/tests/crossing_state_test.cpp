@@ -36,7 +36,7 @@ class CrossingTest : public ::testing::Test {
     // Do not collide with others (Safety)
     automata[0].emplace_back("G !collision", -1000.f, RewardPriority::SAFETY);
     // Finally arrive at goal (Liveness)
-    automata[0].emplace_back("F goal_reached", -1000.f, RewardPriority::GOAL);
+      automata[0].emplace_back("F goal_reached", 0.f, RewardPriority::GOAL, 500.f);
     // Copy rules to other agents
     for (size_t i = 1; i < automata.size(); ++i) {
       automata[i] = Automata::value_type(automata[0]);

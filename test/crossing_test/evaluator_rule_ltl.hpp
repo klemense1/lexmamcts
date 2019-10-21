@@ -26,15 +26,16 @@ enum RewardPriority {
 
 class EvaluatorRuleLTL {
  public:
-  EvaluatorRuleLTL(spot::formula ltl_formula, float weight, RewardPriority type);
-  EvaluatorRuleLTL(std::string ltl_formula_str, float weight, RewardPriority type);
+    EvaluatorRuleLTL(spot::formula ltl_formula, float weight, RewardPriority type, float final_reward = 0.0f);
+    EvaluatorRuleLTL(std::string ltl_formula_str, float weight, RewardPriority type, float final_reward = 0.0f);
   //EvaluatorRuleLTL(const EvaluatorRuleLTL &evaluator_rule_ltl) = default;
   float evaluate(EvaluationMap &labels);
-    float final_reward() const;
+    float get_final_reward() const;
   void reset_state();
  private:
   static bool bdd_eval(bdd cond, const std::set<int> &vars);
   float weight_;
+    float final_reward_;
   uint32_t current_state;
   spot::twa_graph_ptr aut;
   std::set<std::string> alphabet;
