@@ -64,6 +64,21 @@ void CrossingState::draw(mcts::Viewer *viewer) const {
   }
 
 }
+Reward CrossingState::get_action_cost(ActionIdx action) {
+    Reward reward = Reward::Zero();
+    reward(static_cast<int>(RewardPriority::TIME)) += -1.0f;
+    switch (aconv(action)) {
+        case Actions::FORWARD :reward(static_cast<int>(RewardPriority::EFFICIENCY)) = -1.0f;
+            break;
+        case Actions::WAIT:reward(static_cast<int>(RewardPriority::EFFICIENCY)) = 0.0f;
+            break;
+        case Actions::BACKWARD:reward(static_cast<int>(RewardPriority::EFFICIENCY)) = -1.0f;
+            break;
+        default:reward(static_cast<int>(RewardPriority::EFFICIENCY)) = 0.0f;
+            break;
+    }
+    return reward;
+}
 
 const int CrossingState::crossing_point;
 const int CrossingState::ego_goal_reached_position;

@@ -110,24 +110,10 @@ class CrossingState : public mcts::StateInterface<CrossingState> {
             // Automata transit
             for (EvaluatorRuleLTL &aut : (next_automata[agent_idx])) {
                 rewards[agent_idx](aut.get_type()) += aut.evaluate(labels);
-                // For non-safety properties, we need state-based acceptance
-                if (terminal) {
-                    rewards[agent_idx](aut.get_type()) += aut.final_reward();
-                }
             }
-            rewards[agent_idx](static_cast<int>(RewardPriority::TIME)) += -1.0f;
-            switch (aconv(joint_action[agent_idx])) {
-                case Actions::FORWARD :rewards[agent_idx](static_cast<int>(RewardPriority::EFFICIENCY)) = -1.0f;
-                    break;
-                case Actions::WAIT:rewards[agent_idx](static_cast<int>(RewardPriority::EFFICIENCY)) = 0.0f;
-                    break;
-                case Actions::BACKWARD:rewards[agent_idx](static_cast<int>(RewardPriority::EFFICIENCY)) = -1.0f;
-                    break;
-                default:rewards[agent_idx](static_cast<int>(RewardPriority::EFFICIENCY)) = 0.0f;
-                    break;
-            }
+            rewards[agent_idx] += get_action_cost(joint_action[agent_idx]);
             labels.clear();
-        }
+        } // End for each agent
 
         return std::make_shared<CrossingState>(next_agent_states,
                                                terminal,
@@ -140,7 +126,7 @@ class CrossingState : public mcts::StateInterface<CrossingState> {
         for (size_t agent_idx = 0; agent_idx < rewards.size(); ++agent_idx) {
             // Automata transit
             for (EvaluatorRuleLTL const &aut : (automata_[agent_idx])) {
-                rewards[agent_idx](aut.get_type()) += aut.final_reward();
+                rewards[agent_idx](aut.get_type()) += aut.get_final_reward();
             }
         }
         return rewards;
@@ -191,6 +177,7 @@ class CrossingState : public mcts::StateInterface<CrossingState> {
     void draw(Viewer *viewer) const;
 
  private:
+    Reward get_action_cost(ActionIdx action);
 
     std::vector<AgentState> agent_states_;
     bool terminal_;

@@ -55,10 +55,7 @@ class RandomHeuristic : public mcts::Heuristic<RandomHeuristic>, mcts::RandomGen
 
         }
 
-        // If we prematurely aborted the rollout, we have to apply the final penalties!
-        if (!state->is_terminal()) {
-            accum_rewards += state->get_final_reward();
-        }
+        accum_rewards += state->get_final_reward();
 
         Reward coop_sum = Reward::Zero();
         coop_sum = std::accumulate(accum_rewards.begin(), accum_rewards.end(), coop_sum);

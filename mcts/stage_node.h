@@ -181,6 +181,9 @@ struct container_hash {
             #ifdef PLAN_DEBUG_INFO
             //     std::cout << "expanded node state: " << state_->execute(joint_action, rewards)->sprintf();
             #endif
+            if (next_node->get_state()->is_terminal()) {
+                rewards += next_node->get_state()->get_final_reward();
+            }
             // collect intermediate rewards and selected action indexes
             fill_rewards(rewards, joint_action);
             joint_rewards_[joint_action] = rewards;
@@ -237,7 +240,11 @@ struct container_hash {
 
     template<class S, class SE, class SO, class H>
     ActionIdx StageNode<S,SE, SO, H>::get_best_action(){
+        std::cout << std::endl;
         ActionIdx best = ego_int_node_.get_best_action();
+        for (int i = 0; i < 3; i++) {
+            std::cout << ego_int_node_.print_edge_information(i) << std::endl;
+        }
         return best;
     }
 
