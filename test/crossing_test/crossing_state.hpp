@@ -50,9 +50,9 @@ class CrossingState : public mcts::StateInterface<CrossingState> {
   }
 
   CrossingState(const std::vector<AgentState> &agent_states,
-                const bool &terminal,
+                const bool terminal,
                 Automata &automata,
-                const std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> label_evaluator) :
+                const std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> &label_evaluator) :
       agent_states_(agent_states),
       terminal_(terminal),
       automata_(automata),
@@ -74,7 +74,7 @@ class CrossingState : public mcts::StateInterface<CrossingState> {
     Automata next_automata(automata_);
     World next_world;
     bool terminal;
-    std::vector<AgentState> next_agent_states(num_other_agents + 1);
+    std::vector<AgentState> next_agent_states(agent_states_.size());
     rewards.resize(num_other_agents + 1);
 
     // CALCULATE NEXT STATE
