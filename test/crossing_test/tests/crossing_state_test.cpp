@@ -7,7 +7,7 @@
 #define PLAN_DEBUG_INFO
 
 #include "gtest/gtest.h"
-#include "common.hpp"
+#include "test/crossing_test/common.hpp"
 #include "mcts/mcts.h"
 #include "mcts/statistics/uct_statistic.h"
 #include "mcts/heuristics/random_heuristic.h"
@@ -22,7 +22,6 @@
 class CrossingTest : public ::testing::Test {
  protected:
   void SetUp() override {
-    RandomGenerator::random_generator_ = std::mt19937(1000);
 
     // SETUP LABEL EVALUATORS
     label_evaluators.emplace_back(std::make_shared<EvaluatorLabelCollision>("collision",
@@ -47,7 +46,7 @@ class CrossingTest : public ::testing::Test {
     // Currently not possible because ego can't drive faster than others
     // TODO: Add more actions for ego
     //automata.emplace_back("!other_goal_reached U ego_goal_reached", -1000.f, RewardPriority::GOAL);
-    automata[0].emplace_back("G((at_hp_xing & other_near) -> (X at_hp_xing))", -500.0f, RewardPriority::SAFETY);
+    //automata[0].emplace_back("G((at_hp_xing & other_near) -> (X at_hp_xing))", -500.0f, RewardPriority::SAFETY);
 
     state = std::make_shared<CrossingState>(automata, label_evaluators);
     rewards = std::vector<Reward>(1, Reward::Zero());
@@ -64,16 +63,12 @@ class CrossingTest : public ::testing::Test {
 
 TEST_F(CrossingTest, general) {
   const int MAX_STEPS = 40;
-  RandomGenerator::random_generator_ = std::mt19937(1000);
   int steps = 0;
   pos_history.emplace_back(state->get_ego_pos());
   while (!state->is_terminal() && steps < MAX_STEPS) {
-    mcts.search(*state, 50000, 20000);
+    mcts.search(*state, 50000, 1000);
     jt[0] = mcts.returnBestAction();
     state = state->execute(jt, rewards);
-    for (auto r : rewards) {
-      std::cout << r << std::endl;
-    }
     pos_history.emplace_back(state->get_ego_pos());
     ++steps;
   }
@@ -83,6 +78,7 @@ TEST_F(CrossingTest, general) {
     std::cout << p << ", ";
   }
 
+  //Should not hit the maximum # of steps
   EXPECT_LT(steps, MAX_STEPS);
   EXPECT_TRUE(state->ego_goal_reached());
 }

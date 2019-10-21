@@ -7,3 +7,31 @@ py_test(
         "//test/crossing_test:pyviewer",
     ],
 )
+
+cc_test(
+    name = "crossing_state_test",
+    srcs = [
+        "crossing_state_test.cpp",
+    ],
+    copts = ["-Iexternal/gtest/include"],
+    deps = [
+        "//mcts",
+        "//test/crossing_test:crossing_state",
+        "@gtest//:main",
+        "@spot",
+    ],
+)
+
+cc_binary(
+    name = "crossing_state_binary",
+    srcs = [
+        "crossing_state_test.cpp",
+    ],
+    copts = ["-Iexternal/gtest/include"],
+    deps = [
+        "//mcts",
+        "//test/crossing_test:crossing_state",
+        "@gtest//:main",
+        "@spot",
+    ],
+)
