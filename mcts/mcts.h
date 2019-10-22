@@ -39,7 +39,7 @@ public:
     void search(const S& current_state, unsigned int max_search_time_ms, unsigned int max_iterations);
     int numIterations();
     std::string nodeInfo();
-    ActionIdx returnBestAction();
+    JointAction returnBestAction();
     void printTreeToDotFile(std::string filename="tree");
 
     void set_heuristic_function(const H& heuristic) {heuristic_ = heuristic;}
@@ -140,9 +140,8 @@ std::string Mcts<S,SE,SO,H>::nodeInfo(){
 }
 
 template<class S, class SE, class SO, class H>
-ActionIdx Mcts<S,SE,SO,H>::returnBestAction(){
-    ActionIdx idx_max = root_->get_best_action();
-    return idx_max; 
+JointAction Mcts<S, SE, SO, H>::returnBestAction() {
+    return root_->get_best_action();
 }
 
 template<class S, class SE, class SO, class H>

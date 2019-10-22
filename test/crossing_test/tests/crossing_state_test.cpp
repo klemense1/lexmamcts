@@ -33,20 +33,21 @@ class CrossingTest : public ::testing::Test {
     label_evaluators.emplace_back(std::make_shared<EvaluatorLabelOtherNear>("other_near"));
     // SETUP RULES
     automata.resize(CrossingState::num_other_agents + 1);
-    // Do not collide with others (Safety)
-    automata[0].emplace_back("G !collision", -1000.f, RewardPriority::SAFETY);
+
     // Finally arrive at goal (Liveness)
-      automata[0].emplace_back("F goal_reached", 0.f, RewardPriority::GOAL, 500.f);
+      automata[0].emplace_back("F goal_reached", -500.f, RewardPriority::GOAL, 500.f);
     // Copy rules to other agents
     for (size_t i = 1; i < automata.size(); ++i) {
       automata[i] = Automata::value_type(automata[0]);
     }
+      // Do not collide with others (Safety)
+      automata[0].emplace_back("G !collision", -1000.f, RewardPriority::SAFETY);
     // Rules only for ego
     // Arrive before others (Guarantee)
     // Currently not possible because ego can't drive faster than others
     // TODO: Add more actions for ego
     //automata.emplace_back("!other_goal_reached U ego_goal_reached", -1000.f, RewardPriority::GOAL);
-    //automata[0].emplace_back("G((at_hp_xing & other_near) -> (X at_hp_xing))", -500.0f, RewardPriority::SAFETY);
+      automata[0].emplace_back("G((at_hp_xing & other_near) -> (X at_hp_xing))", -500.0f, RewardPriority::SAFETY);
 
     state = std::make_shared<CrossingState>(automata, label_evaluators);
     rewards = std::vector<Reward>(1, Reward::Zero());
@@ -67,7 +68,8 @@ TEST_F(CrossingTest, general) {
   pos_history.emplace_back(state->get_ego_pos());
   while (!state->is_terminal() && steps < MAX_STEPS) {
     mcts.search(*state, 50000, 1000);
-    jt[0] = mcts.returnBestAction();
+      //jt[0] = mcts.returnBestAction()[0];
+      jt = mcts.returnBestAction();
     state = state->execute(jt, rewards);
     pos_history.emplace_back(state->get_ego_pos());
     ++steps;

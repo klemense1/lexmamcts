@@ -80,7 +80,7 @@ struct container_hash {
         const S* get_state() const {return state_.get();}
         StageNodeWPtr get_parent() {return parent_;}
         bool is_root() const {return !parent_.lock();}
-        ActionIdx get_best_action();
+        JointAction get_best_action();
 
         std::string sprintf() const;
         void printTree(std::string filename, const unsigned int& max_depth = 5);
@@ -142,10 +142,15 @@ struct container_hash {
     bool StageNode<S,SE, SO, H>::select_or_expand(StageNodeSPtr& next_node) {
         // helper function to fill rewards
         auto fill_rewards = [this](const std::vector<Reward>& reward_list, const JointAction& ja) {
-            ego_int_node_.collect_reward(reward_list[S::ego_agent_idx], ja[S::ego_agent_idx]);
+            Reward coop_sum = Reward::Zero();
+            coop_sum = std::accumulate(reward_list.begin(), reward_list.end(), coop_sum);
+            coop_sum = coop_sum * MctsParameters::COOP_FACTOR;
+            ego_int_node_.collect_reward(coop_sum + (1 - MctsParameters::COOP_FACTOR) * reward_list[S::ego_agent_idx],
+                                         ja[S::ego_agent_idx]);
             for (auto it = other_int_nodes_.begin(); it != other_int_nodes_.end(); ++it)
             {
-                it->collect_reward(reward_list[it->get_agent_idx()],ja[it->get_agent_idx()] );
+                it->collect_reward(coop_sum + (1 - MctsParameters::COOP_FACTOR) * reward_list[it->get_agent_idx()],
+                                   ja[it->get_agent_idx()]);
             }
         };
 
@@ -239,11 +244,21 @@ struct container_hash {
     }
 
     template<class S, class SE, class SO, class H>
-    ActionIdx StageNode<S,SE, SO, H>::get_best_action(){
-        std::cout << std::endl;
-        ActionIdx best = ego_int_node_.get_best_action();
+    JointAction StageNode<S, SE, SO, H>::get_best_action() {
+        JointAction best(other_int_nodes_.size() + 1);
+        best[0] = ego_int_node_.get_best_action();
+        int i = 1;
+        for (auto &int_node : other_int_nodes_) {
+            best[i] = int_node.get_best_action();
+            ++i;
+        }
+        std::cout << "Ego:" << std::endl;
         for (int i = 0; i < 3; i++) {
             std::cout << ego_int_node_.print_edge_information(i) << std::endl;
+        }
+        std::cout << "Other:" << std::endl;
+        for (int i = 0; i < 3; i++) {
+            std::cout << other_int_nodes_[0].print_edge_information(i) << std::endl;
         }
         return best;
     }

@@ -123,8 +123,8 @@ class UctStatistic : public mcts::NodeStatistic<UctStatistic>, mcts::RandomGener
     std::stringstream ss;
     auto action_it = ucb_statistics_.find(action);
     if (action_it != ucb_statistics_.end()) {
-      ss << std::setprecision(2) << "a=" << int(action) << ", N=" << action_it->second.action_count_ << ", V="
-         << action_it->second.action_value_;
+        ss << "a=" << int(action) << ", N=" << action_it->second.action_count_ << ", V="
+           << action_it->second.action_value_.transpose();
     }
     return ss.str();
   }
