@@ -4,3 +4,8 @@ test --test_output=errors --action_env="GTEST_COLOR=1"
 common --color=yes
 
 build --cxxopt='-std=c++14'
+
+build:gprof --copt='-pg' --cxxopt='-pg' --linkopt='-pg'
+
+build:gperftools --linkopt='-lprofiler'
+test:gperftools --test_env='CPUPROFILE=/tmp/prof.out'
