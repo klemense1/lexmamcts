@@ -18,112 +18,106 @@
 #include "test/crossing_test/evaluator_label_goal_reached.hpp"
 #include "test/crossing_test/evaluator_label_hold_at_xing.hpp"
 #include "test/crossing_test/evaluator_label_other_near.hpp"
+#include "test/crossing_test/crossing_state_episode_runner.h"
 
-class CrossingTest : public ::testing::Test {
- protected:
-  void SetUp() override {
-
-    // SETUP LABEL EVALUATORS
-    label_evaluators.emplace_back(std::make_shared<EvaluatorLabelCollision>("collision",
-                                                                            CrossingState::crossing_point));
-    label_evaluators.emplace_back(std::make_shared<EvaluatorLabelGoalReached>("goal_reached",
-                                                                              CrossingState::ego_goal_reached_position));
-    label_evaluators.emplace_back(std::make_shared<EvaluatorLabelHoldAtXing>("at_hp_xing",
-                                                                             CrossingState::crossing_point));
-    label_evaluators.emplace_back(std::make_shared<EvaluatorLabelOtherNear>("other_near"));
-    // SETUP RULES
-    automata.resize(CrossingState::num_other_agents + 1);
-
-    // Finally arrive at goal (Liveness)
-      automata[0].emplace_back("F goal_reached", -500.f, RewardPriority::GOAL, 500.f);
-    // Copy rules to other agents
-    for (size_t i = 1; i < automata.size(); ++i) {
-      automata[i] = Automata::value_type(automata[0]);
-    }
-      // Do not collide with others (Safety)
-      automata[0].emplace_back("G !collision", -1000.f, RewardPriority::SAFETY);
-    // Rules only for ego
-    // Arrive before others (Guarantee)
-    // Currently not possible because ego can't drive faster than others
-    // TODO: Add more actions for ego
-    //automata.emplace_back("!other_goal_reached U ego_goal_reached", -1000.f, RewardPriority::GOAL);
-      automata[0].emplace_back("G((at_hp_xing & other_near) -> (X at_hp_xing))", -500.0f, RewardPriority::SAFETY);
-
-    state = std::make_shared<CrossingState>(automata, label_evaluators);
-    rewards = std::vector<Reward>(1, Reward::Zero());
-    jt = JointAction(2, (int) Actions::FORWARD);
-  }
-  std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> label_evaluators;
-  Automata automata;
-  std::vector<Reward> rewards;
-  JointAction jt;
-  std::vector<int> pos_history;
-  Mcts<CrossingState, UctStatistic, UctStatistic, RandomHeuristic> mcts;
-  std::shared_ptr<CrossingState> state;
+class CrossingTestF : protected CrossingTest, public ::testing::Test {
+ public:
+    CrossingTestF() : CrossingTest() {};
 };
 
-TEST_F(CrossingTest, general) {
-  const int MAX_STEPS = 40;
-  int steps = 0;
-  pos_history.emplace_back(state->get_ego_pos());
-  while (!state->is_terminal() && steps < MAX_STEPS) {
-    mcts.search(*state, 50000, 1000);
-      //jt[0] = mcts.returnBestAction()[0];
-      jt = mcts.returnBestAction();
-    state = state->execute(jt, rewards);
-    pos_history.emplace_back(state->get_ego_pos());
-    ++steps;
-  }
-
-  std::cout << "Ego positions:" << std::endl;
-  for (auto p : pos_history) {
-    std::cout << p << ", ";
-  }
-
-  //Should not hit the maximum # of steps
-  EXPECT_LT(steps, MAX_STEPS);
-  EXPECT_TRUE(state->ego_goal_reached());
+TEST_F(CrossingTestF, general
+) {
+const int MAX_STEPS = 40;
+int steps = 0;
+pos_history.
+emplace_back(state
+->
+get_ego_pos()
+);
+while (!state->
+is_terminal() &&
+steps<MAX_STEPS) {
+mcts.
+search(*state,
+50000, 1000);
+//jt[0] = mcts.returnBestAction()[0];
+jt = mcts.returnBestAction();
+state = state->execute(jt, rewards);
+pos_history.
+emplace_back(state
+->
+get_ego_pos()
+);
+++
+steps;
 }
 
-TEST_F(CrossingTest, giveWay) {
-  std::vector<AgentState> agent_states(2);
-  agent_states[0].x_pos = 7;
-  agent_states[0].last_action = Actions::FORWARD;
-  agent_states[1].x_pos = 8;
-  agent_states[1].last_action = Actions::FORWARD;
-  state = std::make_shared<CrossingState>(agent_states,
-                                          false,
-                                          automata,
-                                          label_evaluators);
-  state = state->execute(jt, rewards);
-  state = state->execute(jt, rewards);
-  state = state->execute(jt, rewards);
-  state = state->execute(jt, rewards);
-  ASSERT_EQ(rewards[0](0), -500);
-  state->execute(jt, rewards);
+std::cout << "Ego positions:" <<
+std::endl;
+for (
+auto p
+: pos_history) {
+std::cout << p << ", ";
 }
 
-TEST_F(CrossingTest, LexicographicOrder) {
-  std::vector<Eigen::Vector2i> v;
-  v.emplace_back(1, 2);
-  v.emplace_back(2, 1);
-  v.emplace_back(2, 3);
-  v.emplace_back(2, 2);
-  v.emplace_back(-5, 3);
-  auto max = std::max_element(v.begin(), v.end(),
-                              [](Eigen::Vector2i &a,
-                                 Eigen::Vector2i &b) -> bool {
+//Should not hit the maximum # of steps
+EXPECT_LT(steps, MAX_STEPS
+);
+EXPECT_TRUE(state
+->
+ego_goal_reached()
+);
+}
+
+TEST_F(CrossingTestF, giveWay
+) {
+std::vector<AgentState> agent_states(2);
+agent_states[0].
+x_pos = 7;
+agent_states[0].
+last_action = Actions::FORWARD;
+agent_states[1].
+x_pos = 8;
+agent_states[1].
+last_action = Actions::FORWARD;
+state = std::make_shared<CrossingState>(agent_states,
+                                        false,
+                                        automata,
+                                        label_evaluators);
+state = state->execute(jt, rewards);
+state = state->execute(jt, rewards);
+state = state->execute(jt, rewards);
+state = state->execute(jt, rewards);
+ASSERT_EQ(rewards[0](0),
+-500);
+state->
+execute(jt, rewards
+);
+}
+
+TEST_F(CrossingTestF, LexicographicOrder
+) {
+std::vector<Eigen::Vector2i> v;
+v.emplace_back(1, 2);
+v.emplace_back(2, 1);
+v.emplace_back(2, 3);
+v.emplace_back(2, 2);
+v.emplace_back(-5, 3);
+auto max = std::max_element(v.begin(), v.end(),
+                            [](Eigen::Vector2i &a,
+                               Eigen::Vector2i &b) -> bool {
                                 return std::lexicographical_compare(a.begin(),
                                                                     a.end(),
                                                                     b.begin(),
                                                                     b.end());
-                              });
-  ASSERT_EQ(*max, Eigen::Vector2i(2, 3));
+                            });
+ASSERT_EQ(*max, Eigen::Vector2i(2, 3)
+);
 }
 
 int main(int argc, char **argv) {
-  ::testing::InitGoogleTest(&argc, argv);
+    ::testing::InitGoogleTest(&argc, argv);
 
-  return RUN_ALL_TESTS();
+    return RUN_ALL_TESTS();
 
 }
