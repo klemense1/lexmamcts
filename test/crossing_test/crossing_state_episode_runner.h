@@ -48,7 +48,6 @@ class CrossingTest {
         // Arrive before others (Guarantee)
         // Currently not possible because ego can't drive faster than others
         //automata.emplace_back("!other_goal_reached U ego_goal_reached", -1000.f, RewardPriority::GOAL);
-        //automata[0].emplace_back("G((at_hp_xing & other_near) -> (X at_hp_xing))", -500.0f, RewardPriority::SAFETY);
 
         state = std::make_shared<CrossingState>(automata, label_evaluators);
         rewards = std::vector<Reward>(1, Reward::Zero());
