@@ -13,23 +13,23 @@ using namespace mcts;
 enum class Actions {
   WAIT = 0,
   FORWARD = 1,
-  //FASTFORWARD = 2,
-      BACKWARD = -1,
+    FASTFORWARD = 2,
+    //    BACKWARD = -1,
   NUM = 3
 };
 
 const std::map<ActionIdx, Actions> idx_to_action = {
     {0, Actions::WAIT},
     {1, Actions::FORWARD},
-    //{2, Actions::FASTFORWARD},
-    {2, Actions::BACKWARD}
+    {2, Actions::FASTFORWARD},
+    //{2, Actions::BACKWARD}
 };
 
 const std::map<Actions, ActionIdx> action_to_idx = {
     {Actions::WAIT, 0},
     {Actions::FORWARD, 1},
-    //{Actions::FASTFORWARD, 2},
-    {Actions::BACKWARD, 2}
+    {Actions::FASTFORWARD, 2},
+    //{Actions::BACKWARD, 2}
 };
 
 static inline Actions aconv(const ActionIdx &action) {
