@@ -36,9 +36,9 @@ class CrossingTest {
         automata.resize(CrossingState::num_other_agents + 1);
 
         // Finally arrive at goal (Liveness)
-        automata[0].emplace_back("F goal_reached", -500.f, RewardPriority::GOAL, 500.f);
+        //automata[0].emplace_back("F goal_reached", -500.f, RewardPriority::GOAL, 500.f);
         // Do not collide with others (Safety)
-        automata[0].emplace_back("G !collision", -1000.f, RewardPriority::SAFETY);
+        automata[0].emplace_back("G !collision", -100.f, RewardPriority::SAFETY);
         // Copy rules to other agents
         for (size_t i = 1; i < automata.size(); ++i) {
             automata[i] = Automata::value_type(automata[0]);
@@ -47,9 +47,8 @@ class CrossingTest {
         // Rules only for ego
         // Arrive before others (Guarantee)
         // Currently not possible because ego can't drive faster than others
-        // TODO: Add more actions for ego
         //automata.emplace_back("!other_goal_reached U ego_goal_reached", -1000.f, RewardPriority::GOAL);
-        automata[0].emplace_back("G((at_hp_xing & other_near) -> (X at_hp_xing))", -500.0f, RewardPriority::SAFETY);
+        //automata[0].emplace_back("G((at_hp_xing & other_near) -> (X at_hp_xing))", -500.0f, RewardPriority::SAFETY);
 
         state = std::make_shared<CrossingState>(automata, label_evaluators);
         rewards = std::vector<Reward>(1, Reward::Zero());

@@ -37,6 +37,7 @@ class CrossingState : public mcts::StateInterface<CrossingState> {
     static const int state_x_length = X_LNGTH;
     static const int ego_goal_reached_position = EGO_GOAL_POS;
     static const int crossing_point = XING_POINT;
+    static constexpr float ALPHA = 5.0f;
 
     CrossingState(Automata &automata,
                   const std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> label_evaluator) :
@@ -84,7 +85,7 @@ class CrossingState : public mcts::StateInterface<CrossingState> {
             next_agent_states[i] = AgentState(new_x, aconv(joint_action[i]));
         }
         labels["ego_out_of_map"] = false;
-        if (agent_states_[ego_agent_idx].x_pos < 0) {
+        if (next_agent_states[ego_agent_idx].x_pos < 0) {
             labels["ego_out_of_map"] = true;
         }
 
@@ -128,6 +129,8 @@ class CrossingState : public mcts::StateInterface<CrossingState> {
             for (EvaluatorRuleLTL const &aut : (automata_[agent_idx])) {
                 rewards[agent_idx](aut.get_type()) += aut.get_final_reward();
             }
+            // Reward for goal proximity
+            rewards[agent_idx](RewardPriority::GOAL) += ALPHA * agent_states_[agent_idx].x_pos;
         }
         return rewards;
     }
