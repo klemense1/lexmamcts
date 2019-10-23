@@ -13,6 +13,12 @@
 
 namespace mcts {
 
+struct {
+    bool operator()(double const &a, double const &b) {
+        return (round(a) < round(b));
+    }
+} StableComp;
+
 // A upper confidence bound implementation
 class UctStatistic : public mcts::NodeStatistic<UctStatistic>, mcts::RandomGenerator {
 
@@ -49,7 +55,8 @@ class UctStatistic : public mcts::NodeStatistic<UctStatistic>, mcts::RandomGener
                                                                                    return std::lexicographical_compare(a.begin(),
                                                                                                                        a.end(),
                                                                                                                        b.begin(),
-                                                                                                                       b.end());
+                                                                                                                       b.end(),
+                                                                                                                       StableComp);
                                                                                  }));
       return selected_action;
 
@@ -75,7 +82,8 @@ class UctStatistic : public mcts::NodeStatistic<UctStatistic>, mcts::RandomGener
                                     return std::lexicographical_compare(a.second.action_value_.begin(),
                                                                         a.second.action_value_.end(),
                                                                         b.second.action_value_.begin(),
-                                                                        b.second.action_value_.end());
+                                                                        b.second.action_value_.end(),
+                                                                        StableComp);
                                   }
                                 }
     );
