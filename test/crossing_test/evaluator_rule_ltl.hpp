@@ -43,6 +43,8 @@ class EvaluatorRuleLTL {
   RewardPriority type_;
  public:
   RewardPriority get_type() const;
+
+  friend std::ostream& operator<<(std::ostream& os, EvaluatorRuleLTL const& d);
 };
 
 }

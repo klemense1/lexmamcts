@@ -3,6 +3,7 @@
 //
 
 #include "spot/twa/bddprint.hh"
+#include "spot/tl/print.hh"
 #include "evaluator_rule_ltl.hpp"
 
 namespace modules {
@@ -87,6 +88,12 @@ float EvaluatorRuleLTL::get_final_reward() const {
 }
 RewardPriority EvaluatorRuleLTL::get_type() const {
   return type_;
+}
+std::ostream& operator<<(std::ostream& os, EvaluatorRuleLTL const& d) {
+    os << "\"";
+    spot::print_psl(os, d.ltl_formula_);
+    os << "\", weight: " << d.weight_;
+    return os;
 }
 }
 }

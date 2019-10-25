@@ -32,7 +32,16 @@ public:
     using StageNodeSPtr = std::shared_ptr<StageNode<S,SE,SO, H>>;
     using StageNodeWPtr = std::weak_ptr<StageNode<S,SE,SO, H>>;
 
-    Mcts() : root_(), num_iterations(0), heuristic_() {};
+    Mcts() : root_(), num_iterations(0), heuristic_() {
+        LOG(INFO) << "MCTS Parameters:";
+        LOG(INFO) << "MctsParameters::MAX_NUMBER_OF_ITERATIONS_RANDOM_HEURISTIC: " << MctsParameters::MAX_NUMBER_OF_ITERATIONS_RANDOM_HEURISTIC;
+        LOG(INFO) << "MctsParameters::MAX_SEARCH_TIME_RANDOM_HEURISTIC: " << MctsParameters::MAX_SEARCH_TIME_RANDOM_HEURISTIC;
+        LOG(INFO) << "MctsParameters::DISCOUNT_FACTOR: " << MctsParameters::DISCOUNT_FACTOR;
+        LOG(INFO) << "MctsParameters::EXPLORATION_CONSTANT: " << MctsParameters::EXPLORATION_CONSTANT;
+        LOG(INFO) << "MctsParameters::LOWER_BOUND: " << MctsParameters::LOWER_BOUND.transpose();
+        LOG(INFO) << "MctsParameters::UPPER_BOUND: " << MctsParameters::UPPER_BOUND.transpose();
+        LOG(INFO) << "MctsParameters::COOP_FACTOR: " << MctsParameters::COOP_FACTOR;
+    };
 
     ~Mcts() {}
 
@@ -64,12 +73,13 @@ template<class S, class SE, class SO, class H>
 void Mcts<S,SE,SO,H>::search(const S& current_state, unsigned int max_search_time_ms, unsigned int max_iterations)
 {
     namespace chr = std::chrono;
+    LOG(INFO) << "MCTS search samples: " << max_iterations;
     auto start = std::chrono::high_resolution_clock::now();
 
     StageNode<S,SE, SO, H>::reset_counter();
 
 #ifdef PLAN_DEBUG_INFO
-    std::cout << "starting state: " << current_state.sprintf();
+    LOG(INFO) << "starting state: " << current_state.sprintf();
 #endif
 
     root_ = std::make_shared<StageNode<S,SE, SO, H>,StageNodeSPtr, std::shared_ptr<S>, const JointAction&,

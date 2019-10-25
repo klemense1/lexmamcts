@@ -17,6 +17,7 @@ cc_test(
     deps = [
         "//mcts",
         "//test/crossing_test:crossing_state",
+        "@com_github_google_glog//:glog",
         "@gtest//:main",
         "@spot",
     ],
@@ -31,6 +32,7 @@ cc_binary(
     deps = [
         "//mcts",
         "//test/crossing_test:crossing_state",
+        "@com_github_google_glog//:glog",
         "@gtest//:main",
         "@spot",
     ],

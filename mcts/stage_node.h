@@ -7,6 +7,7 @@
 #ifndef MCTS_STAGE_NODE_H
 #define MCTS_STAGE_NODE_H
 
+#include "glog/logging.h"
 
 #include "state.h"
 #include "intermediate_node.h"
@@ -252,13 +253,13 @@ struct container_hash {
             best[i] = int_node.get_best_action();
             ++i;
         }
-        std::cout << "Ego:" << std::endl;
+        LOG(INFO) << "Ego:" << std::endl;
         for (int i = 0; i < 3; i++) {
-            std::cout << ego_int_node_.print_edge_information(i) << std::endl;
+            LOG(INFO) << ego_int_node_.print_edge_information(i) << std::endl;
         }
-        std::cout << "Other:" << std::endl;
+        LOG(INFO)<< "Other:" << std::endl;
         for (int i = 0; i < 3; i++) {
-            std::cout << other_int_nodes_[0].print_edge_information(i) << std::endl;
+            LOG(INFO) << other_int_nodes_[0].print_edge_information(i) << std::endl;
         }
         return best;
     }

@@ -8,6 +8,8 @@
 #ifndef MCTS_EPISODE_RUNNER_H_
 #define MCTS_EPISODE_RUNNER_H_
 
+#include "glog/logging.h"
+
 #include "mcts/mcts.h"
 #include "mcts/statistics/uct_statistic.h"
 #include "mcts/heuristics/random_heuristic.h"
@@ -18,6 +20,7 @@
 #include "test/crossing_test/evaluator_label_goal_reached.hpp"
 #include "test/crossing_test/evaluator_label_hold_at_xing.hpp"
 #include "test/crossing_test/evaluator_label_other_near.hpp"
+#include "test/crossing_test/common.hpp"
 
 namespace mcts {
 
@@ -48,7 +51,12 @@ class CrossingTest {
         // Arrive before others (Guarantee)
         // Currently not possible because ego can't drive faster than others
         //automata.emplace_back("!other_goal_reached U ego_goal_reached", -1000.f, RewardPriority::GOAL);
-
+        for(size_t i = 0; i < automata.size(); i++) {
+            LOG(INFO) << "Rules for agent " << i << ":";
+            for(auto const& rule : automata[i]) {
+                LOG(INFO) << rule;
+            }
+        }
         state = std::make_shared<CrossingState>(automata, label_evaluators);
         rewards = std::vector<Reward>(1, Reward::Zero());
         jt = JointAction(2, (int) Actions::FORWARD);
@@ -57,7 +65,7 @@ class CrossingTest {
     Automata automata;
     std::vector<Reward> rewards;
     JointAction jt;
-    std::vector<int> pos_history;
+    std::vector<std::size_t> pos_history;
     Mcts<CrossingState, UctStatistic, UctStatistic, RandomHeuristic> mcts;
     std::shared_ptr<CrossingState> state;
 };

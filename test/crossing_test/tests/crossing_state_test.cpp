@@ -33,16 +33,13 @@ TEST_F(CrossingTestF, general) {
         mcts.search(*state,50000, 1000);
         //jt[0] = mcts.returnBestAction()[0];
         jt = mcts.returnBestAction();
+        LOG(INFO) << "Performing action:" << jt;
         state = state->execute(jt, rewards);
         pos_history.emplace_back(state->get_ego_pos());
         ++steps;
     }
 
-    std::cout << "Ego positions:" <<
-    std::endl;
-    for (auto p: pos_history) {
-        std::cout << p << ", ";
-    }
+    LOG(INFO) << "Ego positions:" << pos_history;
 
     //Should not hit the maximum # of steps
     EXPECT_LT(steps, MAX_STEPS);
@@ -87,8 +84,9 @@ TEST_F(CrossingTestF, LexicographicOrder) {
 }
 
 int main(int argc, char **argv) {
+    google::InitGoogleLogging(argv[0]);
     ::testing::InitGoogleTest(&argc, argv);
-
+    FLAGS_logtostderr = 1;
     return RUN_ALL_TESTS();
 
 }
