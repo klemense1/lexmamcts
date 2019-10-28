@@ -132,7 +132,7 @@ class CrossingState : public mcts::StateInterface<CrossingState> {
                 rewards[agent_idx](aut.get_type()) += aut.get_final_reward();
             }
             // Reward for goal proximity
-            rewards[agent_idx](RewardPriority::GOAL) += ALPHA * fmin(agent_states_[agent_idx].x_pos, ego_goal_reached_position);
+            //rewards[agent_idx](RewardPriority::GOAL) += ALPHA * fmin(agent_states_[agent_idx].x_pos, ego_goal_reached_position);
         }
         return rewards;
     }
