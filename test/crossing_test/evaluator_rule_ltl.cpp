@@ -93,6 +93,7 @@ std::ostream& operator<<(std::ostream& os, EvaluatorRuleLTL const& d) {
     os << "\"";
     spot::print_psl(os, d.ltl_formula_);
     os << "\", weight: " << d.weight_;
+  os << ", priority: " << d.get_type();
     return os;
 }
 }
