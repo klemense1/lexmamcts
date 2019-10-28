@@ -84,9 +84,10 @@ TEST_F(CrossingTestF, LexicographicOrder) {
 }
 
 int main(int argc, char **argv) {
-    google::InitGoogleLogging(argv[0]);
-    ::testing::InitGoogleTest(&argc, argv);
-    FLAGS_logtostderr = 1;
-    return RUN_ALL_TESTS();
-
+  google::InitGoogleLogging(argv[0]);
+  FLAGS_log_dir = "/tmp/log";
+  ::testing::InitGoogleTest(&argc, argv);
+  FLAGS_alsologtostderr = 1;
+  ::testing::GTEST_FLAG(filter) = "CrossingTestF.general";
+  return RUN_ALL_TESTS();
 }
