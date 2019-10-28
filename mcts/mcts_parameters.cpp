@@ -17,6 +17,6 @@ double MctsParameters::MAX_NUMBER_OF_ITERATIONS_RANDOM_HEURISTIC = 1000;
 ObjectiveVec MctsParameters::LOWER_BOUND = Eigen::Vector4f(-2000.0f, -50.0f, -1000.0f, -1000.0f);
 ObjectiveVec MctsParameters::UPPER_BOUND = Eigen::Vector4f(0.0f, 500.0f, 0.0f, 0.0f);
 
-double MctsParameters::COOP_FACTOR = 0;
+double MctsParameters::COOP_FACTOR = 1;
 
 } // namespace mcts
