@@ -77,6 +77,9 @@ Reward CrossingState::get_action_cost(ActionIdx action) {
         default:reward(static_cast<int>(RewardPriority::EFFICIENCY)) = 0.0f;
             break;
     }
+    if(aconv(action) != Actions::FORWARD) {
+      reward(static_cast<int>(RewardPriority::GOAL)) = -1;
+    }
     return reward;
 }
 

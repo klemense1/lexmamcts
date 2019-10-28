@@ -44,7 +44,8 @@ class CrossingState : public mcts::StateInterface<CrossingState> {
         agent_states_(num_other_agents + 1),
         terminal_(false),
         automata_(automata),
-        label_evaluator_(label_evaluator) {
+        label_evaluator_(label_evaluator),
+        depth_(0) {
         for (auto &state : agent_states_) {
             state = AgentState();
         }
@@ -53,11 +54,12 @@ class CrossingState : public mcts::StateInterface<CrossingState> {
     CrossingState(const std::vector<AgentState> &agent_states,
                   const bool terminal,
                   Automata &automata,
-                  const std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> &label_evaluator) :
+                  const std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> &label_evaluator, int depth = 0) :
         agent_states_(agent_states),
         terminal_(terminal),
         automata_(automata),
-        label_evaluator_(label_evaluator) {};
+        label_evaluator_(label_evaluator),
+        depth_(depth){};
     ~CrossingState() {};
 
     std::shared_ptr<CrossingState> clone() const {
@@ -104,7 +106,7 @@ class CrossingState : public mcts::StateInterface<CrossingState> {
             }
             assert(ego_agent_idx == 0);
             if (agent_idx == ego_agent_idx) {
-                terminal = labels["goal_reached"] || labels["collision"] || labels["ego_out_of_map"];
+                terminal = labels["goal_reached"] || labels["collision"] || (depth_ >= 30);
             }
             rewards[agent_idx] = Reward::Zero();
 
@@ -119,7 +121,7 @@ class CrossingState : public mcts::StateInterface<CrossingState> {
         return std::make_shared<CrossingState>(next_agent_states,
                                                terminal,
                                                next_automata,
-                                               label_evaluator_);
+                                               label_evaluator_, depth_ + 1);
     }
 
     std::vector<Reward> get_final_reward() const {
@@ -130,7 +132,7 @@ class CrossingState : public mcts::StateInterface<CrossingState> {
                 rewards[agent_idx](aut.get_type()) += aut.get_final_reward();
             }
             // Reward for goal proximity
-            rewards[agent_idx](RewardPriority::GOAL) += ALPHA * agent_states_[agent_idx].x_pos;
+            //rewards[agent_idx](RewardPriority::GOAL) += ALPHA * fmin(agent_states_[agent_idx].x_pos, ego_goal_reached_position);
         }
         return rewards;
     }
@@ -179,6 +181,10 @@ class CrossingState : public mcts::StateInterface<CrossingState> {
 
     void draw(Viewer *viewer) const;
 
+    void reset_depth() {
+      depth_ = 0;
+    }
+
  private:
     Reward get_action_cost(ActionIdx action);
 
@@ -186,6 +192,7 @@ class CrossingState : public mcts::StateInterface<CrossingState> {
     bool terminal_;
     Automata automata_;
     std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> label_evaluator_;
+    int depth_;
 };
 
 #endif

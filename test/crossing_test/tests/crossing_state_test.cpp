@@ -35,6 +35,7 @@ TEST_F(CrossingTestF, general) {
         jt = mcts.returnBestAction();
         LOG(INFO) << "Performing action:" << jt;
         state = state->execute(jt, rewards);
+        state->reset_depth();
         pos_history.emplace_back(state->get_ego_pos());
         ++steps;
     }

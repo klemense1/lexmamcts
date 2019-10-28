@@ -19,7 +19,7 @@ typedef std::map<std::string, bool> EvaluationMap;
 
 enum RewardPriority {
   SAFETY = 0,
-  GOAL = 0,
+  GOAL = 1,
   TIME,
   EFFICIENCY,
 };
