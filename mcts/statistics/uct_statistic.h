@@ -25,8 +25,8 @@ class UctStatistic : public mcts::NodeStatistic<UctStatistic>, mcts::RandomGener
  public:
   MCTS_TEST
 
-  UctStatistic(ActionIdx num_actions) :
-      NodeStatistic<UctStatistic>(num_actions),
+  UctStatistic(ActionIdx num_actions, MctsParameters const &mcts_parameters) :
+      NodeStatistic<UctStatistic>(num_actions, mcts_parameters),
       value_(),
       latest_return_(),
       ucb_statistics_([&]() -> ActionUCBMap {
@@ -34,11 +34,7 @@ class UctStatistic : public mcts::NodeStatistic<UctStatistic>, mcts::RandomGener
         for (auto ai = 0; ai < num_actions; ++ai) { map[ai] = UcbPair(); }
         return map;
       }()),
-      total_node_visits_(0),
-      upper_bound(mcts::MctsParameters::UPPER_BOUND),
-      lower_bound(mcts::MctsParameters::LOWER_BOUND),
-      k_discount_factor(mcts::MctsParameters::DISCOUNT_FACTOR),
-      k_exploration_constant(mcts::MctsParameters::EXPLORATION_CONSTANT) {};
+      total_node_visits_(0) {};
 
   ~UctStatistic() {};
 
@@ -106,7 +102,7 @@ class UctStatistic : public mcts::NodeStatistic<UctStatistic>, mcts::RandomGener
     UcbPair &ucb_pair =
         ucb_statistics_[collected_reward_.first]; // we remembered for which action we got the reward, must be the same as during backprop, if we linked parents and childs correctly
     //action value: Q'(s,a) = Q'(s,a) + (latest_return - Q'(s,a))/N
-    latest_return_ = collected_reward_.second + k_discount_factor * changed_uct_statistic.latest_return_;
+    latest_return_ = collected_reward_.second + mcts_parameters_.DISCOUNT_FACTOR * changed_uct_statistic.latest_return_;
     ucb_pair.action_count_ += 1;
     ucb_pair.action_value_ =
         ucb_pair.action_value_ + (latest_return_ - ucb_pair.action_value_) / ucb_pair.action_count_;
@@ -150,11 +146,11 @@ class UctStatistic : public mcts::NodeStatistic<UctStatistic>, mcts::RandomGener
     for (size_t idx = 0; idx < ucb_statistics.size(); ++idx) {
       Eigen::VectorXf
           action_value_normalized =
-          (ucb_statistics.at(idx).action_value_ - lower_bound).cwiseQuotient(upper_bound - lower_bound);
+          (ucb_statistics.at(idx).action_value_ - mcts_parameters_.uct_statistic.LOWER_BOUND).cwiseQuotient(mcts_parameters_.uct_statistic.UPPER_BOUND - mcts_parameters_.uct_statistic.LOWER_BOUND);
       //MCTS_EXPECT_TRUE(action_value_normalized >= 0);
       //MCTS_EXPECT_TRUE(action_value_normalized <= 1);
       values[idx] = action_value_normalized.array()
-          + 2 * k_exploration_constant * sqrt((2 * log(total_node_visits_)) / (ucb_statistics.at(idx).action_count_));
+          + 2 * mcts_parameters_.uct_statistic.EXPLORATION_CONSTANT * sqrt((2 * log(total_node_visits_)) / (ucb_statistics.at(idx).action_count_));
     }
   }
 
@@ -162,12 +158,6 @@ class UctStatistic : public mcts::NodeStatistic<UctStatistic>, mcts::RandomGener
   ObjectiveVec latest_return_;   // tracks the return during backpropagation
   ActionUCBMap ucb_statistics_; // first: action selection count, action-value
   unsigned int total_node_visits_;
-
-// PARAMS
-  const ObjectiveVec upper_bound;
-  const ObjectiveVec lower_bound;
-  const double k_discount_factor;
-  const double k_exploration_constant;
 
 };
 
