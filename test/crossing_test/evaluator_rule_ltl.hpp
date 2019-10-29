@@ -48,13 +48,14 @@ public:
   friend std::ostream &operator<<(std::ostream &os, EvaluatorRuleLTL const &d);
 
 private:
+  static spot::formula parse_formula(std::string ltl_formula_str);
   static bool bdd_eval(bdd cond, const std::set<int> &vars);
 
   float weight_;
   float final_reward_;
-  uint32_t current_state;
-  spot::twa_graph_ptr aut;
-  std::set<std::string> alphabet;
+  uint32_t current_state_;
+  spot::twa_graph_ptr aut_;
+  std::set<spot::formula> alphabet_;
   spot::formula ltl_formula_;
   RewardPriority type_;
   Eigen::Vector2f rule_belief_;
