@@ -179,6 +179,10 @@ class CrossingState : public mcts::StateInterface<CrossingState> {
 
     void draw(Viewer *viewer) const;
 
+  void update_rule_belief();
+
+  void reset_violations();
+
  private:
     Reward get_action_cost(ActionIdx action);
 
