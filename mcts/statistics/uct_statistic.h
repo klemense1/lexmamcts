@@ -31,7 +31,7 @@ class UctStatistic : public mcts::NodeStatistic<UctStatistic>, mcts::RandomGener
       latest_return_(),
       ucb_statistics_([&]() -> ActionUCBMap {
         ActionUCBMap map;
-        for (auto ai = 0; ai < num_actions; ++ai) { map[ai] = UcbPair(); }
+        for (ActionIdx ai = 0; ai < num_actions; ++ai) { map[ai] = UcbPair(); }
         return map;
       }()),
       total_node_visits_(0) {};

@@ -76,12 +76,12 @@ class CrossingTest {
 class CrossingStateEpisodeRunner : public CrossingTest {
  public:
   CrossingStateEpisodeRunner(const unsigned int max_steps, Viewer *viewer) :
-      MAX_STEPS(max_steps),
+      viewer_(viewer),
       current_step_(0),
-      viewer_(viewer) {};
+      MAX_STEPS(max_steps) {};
 
   void step() {
-    if (state->is_terminal()) {
+    if (state->is_terminal() || current_step_ > MAX_STEPS) {
       return;
     }
     std::vector<Reward> rewards(2);
@@ -93,10 +93,7 @@ class CrossingStateEpisodeRunner : public CrossingTest {
               << std::endl;
     state = state->execute(jointaction, rewards);
 
-    const bool collision = state->is_terminal() && !state->ego_goal_reached();
-    const bool goal_reached = state->ego_goal_reached();
     current_step_ += 1;
-    const bool max_steps = current_step_ > MAX_STEPS;
 
     if (viewer_) {
       state->draw(viewer_);
@@ -105,8 +102,8 @@ class CrossingStateEpisodeRunner : public CrossingTest {
 
  private:
   Viewer *viewer_;
-  const unsigned int MAX_STEPS;
   unsigned int current_step_;
+  const unsigned int MAX_STEPS;
 };
 
 } // namespace mcts

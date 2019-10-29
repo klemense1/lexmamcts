@@ -16,7 +16,6 @@ void CrossingState::draw(mcts::Viewer *viewer) const {
     const float state_draw_dst = 1.0f;
     const float linewidth = 2;
     const float state_draw_size = 50;
-    const float factor_draw_current_state = 4;
 
     // draw lines equally spaced angles with small points
     // indicating states and larger points indicating the current state
