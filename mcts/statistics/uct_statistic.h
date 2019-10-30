@@ -14,12 +14,6 @@
 
 namespace mcts {
 
-struct {
-    bool operator()(double const &a, double const &b) {
-        return (round(a) < round(b));
-    }
-} StableComp;
-
 typedef struct UcbPair {
   UcbPair() : action_count_(0), action_value_(ObjectiveVec::Zero()) {};
   unsigned action_count_;
@@ -70,8 +64,7 @@ class UctStatistic :
                                                                                    return std::lexicographical_compare(a.begin(),
                                                                                                                        a.end(),
                                                                                                                        b.begin(),
-                                                                                                                       b.end(),
-                                                                                                                       StableComp);
+                                                                                                                       b.end());
                                                                                  }));
       return selected_action;
     } else {
@@ -96,15 +89,11 @@ class UctStatistic :
                                     return std::lexicographical_compare(a.second.action_value_.begin(),
                                                                         a.second.action_value_.end(),
                                                                         b.second.action_value_.begin(),
-                                                                        b.second.action_value_.end(),
-                                                                        StableComp);
+                                                                        b.second.action_value_.end());
                                   }
-                                  // Original final selection policy from paper
-                                  // return (a.second.action_count_ < b.second.action_count_);
                                 }
     );
-    return max->
-        first;
+    return max->first;
   }
 
   void update_from_heuristic(const parent_type &heuristic_statistic) {
