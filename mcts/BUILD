@@ -5,11 +5,6 @@ cc_library(
         "random_generator.cpp",
     ],
     hdrs = glob(["**/*.h"]),
-    linkopts = [
-        "-lgsl",
-        "-lgslcblas",
-        "-lm",
-    ],
     visibility = ["//visibility:public"],
     deps = [
         "@boost//:math",
