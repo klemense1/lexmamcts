@@ -10,23 +10,36 @@
 #include "mcts/mcts.h"
 #include <iostream>
 #include <iomanip>
+#include <type_traits>
 
 namespace mcts {
 
-struct {
-    bool operator()(double const &a, double const &b) {
-        return (round(a) < round(b));
-    }
-} StableComp;
+typedef struct UcbPair {
+  UcbPair() : action_count_(0), action_value_(ObjectiveVec::Zero()) {};
+  unsigned action_count_;
+  ObjectiveVec action_value_;
+} UcbPair;
+typedef std::map<ActionIdx, UcbPair> ActionUCBMap;
+
+class NodeStatistic_Final_Impl;
 
 // A upper confidence bound implementation
-class UctStatistic : public mcts::NodeStatistic<UctStatistic>, mcts::RandomGenerator {
+template<typename IMPL = NodeStatistic_Final_Impl>
+class UctStatistic :
+    public std::conditional<std::is_same<IMPL, NodeStatistic_Final_Impl>::value,
+                            NodeStatistic<UctStatistic<>>, NodeStatistic<IMPL>>::type, public mcts::RandomGenerator {
+ private:
+  typedef typename std::conditional<std::is_same<IMPL, NodeStatistic_Final_Impl>::value,
+                                    UctStatistic<>,
+                                    UctStatistic<IMPL>>::type ThisType;
+  typedef typename std::conditional<std::is_same<IMPL, NodeStatistic_Final_Impl>::value,
+                                    NodeStatistic<UctStatistic<>>, NodeStatistic<IMPL>>::type ParentType;
 
  public:
   MCTS_TEST
 
   UctStatistic(ActionIdx num_actions, MctsParameters const &mcts_parameters) :
-      NodeStatistic<UctStatistic>(num_actions, mcts_parameters),
+      ParentType(num_actions, mcts_parameters),
       value_(),
       latest_return_(),
       ucb_statistics_([&]() -> ActionUCBMap {
@@ -51,11 +64,9 @@ class UctStatistic : public mcts::NodeStatistic<UctStatistic>, mcts::RandomGener
                                                                                    return std::lexicographical_compare(a.begin(),
                                                                                                                        a.end(),
                                                                                                                        b.begin(),
-                                                                                                                       b.end(),
-                                                                                                                       StableComp);
+                                                                                                                       b.end());
                                                                                  }));
       return selected_action;
-
     } else {
       // Select randomly an unexpanded action
       std::uniform_int_distribution<ActionIdx> random_action_selection(0, unexpanded_actions.size() - 1);
@@ -78,31 +89,30 @@ class UctStatistic : public mcts::NodeStatistic<UctStatistic>, mcts::RandomGener
                                     return std::lexicographical_compare(a.second.action_value_.begin(),
                                                                         a.second.action_value_.end(),
                                                                         b.second.action_value_.begin(),
-                                                                        b.second.action_value_.end(),
-                                                                        StableComp);
+                                                                        b.second.action_value_.end());
                                   }
                                 }
     );
-    return max->
-        first;
+    return max->first;
   }
 
-  void update_from_heuristic(const NodeStatistic<UctStatistic> &heuristic_statistic) {
-    const UctStatistic &heuristic_statistic_impl = heuristic_statistic.impl();
+  void update_from_heuristic(const ParentType &heuristic_statistic) {
+    const ThisType &heuristic_statistic_impl = heuristic_statistic.impl();
     value_ = heuristic_statistic_impl.value_;
     latest_return_ = value_;
     MCTS_EXPECT_TRUE(total_node_visits_ == 0); // This should be the first visit
     total_node_visits_ += 1;
   }
 
-  void update_statistic(const NodeStatistic<UctStatistic> &changed_child_statistic) {
-    const UctStatistic &changed_uct_statistic = changed_child_statistic.impl();
+  void update_statistic(const ParentType &changed_child_statistic) {
+    const ThisType &changed_uct_statistic = changed_child_statistic.impl();
 
     //Action Value update step
     UcbPair &ucb_pair =
-        ucb_statistics_[collected_reward_.first]; // we remembered for which action we got the reward, must be the same as during backprop, if we linked parents and childs correctly
+        ucb_statistics_[this->collected_reward_.first]; // we remembered for which action we got the reward, must be the same as during backprop, if we linked parents and childs correctly
     //action value: Q'(s,a) = Q'(s,a) + (latest_return - Q'(s,a))/N
-    latest_return_ = collected_reward_.second + mcts_parameters_.DISCOUNT_FACTOR * changed_uct_statistic.latest_return_;
+    latest_return_ =
+        this->collected_reward_.second + this->mcts_parameters_.DISCOUNT_FACTOR * changed_uct_statistic.latest_return_;
     ucb_pair.action_count_ += 1;
     ucb_pair.action_value_ =
         ucb_pair.action_value_ + (latest_return_ - ucb_pair.action_value_) / ucb_pair.action_count_;
@@ -127,18 +137,13 @@ class UctStatistic : public mcts::NodeStatistic<UctStatistic>, mcts::RandomGener
     std::stringstream ss;
     auto action_it = ucb_statistics_.find(action);
     if (action_it != ucb_statistics_.end()) {
-        ss << "a=" << int(action) << ", N=" << action_it->second.action_count_ << ", V="
-           << action_it->second.action_value_.transpose();
+      ss << "a=" << int(action) << ", N=" << action_it->second.action_count_ << ", V="
+         << action_it->second.action_value_.transpose();
     }
     return ss.str();
   }
 
-  typedef struct UcbPair {
-    UcbPair() : action_count_(0), action_value_(ObjectiveVec::Zero()) {};
-    unsigned action_count_;
-    ObjectiveVec action_value_;
-  } UcbPair;
-  typedef std::map<ActionIdx, UcbPair> ActionUCBMap;
+ protected:
 
   void calculate_ucb_values(const ActionUCBMap &ucb_statistics, std::vector<Eigen::VectorXf> &values) const {
     values.resize(ucb_statistics.size());
@@ -146,11 +151,13 @@ class UctStatistic : public mcts::NodeStatistic<UctStatistic>, mcts::RandomGener
     for (size_t idx = 0; idx < ucb_statistics.size(); ++idx) {
       Eigen::VectorXf
           action_value_normalized =
-          (ucb_statistics.at(idx).action_value_ - mcts_parameters_.uct_statistic.LOWER_BOUND).cwiseQuotient(mcts_parameters_.uct_statistic.UPPER_BOUND - mcts_parameters_.uct_statistic.LOWER_BOUND);
+          (ucb_statistics.at(idx).action_value_ - this->mcts_parameters_.uct_statistic.LOWER_BOUND).cwiseQuotient(
+              this->mcts_parameters_.uct_statistic.UPPER_BOUND - this->mcts_parameters_.uct_statistic.LOWER_BOUND);
       //MCTS_EXPECT_TRUE(action_value_normalized >= 0);
       //MCTS_EXPECT_TRUE(action_value_normalized <= 1);
       values[idx] = action_value_normalized.array()
-          + 2 * mcts_parameters_.uct_statistic.EXPLORATION_CONSTANT * sqrt((2 * log(total_node_visits_)) / (ucb_statistics.at(idx).action_count_));
+          + 2 * this->mcts_parameters_.DISCOUNT_FACTOR
+              * sqrt((2 * log(total_node_visits_)) / (ucb_statistics.at(idx).action_count_));
     }
   }
 

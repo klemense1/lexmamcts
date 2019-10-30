@@ -38,7 +38,7 @@ public:
     Implementation& impl();
     const Implementation& impl() const;
 
-protected:
+public:
     std::pair<ActionIdx, Reward> collected_reward_;
     ActionIdx num_actions_;
     MctsParameters const mcts_parameters_;

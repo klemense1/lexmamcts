@@ -39,19 +39,11 @@ class IntermediateNode : public Stats {
 
   ActionIdx choose_next_action();
 
-  ActionIdx get_best_action();
-
   bool all_actions_expanded();
 
   AgentIdx get_agent_idx() const;
 
-  double get_value();
-
-  int get_node_visits();
-
-  double get_action_value(int action);
-
-  MCTS_TEST
+        MCTS_TEST
 
 };
 
@@ -76,12 +68,7 @@ IntermediateNode<S, Stats>::~IntermediateNode() {}
 
 template<class S, class Stats>
 ActionIdx IntermediateNode<S, Stats>::choose_next_action() {
-  return NodeStatistic<Stats>::choose_next_action(state_, unexpanded_actions_);
-}
-
-template<class S, class Stats>
-ActionIdx IntermediateNode<S, Stats>::get_best_action() {
-  return NodeStatistic<Stats>::get_best_action();
+        return Stats::choose_next_action(state_, unexpanded_actions_);
 }
 
 template<class S, class Stats>
@@ -90,22 +77,7 @@ bool IntermediateNode<S, Stats>::all_actions_expanded() {
 }
 
 template<class S, class Stats>
-double IntermediateNode<S, Stats>::get_value() {
-  return NodeStatistic<Stats>::get_value();
-}
-
-template<class S, class Stats>
-int IntermediateNode<S, Stats>::get_node_visits() {
-  return NodeStatistic<Stats>::get_node_visits();
-}
-
-template<class S, class Stats>
-double IntermediateNode<S, Stats>::get_action_value(int action) {
-  return NodeStatistic<Stats>::get_action_value(action);
-}
-
-template<class S, class Stats>
-inline AgentIdx IntermediateNode<S, Stats>::get_agent_idx() const { return agent_idx_; }
+inline AgentIdx IntermediateNode<S, Stats>::get_agent_idx() const { return agent_idx_;}
 
 } // namespace mcts
 
