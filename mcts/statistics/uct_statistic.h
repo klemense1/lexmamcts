@@ -11,6 +11,7 @@
 #include <iostream>
 #include <iomanip>
 #include <cfloat>
+#include <gsl/gsl_histogram.h>
 #include "boost/math/distributions/normal.hpp"
 
 namespace mcts {
@@ -125,6 +126,8 @@ namespace mcts {
               ucb_pair.action_value_ + (latest_return_ - ucb_pair.action_value_) / ucb_pair.action_count_;
       ObjectiveVec delta2 = latest_return_ - ucb_pair.action_value_;
       ucb_pair.m_2_ += delta.cwiseProduct(delta2);
+      gsl_histogram_increment(ucb_pair.hist_, latest_return_(0));
+      VLOG(1) << latest_return_(0);
       total_node_visits_ += 1;
       value_ = value_ + (latest_return_ - value_) / total_node_visits_;
     }
@@ -143,19 +146,30 @@ namespace mcts {
 
     std::string print_edge_information(const ActionIdx &action) const {
       std::stringstream ss;
+      FILE *hf;
+      std::stringstream filename;
+      filename << "/tmp/histogram_"<< action << ".dat";
+      hf = fopen(filename.str().c_str(), "w");
       auto action_it = ucb_statistics_.find(action);
       if (action_it != ucb_statistics_.end()) {
         ss << "a=" << int(action) << ", N=" << action_it->second.action_count_ << ", V="
            << action_it->second.action_value_.transpose() << ", sigma=" << (action_it->second.m_2_/action_it->second.action_count_).cwiseSqrt().transpose();
+        gsl_histogram_fprintf(hf, action_it->second.hist_, "%g", "%g");
       }
+      fclose(hf);
       return ss.str();
     }
 
     typedef struct UcbPair {
-      UcbPair() : action_count_(0), action_value_(ObjectiveVec::Zero()), m_2_(ObjectiveVec::Zero()) {};
+      UcbPair() : action_count_(0), action_value_(ObjectiveVec::Zero()), m_2_(ObjectiveVec::Zero()) {
+        hist_ = gsl_histogram_alloc (20);
+        gsl_histogram_set_ranges_uniform (hist_, -10.0, 10.0);
+      };
+      //~UcbPair() {gsl_histogram_free (hist_);}
       unsigned action_count_;
       ObjectiveVec action_value_;
       ObjectiveVec m_2_;
+      gsl_histogram *hist_;
     } UcbPair;
     typedef std::map<ActionIdx, UcbPair> ActionUCBMap;
 

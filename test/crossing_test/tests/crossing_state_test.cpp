@@ -89,6 +89,7 @@ int main(int argc, char **argv) {
   FLAGS_log_dir = "/tmp/log";
   ::testing::InitGoogleTest(&argc, argv);
   FLAGS_alsologtostderr = 1;
+  FLAGS_v = 1;
   ::testing::GTEST_FLAG(filter) = "CrossingTestF.general";
   return RUN_ALL_TESTS();
 }
