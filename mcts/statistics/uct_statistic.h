@@ -12,8 +12,17 @@
 #include <iomanip>
 #include <cfloat>
 #include "boost/math/distributions/normal.hpp"
+#include <type_traits>
 
 namespace mcts {
+
+typedef struct UcbPair {
+  UcbPair() : action_count_(0), action_value_(ObjectiveVec::Zero()) {};
+  unsigned action_count_;
+  ObjectiveVec action_value_;
+  ObjectiveVec m_2_;
+} UcbPair;
+typedef std::map<ActionIdx, UcbPair> ActionUCBMap;
 
   bool slack_compare(Eigen::VectorXf const &a, Eigen::VectorXf const &b, Eigen::VectorXf const &slack_a,
                      Eigen::VectorXf const &slack_b) {
@@ -30,26 +39,33 @@ namespace mcts {
     return false;
   }
 
+class NodeStatistic_Final_Impl;
+
 // A upper confidence bound implementation
-  class UctStatistic : public mcts::NodeStatistic<UctStatistic>, mcts::RandomGenerator {
+template<typename IMPL = NodeStatistic_Final_Impl>
+class UctStatistic :
+    public std::conditional<std::is_same<IMPL, NodeStatistic_Final_Impl>::value,
+                            NodeStatistic<UctStatistic<>>, NodeStatistic<IMPL>>::type, public mcts::RandomGenerator {
+ private:
+  typedef typename std::conditional<std::is_same<IMPL, NodeStatistic_Final_Impl>::value,
+                                    UctStatistic<>,
+                                    UctStatistic<IMPL>>::type ThisType;
+  typedef typename std::conditional<std::is_same<IMPL, NodeStatistic_Final_Impl>::value,
+                                    NodeStatistic<UctStatistic<>>, NodeStatistic<IMPL>>::type ParentType;
 
-  public:
-    MCTS_TEST
+ public:
+  MCTS_TEST
 
-    UctStatistic(ActionIdx num_actions) :
-            NodeStatistic<UctStatistic>(num_actions),
-            value_(),
-            latest_return_(),
-            ucb_statistics_([&]() -> ActionUCBMap {
-                ActionUCBMap map;
-                for (auto ai = 0; ai < num_actions; ++ai) { map[ai] = UcbPair(); }
-                return map;
-            }()),
-            total_node_visits_(0),
-            upper_bound(mcts::MctsParameters::UPPER_BOUND),
-            lower_bound(mcts::MctsParameters::LOWER_BOUND),
-            k_discount_factor(mcts::MctsParameters::DISCOUNT_FACTOR),
-            k_exploration_constant(mcts::MctsParameters::EXPLORATION_CONSTANT) {};
+  UctStatistic(ActionIdx num_actions, MctsParameters const &mcts_parameters) :
+      ParentType(num_actions, mcts_parameters),
+      value_(),
+      latest_return_(),
+      ucb_statistics_([&]() -> ActionUCBMap {
+        ActionUCBMap map;
+        for (ActionIdx ai = 0; ai < num_actions; ++ai) { map[ai] = UcbPair(); }
+        return map;
+      }()),
+      total_node_visits_(0) {};
 
     ~UctStatistic() {};
 
@@ -98,36 +114,37 @@ namespace mcts {
                                       }
                                   }
       );
-      return max->
-              first;
+      return max->first;
     }
 
-    void update_from_heuristic(const NodeStatistic<UctStatistic> &heuristic_statistic) {
-      const UctStatistic &heuristic_statistic_impl = heuristic_statistic.impl();
-      value_ = heuristic_statistic_impl.value_;
-      latest_return_ = value_;
-      MCTS_EXPECT_TRUE(total_node_visits_ == 0); // This should be the first visit
-      total_node_visits_ += 1;
-    }
+  void update_from_heuristic(const ParentType &heuristic_statistic) {
+    const ThisType &heuristic_statistic_impl = heuristic_statistic.impl();
+    value_ = heuristic_statistic_impl.value_;
+    latest_return_ = value_;
+    MCTS_EXPECT_TRUE(total_node_visits_ == 0); // This should be the first visit
+    total_node_visits_ += 1;
+  }
 
-    void update_statistic(const NodeStatistic<UctStatistic> &changed_child_statistic) {
-      const UctStatistic &changed_uct_statistic = changed_child_statistic.impl();
+  void update_statistic(const ParentType &changed_child_statistic) {
+    const ThisType &changed_uct_statistic = changed_child_statistic.impl();
 
-      //Action Value update step
-      UcbPair &ucb_pair =
-              ucb_statistics_[collected_reward_.first]; // we remembered for which action we got the reward, must be the same as during backprop, if we linked parents and childs correctly
-      //action value: Q'(s,a) = Q'(s,a) + (latest_return - Q'(s,a))/N
-      latest_return_ = collected_reward_.second + k_discount_factor * changed_uct_statistic.latest_return_;
-      ucb_pair.action_count_ += 1;
-      ObjectiveVec delta = latest_return_ - ucb_pair.action_value_;
+    //Action Value update step
+    UcbPair &ucb_pair =
+        ucb_statistics_[this->collected_reward_.first]; // we remembered for which action we got the reward, must be the same as during backprop, if we linked parents and childs correctly
+    //action value: Q'(s,a) = Q'(s,a) + (latest_return - Q'(s,a))/N
+    latest_return_ =
+        this->collected_reward_.second + this->mcts_parameters_.DISCOUNT_FACTOR * changed_uct_statistic.latest_return_;
+    ucb_pair.action_count_ += 1;
+    ObjectiveVec delta = latest_return_ - ucb_pair.action_value_;
 
-      ucb_pair.action_value_ =
-              ucb_pair.action_value_ + (latest_return_ - ucb_pair.action_value_) / ucb_pair.action_count_;
-      ObjectiveVec delta2 = latest_return_ - ucb_pair.action_value_;
-      ucb_pair.m_2_ += delta.cwiseProduct(delta2);
-      total_node_visits_ += 1;
-      value_ = value_ + (latest_return_ - value_) / total_node_visits_;
-    }
+    ucb_pair.action_value_ =
+        ucb_pair.action_value_ + (latest_return_ - ucb_pair.action_value_) / ucb_pair.action_count_;
+
+    ObjectiveVec delta2 = latest_return_ - ucb_pair.action_value_;
+    ucb_pair.m_2_ += delta.cwiseProduct(delta2);
+    total_node_visits_ += 1;
+    value_ = value_ + (latest_return_ - value_) / total_node_visits_;
+  }
 
     void set_heuristic_estimate(const Reward &accum_rewards) {
       value_ = accum_rewards;
@@ -145,19 +162,13 @@ namespace mcts {
       std::stringstream ss;
       auto action_it = ucb_statistics_.find(action);
       if (action_it != ucb_statistics_.end()) {
-        ss << "a=" << int(action) << ", N=" << action_it->second.action_count_ << ", V="
-           << action_it->second.action_value_.transpose() << ", sigma=" << (action_it->second.m_2_/action_it->second.action_count_).cwiseSqrt().transpose();
+      ss << "a=" << int(action) << ", N=" << action_it->second.action_count_ << ", V="
+         << action_it->second.action_value_.transpose() << ", sigma=" << (action_it->second.m_2_/action_it->second.action_count_).cwiseSqrt().transpose();
       }
       return ss.str();
     }
 
-    typedef struct UcbPair {
-      UcbPair() : action_count_(0), action_value_(ObjectiveVec::Zero()), m_2_(ObjectiveVec::Zero()) {};
-      unsigned action_count_;
-      ObjectiveVec action_value_;
-      ObjectiveVec m_2_;
-    } UcbPair;
-    typedef std::map<ActionIdx, UcbPair> ActionUCBMap;
+ protected:
 
     void calculate_slack_values(const ActionUCBMap &ucb_statistics, std::vector<ObjectiveVec> &values) const {
       values.resize(ucb_statistics.size());
@@ -176,29 +187,25 @@ namespace mcts {
     void calculate_ucb_values(const ActionUCBMap &ucb_statistics, std::vector<Eigen::VectorXf> &values) const {
       values.resize(ucb_statistics.size());
 
-      for (size_t idx = 0; idx < ucb_statistics.size(); ++idx) {
-        Eigen::VectorXf
-                action_value_normalized =
-                (ucb_statistics.at(idx).action_value_ - lower_bound).cwiseQuotient(upper_bound - lower_bound);
-        //MCTS_EXPECT_TRUE(action_value_normalized >= 0);
-        //MCTS_EXPECT_TRUE(action_value_normalized <= 1);
-        values[idx] = action_value_normalized.array()
-                      + sqrt((4 * log(total_node_visits_)+log(REWARD_DIM)) / (2*(ucb_statistics.at(idx).action_count_)));
-      }
+    for (size_t idx = 0; idx < ucb_statistics.size(); ++idx) {
+      Eigen::VectorXf
+          action_value_normalized =
+          (ucb_statistics.at(idx).action_value_ - this->mcts_parameters_.uct_statistic.LOWER_BOUND).cwiseQuotient(
+              this->mcts_parameters_.uct_statistic.UPPER_BOUND - this->mcts_parameters_.uct_statistic.LOWER_BOUND);
+      //MCTS_EXPECT_TRUE(action_value_normalized >= 0);
+      //MCTS_EXPECT_TRUE(action_value_normalized <= 1);
+      values[idx] = action_value_normalized.array()
+          + 2 * this->mcts_parameters_.DISCOUNT_FACTOR
+              * sqrt((2 * log(total_node_visits_)) / (ucb_statistics.at(idx).action_count_));
     }
+  }
 
-    ObjectiveVec value_;
-    ObjectiveVec latest_return_;   // tracks the return during backpropagation
-    ActionUCBMap ucb_statistics_; // first: action selection count, action-value
-    unsigned int total_node_visits_;
+  ObjectiveVec value_;
+  ObjectiveVec latest_return_;   // tracks the return during backpropagation
+  ActionUCBMap ucb_statistics_; // first: action selection count, action-value
+  unsigned int total_node_visits_;
 
-// PARAMS
-    const ObjectiveVec upper_bound;
-    const ObjectiveVec lower_bound;
-    const double k_discount_factor;
-    const double k_exploration_constant;
-
-  };
+};
 
 } // namespace mcts
 

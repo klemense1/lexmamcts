@@ -14,49 +14,51 @@
 
 namespace mcts {
 
-    template<class S, class SE, class SO, class H>
-    class StageNode;
-
-
-
-    template <class Implementation>
-    class Heuristic
-    {
-    public:
-
-        template<class S, class SE, class SO, class H>
-        std::vector<SE> get_heuristic_values(const std::shared_ptr<StageNode<S,SE,SO,H>> &node);
-
-        std::string sprintf() const;
-
-    private:
-        Implementation& impl() ;
-        Implementation& impl() const;
-    };
-
-
-template <class Implementation>
-Implementation& Heuristic<Implementation>::impl() {
-    return *static_cast<Implementation*>(this);
-}
-
-
-template <class Implementation>
-Implementation& Heuristic<Implementation>::impl() const {
-    return *static_cast<const Implementation*>(this);
-}
-
-template <class Implementation>
 template<class S, class SE, class SO, class H>
-std::vector<SE> Heuristic<Implementation>::get_heuristic_values(const std::shared_ptr<StageNode<S,SE,SO,H>> &node)
-{
-    return impl().get_heuristic_values(node);
+class StageNode;
+
+
+template<class Implementation>
+class Heuristic {
+public:
+  Heuristic(MctsParameters const &mcts_parameters) : mcts_parameters_(mcts_parameters) {};
+
+  template<class S, class SE, class SO, class H>
+  std::vector<SE> get_heuristic_values(const std::shared_ptr<StageNode<S, SE, SO, H>> &node);
+
+  std::string sprintf() const;
+
+protected:
+  MctsParameters mcts_parameters_;
+
+private:
+
+  Implementation &impl();
+
+  Implementation &impl() const;
+};
+
+
+template<class Implementation>
+Implementation &Heuristic<Implementation>::impl() {
+  return *static_cast<Implementation *>(this);
 }
 
-template <class Implementation>
-std::string Heuristic<Implementation>::sprintf() const
-{
-    return impl().sprintf();
+
+template<class Implementation>
+Implementation &Heuristic<Implementation>::impl() const {
+  return *static_cast<const Implementation *>(this);
+}
+
+template<class Implementation>
+template<class S, class SE, class SO, class H>
+std::vector<SE> Heuristic<Implementation>::get_heuristic_values(const std::shared_ptr<StageNode<S, SE, SO, H>> &node) {
+  return impl().get_heuristic_values(node);
+}
+
+template<class Implementation>
+std::string Heuristic<Implementation>::sprintf() const {
+  return impl().sprintf();
 }
 
 } // namespace mcts

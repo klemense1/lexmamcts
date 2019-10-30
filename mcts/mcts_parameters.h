@@ -16,22 +16,32 @@
 namespace mcts {
 
 typedef Eigen::Matrix<float, REWARD_DIM, 1> ObjectiveVec;
+
 struct MctsParameters {
 
-  //MCTS
-  static double DISCOUNT_FACTOR;
-  static double EXPLORATION_CONSTANT;
+  struct UctStatistic {
+    double EXPLORATION_CONSTANT;
+    ObjectiveVec LOWER_BOUND;
+    ObjectiveVec UPPER_BOUND;
+  };
 
-  static double RANDOM_GENERATOR_SEED;
-  static double MAX_NUMBER_OF_ITERATIONS;
-  static double MAX_SEARCH_TIME_RANDOM_HEURISTIC;
-  static double MAX_NUMBER_OF_ITERATIONS_RANDOM_HEURISTIC;
+  struct RandomHeuristic {
+    double RANDOM_GENERATOR_SEED;
+    double MAX_NUMBER_OF_ITERATIONS;
+    double MAX_SEARCH_TIME_RANDOM_HEURISTIC;
+    double MAX_NUMBER_OF_ITERATIONS_RANDOM_HEURISTIC;
+  };
 
-  static ObjectiveVec LOWER_BOUND;
-  static ObjectiveVec UPPER_BOUND;
+  double COOP_FACTOR;
+  double DISCOUNT_FACTOR;
 
-  static double COOP_FACTOR;
+  RandomHeuristic random_heuristic;
+  UctStatistic uct_statistic;
 };
+
+MctsParameters make_std_mcts_parameters();
+std::ostream &operator<<(std::ostream &os, MctsParameters const &d);
+
 } // namespace mcts
 
 

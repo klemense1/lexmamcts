@@ -185,6 +185,10 @@ class CrossingState : public mcts::StateInterface<CrossingState> {
       depth_ = 0;
     }
 
+  void update_rule_belief();
+
+  void reset_violations();
+
  private:
     Reward get_action_cost(ActionIdx action);
 

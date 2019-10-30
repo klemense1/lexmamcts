@@ -21,7 +21,7 @@ class NodeStatistic
 public:
     MCTS_TEST;
 
-    NodeStatistic(ActionIdx num_actions) : num_actions_(num_actions) {}
+    NodeStatistic(ActionIdx num_actions, MctsParameters const &mcts_parameters) : num_actions_(num_actions), mcts_parameters_(mcts_parameters) {}
     template <class S>
     ActionIdx choose_next_action(const StateInterface<S>& state, std::vector<int>& unexpanded_actions);
     void update_statistic(const NodeStatistic<Implementation>& changed_child_statistic); // update statistic during backpropagation from child node
@@ -38,10 +38,10 @@ public:
     Implementation& impl();
     const Implementation& impl() const;
 
-protected:
+public:
     std::pair<ActionIdx, Reward> collected_reward_;
     ActionIdx num_actions_;
-
+    MctsParameters const mcts_parameters_;
 };
 
 template <class Implementation>

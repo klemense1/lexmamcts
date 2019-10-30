@@ -16,7 +16,6 @@ void CrossingState::draw(mcts::Viewer *viewer) const {
     const float state_draw_dst = 1.0f;
     const float linewidth = 2;
     const float state_draw_size = 50;
-    const float factor_draw_current_state = 4;
 
     // draw lines equally spaced angles with small points
     // indicating states and larger points indicating the current state
@@ -81,6 +80,26 @@ Reward CrossingState::get_action_cost(ActionIdx action) {
       reward(static_cast<int>(RewardPriority::GOAL)) = -1;
     }
     return reward;
+}
+
+void CrossingState::update_rule_belief() {
+  for (size_t agent_idx = 0; agent_idx < automata_.size(); agent_idx++) {
+    if (agent_idx == ego_agent_idx) {
+      continue;
+    }
+    for (auto &aut : automata_[agent_idx]) {
+      aut.update_belief();
+      LOG(INFO) << aut;
+    }
+  }
+}
+
+void CrossingState::reset_violations() {
+  for (auto &agent : automata_) {
+    for (auto &aut : agent) {
+      aut.reset_violation();
+    }
+  }
 }
 
 const int CrossingState::crossing_point;

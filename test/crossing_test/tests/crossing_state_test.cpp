@@ -19,6 +19,7 @@
 #include "test/crossing_test/evaluator_label_hold_at_xing.hpp"
 #include "test/crossing_test/evaluator_label_other_near.hpp"
 #include "test/crossing_test/crossing_state_episode_runner.h"
+#include "test/crossing_test/evaluator_label_speed.hpp"
 
 class CrossingTestF : protected CrossingTest, public ::testing::Test {
  public:
@@ -45,6 +46,51 @@ TEST_F(CrossingTestF, general) {
     //Should not hit the maximum # of steps
     EXPECT_LT(steps, MAX_STEPS);
     EXPECT_TRUE(state->ego_goal_reached());
+}
+
+TEST_F(CrossingTestF, belief) {
+  const int MAX_STEPS = 40;
+  int steps = 0;
+  JointAction other_jt(2);
+
+  label_evaluators.emplace_back(std::make_shared<EvaluatorLabelSpeed>("speeding"));
+  automata[1].emplace_back("G !speeding", -20.0f, RewardPriority::SAFETY, 0.9);
+  std::shared_ptr<CrossingState> ego_state = std::make_shared<CrossingState>(automata, label_evaluators);
+
+  pos_history.emplace_back(ego_state->get_ego_pos());
+  std::vector<size_t> pos_history_other;
+  pos_history_other.emplace_back(state->get_ego_pos());
+
+  while (!state->is_terminal() && steps < MAX_STEPS) {
+
+    // Ego search
+    mcts.search(*ego_state ,50000, 1000);
+    jt[0] = mcts.returnBestAction()[0];
+    other_jt[1] = jt[0];
+
+    // Other search
+    mcts.search(*state, 50000, 1000);
+    jt[1] = mcts.returnBestAction()[0]; //Note that other is now in the ego perspective
+    other_jt[0] = jt[1];
+
+    LOG(INFO) << "Performing action:" << jt;
+    ego_state = ego_state->execute(jt, rewards);
+
+    state = state->execute(other_jt, rewards);
+
+    ego_state->update_rule_belief();
+    ego_state->reset_violations();
+
+    pos_history.emplace_back(ego_state->get_ego_pos());
+    pos_history_other.emplace_back(state->get_ego_pos());
+    ++steps;
+  }
+
+  LOG(INFO) << "Ego positions:" << pos_history;
+  LOG(INFO) << "Other positions: " << pos_history_other;
+  //Should not hit the maximum # of steps
+  EXPECT_LT(steps, MAX_STEPS);
+  EXPECT_TRUE(state->ego_goal_reached());
 }
 
 TEST_F(CrossingTestF, giveWay) {

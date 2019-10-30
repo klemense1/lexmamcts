@@ -4,19 +4,38 @@
 // For a copy, see <https://opensource.org/licenses/MIT>.
 // ========================================================
 
+#include "glog/logging.h"
+
 #include "mcts/mcts_parameters.h"
 
 namespace mcts {
 
-double MctsParameters::DISCOUNT_FACTOR = 1;
-double MctsParameters::EXPLORATION_CONSTANT = 1;
+MctsParameters make_std_mcts_parameters() {
+  MctsParameters param;
 
-double MctsParameters::MAX_SEARCH_TIME_RANDOM_HEURISTIC = 1000;
-double MctsParameters::MAX_NUMBER_OF_ITERATIONS_RANDOM_HEURISTIC = 1000;
+  param.random_heuristic.MAX_SEARCH_TIME_RANDOM_HEURISTIC = 1000;
+  param.random_heuristic.MAX_NUMBER_OF_ITERATIONS_RANDOM_HEURISTIC = 1000;
+  param.COOP_FACTOR = 0;
+  param.DISCOUNT_FACTOR = 1;
 
-ObjectiveVec MctsParameters::LOWER_BOUND = Eigen::Vector4f(-2000.0f, -50.0f, -1000.0f, -1000.0f);
-ObjectiveVec MctsParameters::UPPER_BOUND = Eigen::Vector4f(0.0f, 500.0f, 0.0f, 0.0f);
+  param.uct_statistic.EXPLORATION_CONSTANT = 1;
+  param.uct_statistic.LOWER_BOUND = Eigen::Vector4f(-2000.0f, -1000.0f, -1000.0f, -1000.0f);
+  param.uct_statistic.UPPER_BOUND = Eigen::Vector4f(2000.0f, 0.0f, 0.0f, 0.0f);
 
-double MctsParameters::COOP_FACTOR = 0.5;
+  return param;
+}
+
+std::ostream &operator<<(std::ostream &os, MctsParameters const &d) {
+  LOG(INFO) << "MCTS Parameters:";
+  LOG(INFO) << "MctsParameters::MAX_NUMBER_OF_ITERATIONS_RANDOM_HEURISTIC: "
+            << d.random_heuristic.MAX_NUMBER_OF_ITERATIONS_RANDOM_HEURISTIC;
+  LOG(INFO) << "MctsParameters::MAX_SEARCH_TIME_RANDOM_HEURISTIC: " << d.random_heuristic.MAX_SEARCH_TIME_RANDOM_HEURISTIC;
+  LOG(INFO) << "MctsParameters::DISCOUNT_FACTOR: " << d.DISCOUNT_FACTOR;
+  LOG(INFO) << "MctsParameters::EXPLORATION_CONSTANT: " << d.uct_statistic.EXPLORATION_CONSTANT;
+  LOG(INFO) << "MctsParameters::LOWER_BOUND: " << d.uct_statistic.LOWER_BOUND.transpose();
+  LOG(INFO) << "MctsParameters::UPPER_BOUND: " << d.uct_statistic.UPPER_BOUND.transpose();
+  LOG(INFO) << "MctsParameters::COOP_FACTOR: " << d.COOP_FACTOR;
+  return os;
+}
 
 } // namespace mcts

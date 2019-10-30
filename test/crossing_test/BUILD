@@ -13,6 +13,7 @@ cc_library(
         "evaluator_label_goal_reached.hpp",
         "evaluator_label_hold_at_xing.hpp",
         "evaluator_label_other_near.hpp",
+        "evaluator_label_speed.hpp",
         "evaluator_rule_ltl.hpp",
         "viewer.h",
     ],

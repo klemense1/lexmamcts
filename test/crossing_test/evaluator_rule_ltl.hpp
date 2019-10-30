@@ -8,6 +8,7 @@
 #include <string>
 #include <set>
 
+#include "Eigen/Core"
 #include "spot/tl/parse.hh"
 #include "spot/twaalgos/translate.hh"
 
@@ -25,26 +26,41 @@ enum RewardPriority {
 };
 
 class EvaluatorRuleLTL {
- public:
-    EvaluatorRuleLTL(spot::formula ltl_formula, float weight, RewardPriority type, float final_reward = 0.0f);
-    EvaluatorRuleLTL(std::string ltl_formula_str, float weight, RewardPriority type, float final_reward = 0.0f);
-  //EvaluatorRuleLTL(const EvaluatorRuleLTL &evaluator_rule_ltl) = default;
+public:
+  EvaluatorRuleLTL(spot::formula ltl_formula, float weight, RewardPriority type, float init_belief = 1.0,
+                   float final_reward = 0.0f);
+
+  EvaluatorRuleLTL(std::string ltl_formula_str, float weight, RewardPriority type, float init_belief = 1.0,
+                   float final_reward = 0.0f);
+
   float evaluate(EvaluationMap &labels);
-    float get_final_reward() const;
+
+  float get_final_reward() const;
+
   void reset_state();
- private:
-  static bool bdd_eval(bdd cond, const std::set<int> &vars);
-  float weight_;
-    float final_reward_;
-  uint32_t current_state;
-  spot::twa_graph_ptr aut;
-  std::set<std::string> alphabet;
-  spot::formula ltl_formula_;
-  RewardPriority type_;
- public:
+
   RewardPriority get_type() const;
 
-  friend std::ostream& operator<<(std::ostream& os, EvaluatorRuleLTL const& d);
+  void reset_violation();
+
+  void update_belief();
+
+  friend std::ostream &operator<<(std::ostream &os, EvaluatorRuleLTL const &d);
+
+private:
+  static spot::formula parse_formula(std::string ltl_formula_str);
+  static bool bdd_eval(bdd cond, const std::set<int> &vars);
+
+  float weight_;
+  float final_reward_;
+  uint32_t current_state_;
+  spot::twa_graph_ptr aut_;
+  std::set<spot::formula> alphabet_;
+  spot::formula ltl_formula_;
+  RewardPriority type_;
+  Eigen::Vector2f rule_belief_;
+  Eigen::Matrix2f observation_prob_;
+  bool violated_;
 };
 
 }
