@@ -8,6 +8,7 @@
 #define UCT_STATISTIC_H
 
 #include "mcts/mcts.h"
+#include "mcts/statistics/pareto_set.h"
 #include <iostream>
 #include <iomanip>
 
@@ -44,18 +45,10 @@ class UctStatistic : public mcts::NodeStatistic<UctStatistic>, mcts::RandomGener
       // Select an action based on the UCB formula
       std::vector<Eigen::VectorXf> values;
       calculate_ucb_values(ucb_statistics_, values);
-      // find largest index
-      ActionIdx selected_action = std::distance(values.begin(), std::max_element(values.begin(), values.end(),
-                                                                                 [](Eigen::VectorXf &a,
-                                                                                    Eigen::VectorXf &b) -> bool {
-                                                                                   return std::lexicographical_compare(a.begin(),
-                                                                                                                       a.end(),
-                                                                                                                       b.begin(),
-                                                                                                                       b.end(),
-                                                                                                                       StableComp);
-                                                                                 }));
+      ParetoSet<ActionIdx, Eigen::VectorXf> pareto_set;
+      pareto_set.add(values);
+      ActionIdx selected_action = pareto_set.get_random();
       return selected_action;
-
     } else {
       // Select randomly an unexpanded action
       std::uniform_int_distribution<ActionIdx> random_action_selection(0, unexpanded_actions.size() - 1);
@@ -81,6 +74,8 @@ class UctStatistic : public mcts::NodeStatistic<UctStatistic>, mcts::RandomGener
                                                                         b.second.action_value_.end(),
                                                                         StableComp);
                                   }
+                                  // Original final selection policy from paper
+                                  // return (a.second.action_count_ < b.second.action_count_);
                                 }
     );
     return max->
@@ -150,7 +145,7 @@ class UctStatistic : public mcts::NodeStatistic<UctStatistic>, mcts::RandomGener
       //MCTS_EXPECT_TRUE(action_value_normalized >= 0);
       //MCTS_EXPECT_TRUE(action_value_normalized <= 1);
       values[idx] = action_value_normalized.array()
-          + 2 * mcts_parameters_.uct_statistic.EXPLORATION_CONSTANT * sqrt((2 * log(total_node_visits_)) / (ucb_statistics.at(idx).action_count_));
+          + sqrt((4 * log(total_node_visits_) + log(REWARD_DIM)) / (2 * ucb_statistics.at(idx).action_count_));
     }
   }
 
