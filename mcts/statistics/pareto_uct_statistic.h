@@ -1,42 +1,37 @@
-// Copyright (c) 2019 Julian Bernhard
-// 
-// This work is licensed under the terms of the MIT license.
-// For a copy, see <https://opensource.org/licenses/MIT>.
-// ========================================================
+//
+// Created by luis on 30.10.19.
+//
 
-#ifndef UCT_STATISTIC_H
-#define UCT_STATISTIC_H
+#ifndef MAMCTS_MCTS_STATISTICS_UCT_STATISTIC_H_PARETOUCT_H_
+#define MAMCTS_MCTS_STATISTICS_UCT_STATISTIC_H_PARETOUCT_H_
 
 #include "mcts/mcts.h"
+#include "mcts/statistics/pareto_set.h"
 #include <iostream>
 #include <iomanip>
-
 namespace mcts {
 
-struct {
-    bool operator()(double const &a, double const &b) {
-        return (round(a) < round(b));
-    }
-} StableComp;
-
-// A upper confidence bound implementation
-class UctStatistic : public mcts::NodeStatistic<UctStatistic>, public mcts::RandomGenerator {
+class ParetoUCTStatistic : public mcts::NodeStatistic<ParetoUCTStatistic>, RandomGenerator {
 
  public:
   MCTS_TEST
 
-  UctStatistic(ActionIdx num_actions, MctsParameters const &mcts_parameters) :
-      NodeStatistic<UctStatistic>(num_actions, mcts_parameters),
+  ParetoUCTStatistic(ActionIdx num_actions) :
+      NodeStatistic<ParetoUCTStatistic>(num_actions),
       value_(),
       latest_return_(),
       ucb_statistics_([&]() -> ActionUCBMap {
         ActionUCBMap map;
-        for (ActionIdx ai = 0; ai < num_actions; ++ai) { map[ai] = UcbPair(); }
+        for (auto ai = 0; ai < num_actions; ++ai) { map[ai] = UcbPair(); }
         return map;
       }()),
-      total_node_visits_(0) {};
+      total_node_visits_(0),
+      upper_bound(mcts::MctsParameters::UPPER_BOUND),
+      lower_bound(mcts::MctsParameters::LOWER_BOUND),
+      k_discount_factor(mcts::MctsParameters::DISCOUNT_FACTOR),
+      k_exploration_constant(mcts::MctsParameters::EXPLORATION_CONSTANT) {};
 
-  ~UctStatistic() {};
+  ~ParetoUCTStatistic() {};
 
   template<class S>
   ActionIdx choose_next_action(const S &state, std::vector<int> &unexpanded_actions) {
@@ -44,16 +39,9 @@ class UctStatistic : public mcts::NodeStatistic<UctStatistic>, public mcts::Rand
       // Select an action based on the UCB formula
       std::vector<Eigen::VectorXf> values;
       calculate_ucb_values(ucb_statistics_, values);
-      // find largest index
-      ActionIdx selected_action = std::distance(values.begin(), std::max_element(values.begin(), values.end(),
-                                                                                 [](Eigen::VectorXf &a,
-                                                                                    Eigen::VectorXf &b) -> bool {
-                                                                                   return std::lexicographical_compare(a.begin(),
-                                                                                                                       a.end(),
-                                                                                                                       b.begin(),
-                                                                                                                       b.end(),
-                                                                                                                       StableComp);
-                                                                                 }));
+      ParetoSet<ActionIdx, Eigen::VectorXf> pareto_set;
+      pareto_set.add(values);
+      ActionIdx selected_action = pareto_set.get_random();
       return selected_action;
     } else {
       // Select randomly an unexpanded action
@@ -88,22 +76,22 @@ class UctStatistic : public mcts::NodeStatistic<UctStatistic>, public mcts::Rand
         first;
   }
 
-  void update_from_heuristic(const NodeStatistic<UctStatistic> &heuristic_statistic) {
-    const UctStatistic &heuristic_statistic_impl = heuristic_statistic.impl();
+  void update_from_heuristic(const NodeStatistic<ParetoUCTStatistic> &heuristic_statistic) {
+    const ParetoUCTStatistic &heuristic_statistic_impl = heuristic_statistic.impl();
     value_ = heuristic_statistic_impl.value_;
     latest_return_ = value_;
     MCTS_EXPECT_TRUE(total_node_visits_ == 0); // This should be the first visit
     total_node_visits_ += 1;
   }
 
-  void update_statistic(const NodeStatistic<UctStatistic> &changed_child_statistic) {
-    const UctStatistic &changed_uct_statistic = changed_child_statistic.impl();
+  void update_statistic(const NodeStatistic<ParetoUCTStatistic> &changed_child_statistic) {
+    const ParetoUCTStatistic &changed_uct_statistic = changed_child_statistic.impl();
 
     //Action Value update step
     UcbPair &ucb_pair =
         ucb_statistics_[collected_reward_.first]; // we remembered for which action we got the reward, must be the same as during backprop, if we linked parents and childs correctly
     //action value: Q'(s,a) = Q'(s,a) + (latest_return - Q'(s,a))/N
-    latest_return_ = collected_reward_.second + mcts_parameters_.DISCOUNT_FACTOR * changed_uct_statistic.latest_return_;
+    latest_return_ = collected_reward_.second + k_discount_factor * changed_uct_statistic.latest_return_;
     ucb_pair.action_count_ += 1;
     ucb_pair.action_value_ =
         ucb_pair.action_value_ + (latest_return_ - ucb_pair.action_value_) / ucb_pair.action_count_;
@@ -128,8 +116,8 @@ class UctStatistic : public mcts::NodeStatistic<UctStatistic>, public mcts::Rand
     std::stringstream ss;
     auto action_it = ucb_statistics_.find(action);
     if (action_it != ucb_statistics_.end()) {
-        ss << "a=" << int(action) << ", N=" << action_it->second.action_count_ << ", V="
-           << action_it->second.action_value_.transpose();
+      ss << "a=" << int(action) << ", N=" << action_it->second.action_count_ << ", V="
+         << action_it->second.action_value_.transpose();
     }
     return ss.str();
   }
@@ -148,11 +136,11 @@ class UctStatistic : public mcts::NodeStatistic<UctStatistic>, public mcts::Rand
     for (size_t idx = 0; idx < ucb_statistics.size(); ++idx) {
       Eigen::VectorXf
           action_value_normalized =
-          (ucb_statistics.at(idx).action_value_ - mcts_parameters_.uct_statistic.LOWER_BOUND).cwiseQuotient(mcts_parameters_.uct_statistic.UPPER_BOUND - mcts_parameters_.uct_statistic.LOWER_BOUND);
+          (ucb_statistics.at(idx).action_value_ - lower_bound).cwiseQuotient(upper_bound - lower_bound);
       //MCTS_EXPECT_TRUE(action_value_normalized >= 0);
       //MCTS_EXPECT_TRUE(action_value_normalized <= 1);
       values[idx] = action_value_normalized.array()
-          + 2 * k_exploration_constant * sqrt((2 * log(total_node_visits_)) / (ucb_statistics.at(idx).action_count_));
+          + sqrt((4 * log(total_node_visits_) + log(REWARD_DIM)) / (2 * ucb_statistics.at(idx).action_count_));
     }
   }
 
@@ -161,8 +149,13 @@ class UctStatistic : public mcts::NodeStatistic<UctStatistic>, public mcts::Rand
   ActionUCBMap ucb_statistics_; // first: action selection count, action-value
   unsigned int total_node_visits_;
 
+// PARAMS
+  const ObjectiveVec upper_bound;
+  const ObjectiveVec lower_bound;
+  const double k_discount_factor;
+  const double k_exploration_constant;
 };
 
-} // namespace mcts
+}
 
-#endif
+#endif //MAMCTS_MCTS_STATISTICS_UCT_STATISTIC_H_PARETOUCT_H_
