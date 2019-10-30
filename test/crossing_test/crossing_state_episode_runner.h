@@ -21,6 +21,7 @@
 #include "test/crossing_test/evaluator_label_hold_at_xing.hpp"
 #include "test/crossing_test/evaluator_label_other_near.hpp"
 #include "test/crossing_test/common.hpp"
+#include "mcts/statistics/pareto_uct_statistic.h"
 
 namespace mcts {
 
@@ -69,7 +70,7 @@ class CrossingTest {
   std::vector<Reward> rewards;
   JointAction jt;
   std::vector<std::size_t> pos_history;
-  Mcts<CrossingState, UctStatistic, UctStatistic, RandomHeuristic> mcts;
+  Mcts<CrossingState, ParetoUCTStatistic, ParetoUCTStatistic, RandomHeuristic> mcts;
   std::shared_ptr<CrossingState> state;
 };
 
@@ -86,12 +87,13 @@ class CrossingStateEpisodeRunner : public CrossingTest {
     }
     std::vector<Reward> rewards(2);
 
-    JointAction jointaction(state->get_agent_idx().size());
-    mcts.search(*state, 5000, 1000);
-    jointaction = mcts.returnBestAction();
-    std::cout << "Step " << current_step_ << ", Action = " << jointaction << ", " << state->sprintf()
-              << std::endl;
-    state = state->execute(jointaction, rewards);
+        JointAction jointaction(state->get_agent_idx().size());
+        Mcts<CrossingState, UctStatistic<>, UctStatistic<>, RandomHeuristic> mcts;
+        mcts.search(*state, 5000, 1000);
+        jointaction = mcts.returnBestAction();
+        std::cout << "Step " << current_step_ << ", Action = " << jointaction << ", " << state->sprintf()
+                  << std::endl;
+        state = state->execute(jointaction, rewards);
 
     current_step_ += 1;
 

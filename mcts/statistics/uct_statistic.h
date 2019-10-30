@@ -10,6 +10,7 @@
 #include "mcts/mcts.h"
 #include <iostream>
 #include <iomanip>
+#include <type_traits>
 
 namespace mcts {
 
@@ -19,14 +20,31 @@ struct {
     }
 } StableComp;
 
+typedef struct UcbPair {
+  UcbPair() : action_count_(0), action_value_(ObjectiveVec::Zero()) {};
+  unsigned action_count_;
+  ObjectiveVec action_value_;
+} UcbPair;
+typedef std::map<ActionIdx, UcbPair> ActionUCBMap;
+
+class NodeStatistic_Final_Impl;
+
 // A upper confidence bound implementation
-class UctStatistic : public mcts::NodeStatistic<UctStatistic>, public mcts::RandomGenerator {
+template<typename IMPL = NodeStatistic_Final_Impl>
+class UctStatistic : public NodeStatistic<UctStatistic<IMPL>>
+    //public std::conditional<std::is_same<IMPL, NodeStatistic_Final_Impl>::value,
+    //NodeStatistic<UctStatistic<>>,
+    //NodeStatistic<IMPL>>::type
+    , public mcts::RandomGenerator {
+ private:
+  //typedef typename std::conditional<std::is_same<IMPL, NodeStatistic_Final_Impl>::value,UctStatistic<>,UctStatistic<IMPL>>::type this_type;
+  typedef UctStatistic<IMPL> this_type;
 
  public:
   MCTS_TEST
 
   UctStatistic(ActionIdx num_actions, MctsParameters const &mcts_parameters) :
-      NodeStatistic<UctStatistic>(num_actions, mcts_parameters),
+      NodeStatistic<this_type>(num_actions, mcts_parameters),
       value_(),
       latest_return_(),
       ucb_statistics_([&]() -> ActionUCBMap {
@@ -88,22 +106,22 @@ class UctStatistic : public mcts::NodeStatistic<UctStatistic>, public mcts::Rand
         first;
   }
 
-  void update_from_heuristic(const NodeStatistic<UctStatistic> &heuristic_statistic) {
-    const UctStatistic &heuristic_statistic_impl = heuristic_statistic.impl();
+  void update_from_heuristic(const NodeStatistic<this_type> &heuristic_statistic) {
+    const this_type &heuristic_statistic_impl = heuristic_statistic.impl();
     value_ = heuristic_statistic_impl.value_;
     latest_return_ = value_;
     MCTS_EXPECT_TRUE(total_node_visits_ == 0); // This should be the first visit
     total_node_visits_ += 1;
   }
 
-  void update_statistic(const NodeStatistic<UctStatistic> &changed_child_statistic) {
-    const UctStatistic &changed_uct_statistic = changed_child_statistic.impl();
+  void update_statistic(const NodeStatistic<this_type> &changed_child_statistic) {
+    const this_type &changed_uct_statistic = changed_child_statistic.impl();
 
     //Action Value update step
     UcbPair &ucb_pair =
-        ucb_statistics_[collected_reward_.first]; // we remembered for which action we got the reward, must be the same as during backprop, if we linked parents and childs correctly
+        ucb_statistics_[this->collected_reward_.first]; // we remembered for which action we got the reward, must be the same as during backprop, if we linked parents and childs correctly
     //action value: Q'(s,a) = Q'(s,a) + (latest_return - Q'(s,a))/N
-    latest_return_ = collected_reward_.second + mcts_parameters_.DISCOUNT_FACTOR * changed_uct_statistic.latest_return_;
+    latest_return_ = this->collected_reward_.second + mcts_parameters_.DISCOUNT_FACTOR * changed_uct_statistic.latest_return_;
     ucb_pair.action_count_ += 1;
     ucb_pair.action_value_ =
         ucb_pair.action_value_ + (latest_return_ - ucb_pair.action_value_) / ucb_pair.action_count_;
@@ -128,19 +146,13 @@ class UctStatistic : public mcts::NodeStatistic<UctStatistic>, public mcts::Rand
     std::stringstream ss;
     auto action_it = ucb_statistics_.find(action);
     if (action_it != ucb_statistics_.end()) {
-        ss << "a=" << int(action) << ", N=" << action_it->second.action_count_ << ", V="
-           << action_it->second.action_value_.transpose();
+      ss << "a=" << int(action) << ", N=" << action_it->second.action_count_ << ", V="
+         << action_it->second.action_value_.transpose();
     }
     return ss.str();
   }
 
  protected:
-  typedef struct UcbPair {
-    UcbPair() : action_count_(0), action_value_(ObjectiveVec::Zero()) {};
-    unsigned action_count_;
-    ObjectiveVec action_value_;
-  } UcbPair;
-  typedef std::map<ActionIdx, UcbPair> ActionUCBMap;
 
   void calculate_ucb_values(const ActionUCBMap &ucb_statistics, std::vector<Eigen::VectorXf> &values) const {
     values.resize(ucb_statistics.size());
