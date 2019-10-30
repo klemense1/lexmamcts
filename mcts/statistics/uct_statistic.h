@@ -111,7 +111,8 @@ class UctStatistic :
     UcbPair &ucb_pair =
         ucb_statistics_[this->collected_reward_.first]; // we remembered for which action we got the reward, must be the same as during backprop, if we linked parents and childs correctly
     //action value: Q'(s,a) = Q'(s,a) + (latest_return - Q'(s,a))/N
-    latest_return_ = this->collected_reward_.second + mcts_parameters_.DISCOUNT_FACTOR * changed_uct_statistic.latest_return_;
+    latest_return_ =
+        this->collected_reward_.second + this->mcts_parameters_.DISCOUNT_FACTOR * changed_uct_statistic.latest_return_;
     ucb_pair.action_count_ += 1;
     ucb_pair.action_value_ =
         ucb_pair.action_value_ + (latest_return_ - ucb_pair.action_value_) / ucb_pair.action_count_;
@@ -150,11 +151,13 @@ class UctStatistic :
     for (size_t idx = 0; idx < ucb_statistics.size(); ++idx) {
       Eigen::VectorXf
           action_value_normalized =
-          (ucb_statistics.at(idx).action_value_ - mcts_parameters_.uct_statistic.LOWER_BOUND).cwiseQuotient(mcts_parameters_.uct_statistic.UPPER_BOUND - mcts_parameters_.uct_statistic.LOWER_BOUND);
+          (ucb_statistics.at(idx).action_value_ - this->mcts_parameters_.uct_statistic.LOWER_BOUND).cwiseQuotient(
+              this->mcts_parameters_.uct_statistic.UPPER_BOUND - this->mcts_parameters_.uct_statistic.LOWER_BOUND);
       //MCTS_EXPECT_TRUE(action_value_normalized >= 0);
       //MCTS_EXPECT_TRUE(action_value_normalized <= 1);
       values[idx] = action_value_normalized.array()
-          + 2 * k_exploration_constant * sqrt((2 * log(total_node_visits_)) / (ucb_statistics.at(idx).action_count_));
+          + 2 * this->mcts_parameters_.DISCOUNT_FACTOR
+              * sqrt((2 * log(total_node_visits_)) / (ucb_statistics.at(idx).action_count_));
     }
   }
 

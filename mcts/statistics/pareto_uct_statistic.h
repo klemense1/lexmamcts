@@ -12,7 +12,9 @@ namespace mcts {
 class ParetoUCTStatistic : public UctStatistic<ParetoUCTStatistic> {
 
  public:
-  ParetoUCTStatistic(ActionIdx num_actions) : UctStatistic<ParetoUCTStatistic>(num_actions) {};
+  ParetoUCTStatistic(ActionIdx num_actions, MctsParameters const &mcts_parameters) : UctStatistic<ParetoUCTStatistic>(
+      num_actions,
+      mcts_parameters) {};
 
   template<class S>
   ActionIdx choose_next_action(const S &state, std::vector<int> &unexpanded_actions) {
@@ -40,7 +42,8 @@ class ParetoUCTStatistic : public UctStatistic<ParetoUCTStatistic> {
     for (size_t idx = 0; idx < ucb_statistics.size(); ++idx) {
       Eigen::VectorXf
           action_value_normalized =
-          (ucb_statistics.at(idx).action_value_ - lower_bound).cwiseQuotient(upper_bound - lower_bound);
+          (ucb_statistics.at(idx).action_value_ - this->mcts_parameters_.uct_statistic.LOWER_BOUND).cwiseQuotient(
+              this->mcts_parameters_.uct_statistic.UPPER_BOUND - this->mcts_parameters_.uct_statistic.LOWER_BOUND);
       //MCTS_EXPECT_TRUE(action_value_normalized >= 0);
       //MCTS_EXPECT_TRUE(action_value_normalized <= 1);
       values[idx] = action_value_normalized.array()

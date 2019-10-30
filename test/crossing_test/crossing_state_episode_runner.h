@@ -70,7 +70,7 @@ class CrossingTest {
   std::vector<Reward> rewards;
   JointAction jt;
   std::vector<std::size_t> pos_history;
-  Mcts<CrossingState, ParetoUCTStatistic, ParetoUCTStatistic, RandomHeuristic> mcts;
+  Mcts<CrossingState, UctStatistic<>, UctStatistic<>, RandomHeuristic> mcts;
   std::shared_ptr<CrossingState> state;
 };
 
@@ -88,7 +88,6 @@ class CrossingStateEpisodeRunner : public CrossingTest {
     std::vector<Reward> rewards(2);
 
         JointAction jointaction(state->get_agent_idx().size());
-        Mcts<CrossingState, UctStatistic<>, UctStatistic<>, RandomHeuristic> mcts;
         mcts.search(*state, 5000, 1000);
         jointaction = mcts.returnBestAction();
         std::cout << "Step " << current_step_ << ", Action = " << jointaction << ", " << state->sprintf()
