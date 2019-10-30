@@ -31,20 +31,21 @@ class NodeStatistic_Final_Impl;
 
 // A upper confidence bound implementation
 template<typename IMPL = NodeStatistic_Final_Impl>
-class UctStatistic : public NodeStatistic<UctStatistic<IMPL>>
-    //public std::conditional<std::is_same<IMPL, NodeStatistic_Final_Impl>::value,
-    //NodeStatistic<UctStatistic<>>,
-    //NodeStatistic<IMPL>>::type
-    , public mcts::RandomGenerator {
+class UctStatistic :
+    public std::conditional<std::is_same<IMPL, NodeStatistic_Final_Impl>::value,
+                            NodeStatistic<UctStatistic<>>, NodeStatistic<IMPL>>::type, public mcts::RandomGenerator {
  private:
-  //typedef typename std::conditional<std::is_same<IMPL, NodeStatistic_Final_Impl>::value,UctStatistic<>,UctStatistic<IMPL>>::type this_type;
-  typedef UctStatistic<IMPL> this_type;
+  typedef typename std::conditional<std::is_same<IMPL, NodeStatistic_Final_Impl>::value,
+                                    UctStatistic<>,
+                                    UctStatistic<IMPL>>::type this_type;
+  typedef typename std::conditional<std::is_same<IMPL, NodeStatistic_Final_Impl>::value,
+                                    NodeStatistic<UctStatistic<>>, NodeStatistic<IMPL>>::type parent_type;
 
  public:
   MCTS_TEST
 
   UctStatistic(ActionIdx num_actions, MctsParameters const &mcts_parameters) :
-      NodeStatistic<this_type>(num_actions, mcts_parameters),
+      parent_type(num_actions, mcts_parameters),
       value_(),
       latest_return_(),
       ucb_statistics_([&]() -> ActionUCBMap {
@@ -106,7 +107,7 @@ class UctStatistic : public NodeStatistic<UctStatistic<IMPL>>
         first;
   }
 
-  void update_from_heuristic(const NodeStatistic<this_type> &heuristic_statistic) {
+  void update_from_heuristic(const parent_type &heuristic_statistic) {
     const this_type &heuristic_statistic_impl = heuristic_statistic.impl();
     value_ = heuristic_statistic_impl.value_;
     latest_return_ = value_;
@@ -114,7 +115,7 @@ class UctStatistic : public NodeStatistic<UctStatistic<IMPL>>
     total_node_visits_ += 1;
   }
 
-  void update_statistic(const NodeStatistic<this_type> &changed_child_statistic) {
+  void update_statistic(const parent_type &changed_child_statistic) {
     const this_type &changed_uct_statistic = changed_child_statistic.impl();
 
     //Action Value update step

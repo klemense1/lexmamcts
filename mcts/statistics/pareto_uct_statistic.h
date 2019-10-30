@@ -12,7 +12,7 @@ namespace mcts {
 class ParetoUCTStatistic : public UctStatistic<ParetoUCTStatistic> {
 
  public:
-  using UctStatistic<ParetoUCTStatistic>::UctStatistic;
+  ParetoUCTStatistic(ActionIdx num_actions) : UctStatistic<ParetoUCTStatistic>(num_actions) {};
 
   template<class S>
   ActionIdx choose_next_action(const S &state, std::vector<int> &unexpanded_actions) {
