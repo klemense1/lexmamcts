@@ -19,7 +19,7 @@ class ParetoUCTStatistic : public UctStatistic<ParetoUCTStatistic> {
     if (unexpanded_actions.empty()) {
       // Select an action based on the UCB formula
       std::vector<Eigen::VectorXf> values;
-      calculate_ucb_values(ucb_statistics_, values);
+      calculate_modified_ucb_values(ucb_statistics_, values);
       ParetoSet<ActionIdx, Eigen::VectorXf> pareto_set;
       pareto_set.add(values);
       ActionIdx selected_action = pareto_set.get_random();
@@ -33,8 +33,22 @@ class ParetoUCTStatistic : public UctStatistic<ParetoUCTStatistic> {
       return selected_action;
     }
   }
+
+  void calculate_modified_ucb_values(const ActionUCBMap &ucb_statistics, std::vector<Eigen::VectorXf> &values) const {
+    values.resize(ucb_statistics.size());
+
+    for (size_t idx = 0; idx < ucb_statistics.size(); ++idx) {
+      Eigen::VectorXf
+          action_value_normalized =
+          (ucb_statistics.at(idx).action_value_ - lower_bound).cwiseQuotient(upper_bound - lower_bound);
+      //MCTS_EXPECT_TRUE(action_value_normalized >= 0);
+      //MCTS_EXPECT_TRUE(action_value_normalized <= 1);
+      values[idx] = action_value_normalized.array()
+          + sqrt((4 * log(total_node_visits_) + log(REWARD_DIM)) / (2 * ucb_statistics.at(idx).action_count_));
+    }
+  }
 };
 
-}
+};
 
 #endif //MAMCTS_MCTS_STATISTICS_UCT_STATISTIC_H_PARETOUCT_H_
