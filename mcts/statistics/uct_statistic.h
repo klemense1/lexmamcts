@@ -31,15 +31,15 @@ class UctStatistic :
  private:
   typedef typename std::conditional<std::is_same<IMPL, NodeStatistic_Final_Impl>::value,
                                     UctStatistic<>,
-                                    UctStatistic<IMPL>>::type this_type;
+                                    UctStatistic<IMPL>>::type ThisType;
   typedef typename std::conditional<std::is_same<IMPL, NodeStatistic_Final_Impl>::value,
-                                    NodeStatistic<UctStatistic<>>, NodeStatistic<IMPL>>::type parent_type;
+                                    NodeStatistic<UctStatistic<>>, NodeStatistic<IMPL>>::type ParentType;
 
  public:
   MCTS_TEST
 
   UctStatistic(ActionIdx num_actions, MctsParameters const &mcts_parameters) :
-      parent_type(num_actions, mcts_parameters),
+      ParentType(num_actions, mcts_parameters),
       value_(),
       latest_return_(),
       ucb_statistics_([&]() -> ActionUCBMap {
@@ -96,16 +96,16 @@ class UctStatistic :
     return max->first;
   }
 
-  void update_from_heuristic(const parent_type &heuristic_statistic) {
-    const this_type &heuristic_statistic_impl = heuristic_statistic.impl();
+  void update_from_heuristic(const ParentType &heuristic_statistic) {
+    const ThisType &heuristic_statistic_impl = heuristic_statistic.impl();
     value_ = heuristic_statistic_impl.value_;
     latest_return_ = value_;
     MCTS_EXPECT_TRUE(total_node_visits_ == 0); // This should be the first visit
     total_node_visits_ += 1;
   }
 
-  void update_statistic(const parent_type &changed_child_statistic) {
-    const this_type &changed_uct_statistic = changed_child_statistic.impl();
+  void update_statistic(const ParentType &changed_child_statistic) {
+    const ThisType &changed_uct_statistic = changed_child_statistic.impl();
 
     //Action Value update step
     UcbPair &ucb_pair =
