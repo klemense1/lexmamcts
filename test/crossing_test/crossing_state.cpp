@@ -4,6 +4,9 @@
 // For a copy, see <https://opensource.org/licenses/MIT>.
 // ========================================================
 
+#include <tuple>
+#include <utility>
+
 #include "mcts/mcts.h"
 #include "test/crossing_test/crossing_state.hpp"
 #include "test/crossing_test/viewer.h"
@@ -19,7 +22,7 @@ void CrossingState::draw(mcts::Viewer *viewer) const {
 
     // draw lines equally spaced angles with small points
     // indicating states and larger points indicating the current state
-    const float angle_delta = M_PI / (NUM_OTHER_AGENTS + 2); // one for ego
+  const float angle_delta = M_PI / (NUM_OTHER_AGENTS + 2);  // one for ego
     const float line_radius = state_draw_dst * (CHAIN_LENGTH - 1) / 2.0f;
     for (int i = 0; i < NUM_OTHER_AGENTS + 1; ++i) {
         float start_angle = 1.5 * M_PI - (i + 1) * angle_delta;
@@ -52,14 +55,12 @@ void CrossingState::draw(mcts::Viewer *viewer) const {
                 static_cast<float>(CHAIN_LENGTH - 1);
             float pointsize_temp = state_draw_size * 4;
             if (state.x_pos == y) {
-                //pointsize_temp *= factor_draw_current_state;
                 current_color = color;
             } else {
                 current_color = gray;
             }
             viewer->drawPoint(px, py, pointsize_temp, current_color);
         }
-
     }
 
 }
@@ -76,9 +77,8 @@ Reward CrossingState::get_action_cost(ActionIdx action) {
         default:reward(static_cast<int>(RewardPriority::EFFICIENCY)) = 0.0f;
             break;
     }
-    if(aconv(action) != Actions::FORWARD) {
-      reward(static_cast<int>(RewardPriority::GOAL)) = -1;
-    }
+  reward(static_cast<int>(RewardPriority::GOAL)) =
+      -std::abs(static_cast<int>(aconv(action)) - static_cast<int>(Actions::FORWARD));
     return reward;
 }
 
