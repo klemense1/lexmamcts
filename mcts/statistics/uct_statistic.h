@@ -11,7 +11,6 @@
 #include <iostream>
 #include <iomanip>
 #include <cfloat>
-#include "boost/math/distributions/normal.hpp"
 #include <type_traits>
 
 namespace mcts {
@@ -20,24 +19,8 @@ typedef struct UcbPair {
   UcbPair() : action_count_(0), action_value_(ObjectiveVec::Zero()) {};
   unsigned action_count_;
   ObjectiveVec action_value_;
-  ObjectiveVec m_2_;
 } UcbPair;
 typedef std::map<ActionIdx, UcbPair> ActionUCBMap;
-
-  bool slack_compare(Eigen::VectorXf const &a, Eigen::VectorXf const &b, Eigen::VectorXf const &slack_a,
-                     Eigen::VectorXf const &slack_b) {
-    assert(a.rows() == b.rows() && a.rows() == slack_a.rows() && b.rows() == slack_b.rows());
-    for (auto ai = a.begin(), bi = b.begin(), sai = slack_a.begin(), sbi = slack_b.begin();
-         ai != a.end(); ai++, bi++, sai++, sbi++) {
-      if ((*ai + *sai) < (*bi - *sbi)) {
-        return true;
-      } else if ((*bi + *sbi) < (*ai - *sai)) {
-        return false;
-      }
-    }
-    // Approximate Equal
-    return false;
-  }
 
 class NodeStatistic_Final_Impl;
 
@@ -67,55 +50,54 @@ class UctStatistic :
       }()),
       total_node_visits_(0) {};
 
-    ~UctStatistic() {};
+  ~UctStatistic() {};
 
-    template<class S>
-    ActionIdx choose_next_action(const S &state, std::vector<int> &unexpanded_actions) {
-      if (unexpanded_actions.empty()) {
-        // Select an action based on the UCB formula
-        std::vector<Eigen::VectorXf> values;
-        calculate_ucb_values(ucb_statistics_, values);
-        // find largest index
-        ActionIdx selected_action = std::distance(values.begin(), std::max_element(values.begin(), values.end(),
-                                                                                   [](Eigen::VectorXf &a,
-                                                                                      Eigen::VectorXf &b) -> bool {
-                                                                                       return std::lexicographical_compare(
-                                                                                               a.begin(),
-                                                                                               a.end(),
-                                                                                               b.begin(),
-                                                                                               b.end());
-                                                                                   }));
-        return selected_action;
+  template<class S>
+  ActionIdx choose_next_action(const S &state, std::vector<int> &unexpanded_actions) {
+    if (unexpanded_actions.empty()) {
+      // Select an action based on the UCB formula
+      std::vector<Eigen::VectorXf> values;
+      calculate_ucb_values(ucb_statistics_, values);
+      // find largest index
+      ActionIdx selected_action = std::distance(values.begin(),
+                                                std::max_element(values.begin(),
+                                                                 values.end(),
+                                                                 [](Eigen::VectorXf &a, Eigen::VectorXf &b) -> bool {
+                                                                   return std::lexicographical_compare(a.begin(),
+                                                                                                       a.end(),
+                                                                                                       b.begin(),
+                                                                                                       b.end());
+                                                                 }));
+      return selected_action;
 
-      } else {
-        // Select randomly an unexpanded action
-        std::uniform_int_distribution<ActionIdx> random_action_selection(0, unexpanded_actions.size() - 1);
-        ActionIdx array_idx = random_action_selection(random_generator_);
-        ActionIdx selected_action = unexpanded_actions[array_idx];
-        unexpanded_actions.erase(unexpanded_actions.begin() + array_idx);
-        return selected_action;
-      }
+    } else {
+      // Select randomly an unexpanded action
+      std::uniform_int_distribution<ActionIdx> random_action_selection(0, unexpanded_actions.size() - 1);
+      ActionIdx array_idx = random_action_selection(random_generator_);
+      ActionIdx selected_action = unexpanded_actions[array_idx];
+      unexpanded_actions.erase(unexpanded_actions.begin() + array_idx);
+      return selected_action;
     }
+  }
 
-    ActionIdx get_best_action() {
-      // Lexicographical ordering of the UCT value vectors
-      std::vector<ObjectiveVec> slack;
-      //ObjectiveVec thr = ObjectiveVec::Ones()*FLT_MAX;
-      calculate_slack_values(ucb_statistics_, slack);
-      LOG(INFO) << "Slack: " << slack;
-      auto max = std::max_element(ucb_statistics_.begin(), ucb_statistics_.end(),
-                                  [slack](ActionUCBMap::value_type const &a, ActionUCBMap::value_type const &b) {
-                                      if (a.second.action_count_ == 0) {
-                                        return true;
-                                      } else if (b.second.action_count_ == 0) {
-                                        return false;
-                                      } else {
-                                        return slack_compare(a.second.action_value_, b.second.action_value_, slack[a.first], slack[b.first]);
-                                      }
+  ActionIdx get_best_action() {
+    // Lexicographical ordering of the UCT value vectors
+    auto max = std::max_element(ucb_statistics_.begin(),
+                                ucb_statistics_.end(),
+                                [](ActionUCBMap::value_type const &a, ActionUCBMap::value_type const &b) {
+                                  if (a.second.action_count_ == 0) {
+                                    return true;
+                                  } else if (b.second.action_count_ == 0) {
+                                    return false;
+                                  } else {
+                                    return std::lexicographical_compare(a.second.action_value_.begin(),
+                                                                        a.second.action_value_.end(),
+                                                                        b.second.action_value_.begin(),
+                                                                        b.second.action_value_.end());
                                   }
-      );
-      return max->first;
-    }
+                                });
+    return max->first;
+  }
 
   void update_from_heuristic(const ParentType &heuristic_statistic) {
     const ThisType &heuristic_statistic_impl = heuristic_statistic.impl();
@@ -135,65 +117,46 @@ class UctStatistic :
     latest_return_ =
         this->collected_reward_.second + this->mcts_parameters_.DISCOUNT_FACTOR * changed_uct_statistic.latest_return_;
     ucb_pair.action_count_ += 1;
-    ObjectiveVec delta = latest_return_ - ucb_pair.action_value_;
-
     ucb_pair.action_value_ =
         ucb_pair.action_value_ + (latest_return_ - ucb_pair.action_value_) / ucb_pair.action_count_;
-
-    ObjectiveVec delta2 = latest_return_ - ucb_pair.action_value_;
-    ucb_pair.m_2_ += delta.cwiseProduct(delta2);
     total_node_visits_ += 1;
     value_ = value_ + (latest_return_ - value_) / total_node_visits_;
   }
 
-    void set_heuristic_estimate(const Reward &accum_rewards) {
-      value_ = accum_rewards;
-    }
+  void set_heuristic_estimate(const Reward &accum_rewards) {
+    value_ = accum_rewards;
+  }
 
-  public:
+ public:
 
-    std::string print_node_information() const {
-      std::stringstream ss;
-      ss << std::setprecision(2) << "V=" << value_ << ", N=" << total_node_visits_;
-      return ss.str();
-    }
+  std::string print_node_information() const {
+    std::stringstream ss;
+    ss << std::setprecision(2) << "V=" << value_ << ", N=" << total_node_visits_;
+    return ss.str();
+  }
 
-    std::string print_edge_information(const ActionIdx &action) const {
-      std::stringstream ss;
-      auto action_it = ucb_statistics_.find(action);
-      if (action_it != ucb_statistics_.end()) {
+  std::string print_edge_information(const ActionIdx &action) const {
+    std::stringstream ss;
+    auto action_it = ucb_statistics_.find(action);
+    if (action_it != ucb_statistics_.end()) {
       ss << "a=" << int(action) << ", N=" << action_it->second.action_count_ << ", V="
-         << action_it->second.action_value_.transpose() << ", sigma=" << (action_it->second.m_2_/action_it->second.action_count_).cwiseSqrt().transpose();
-      }
-      return ss.str();
+         << action_it->second.action_value_.transpose();
     }
+    return ss.str();
+  }
 
  protected:
 
-    void calculate_slack_values(const ActionUCBMap &ucb_statistics, std::vector<ObjectiveVec> &values) const {
-      values.resize(ucb_statistics.size());
-      double const ALPHA = 0.05;
-      boost::math::normal dist(0.0, 1.0);
-      double z = quantile(dist, 1-ALPHA/2);
-
-      for (ActionIdx idx = 0; idx < ucb_statistics.size(); ++idx) {
-        UcbPair pair = ucb_statistics.at(idx);
-        ObjectiveVec std_dev = (pair.m_2_/pair.action_count_).cwiseSqrt();
-        // confidence interval radius
-        values[idx] = z*std_dev/sqrt(pair.action_count_);
-      }
-    }
-
-    void calculate_ucb_values(const ActionUCBMap &ucb_statistics, std::vector<Eigen::VectorXf> &values) const {
-      values.resize(ucb_statistics.size());
+  void calculate_ucb_values(const ActionUCBMap &ucb_statistics, std::vector<Eigen::VectorXf> &values) const {
+    values.resize(ucb_statistics.size());
 
     for (size_t idx = 0; idx < ucb_statistics.size(); ++idx) {
       Eigen::VectorXf
           action_value_normalized =
           (ucb_statistics.at(idx).action_value_ - this->mcts_parameters_.uct_statistic.LOWER_BOUND).cwiseQuotient(
               this->mcts_parameters_.uct_statistic.UPPER_BOUND - this->mcts_parameters_.uct_statistic.LOWER_BOUND);
-      //MCTS_EXPECT_TRUE(action_value_normalized >= 0);
-      //MCTS_EXPECT_TRUE(action_value_normalized <= 1);
+      // MCTS_EXPECT_TRUE(action_value_normalized >= 0);
+      // MCTS_EXPECT_TRUE(action_value_normalized <= 1);
       values[idx] = action_value_normalized.array()
           + 2 * this->mcts_parameters_.DISCOUNT_FACTOR
               * sqrt((2 * log(total_node_visits_)) / (ucb_statistics.at(idx).action_count_));
@@ -201,8 +164,8 @@ class UctStatistic :
   }
 
   ObjectiveVec value_;
-  ObjectiveVec latest_return_;   // tracks the return during backpropagation
-  ActionUCBMap ucb_statistics_; // first: action selection count, action-value
+  ObjectiveVec latest_return_;  // tracks the return during backpropagation
+  ActionUCBMap ucb_statistics_;  // first: action selection count, action-value
   unsigned int total_node_visits_;
 
 };
