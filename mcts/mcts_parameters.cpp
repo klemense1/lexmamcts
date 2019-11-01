@@ -20,7 +20,7 @@ MctsParameters make_std_mcts_parameters() {
 
   param.uct_statistic.EXPLORATION_CONSTANT = 1;
   param.uct_statistic.LOWER_BOUND = Eigen::Vector4f(-2000.0f, -1000.0f, -1000.0f, -1000.0f);
-  param.uct_statistic.UPPER_BOUND = Eigen::Vector4f(2000.0f, 0.0f, 0.0f, 0.0f);
+  param.uct_statistic.UPPER_BOUND = Eigen::Vector4f(0.0f, 0.0f, 0.0f, 0.0f);
 
   return param;
 }
