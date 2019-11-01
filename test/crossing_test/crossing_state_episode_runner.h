@@ -22,6 +22,7 @@
 #include "test/crossing_test/evaluator_label_other_near.hpp"
 #include "test/crossing_test/common.hpp"
 #include "mcts/statistics/pareto_uct_statistic.h"
+#include "mcts/statistics/slack_uct_statistic.h"
 
 namespace mcts {
 
@@ -42,15 +43,16 @@ class CrossingTest {
     automata.resize(CrossingState::num_other_agents + 1);
 
     // Finally arrive at goal (Liveness)
-    //automata[0].emplace_back("F goal_reached", -500.f, RewardPriority::GOAL, 500.f);
+    //automata[0].emplace_back("F goal_reached", -500.f, RewardPriority::GOAL, 1.0f);
     // Do not collide with others (Safety)
-    automata[0].emplace_back("G !collision", -100.f, RewardPriority::SAFETY);
+    automata[0].emplace_back("G !collision", -1000.f, RewardPriority::SAFETY);
     // Copy rules to other agents
     for (size_t i = 1; i < automata.size(); ++i) {
       automata[i] = Automata::value_type(automata[0]);
     }
 
     // Rules only for ego
+    //automata[0].emplace_back("G((at_hp_xing & other_near) -> (X at_hp_xing))", -100.0f, RewardPriority::SAFETY);
     // Arrive before others (Guarantee)
     // Currently not possible because ego can't drive faster than others
     //automata.emplace_back("!other_goal_reached U ego_goal_reached", -1000.f, RewardPriority::GOAL);
@@ -64,13 +66,20 @@ class CrossingTest {
     rewards = std::vector<Reward>(1, Reward::Zero());
     jt = JointAction(2, (int) Actions::FORWARD);
   }
+  ~CrossingTest() {
+    LOG(INFO) << "Ego positions:" << pos_history;
+    LOG(INFO) << "Otr positions:" << pos_history_other;
+  }
   MctsParameters const mcts_parameters_;
   std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> label_evaluators;
   Automata automata;
   std::vector<Reward> rewards;
   JointAction jt;
   std::vector<std::size_t> pos_history;
-  Mcts<CrossingState, UctStatistic<>, UctStatistic<>, RandomHeuristic> mcts;
+  std::vector<size_t> pos_history_other;
+  typedef SlackUCTStatistic Stats;
+  //typedef UctStatistic<> Stats;
+  Mcts<CrossingState, Stats, Stats, RandomHeuristic> mcts;
   std::shared_ptr<CrossingState> state;
 };
 
@@ -107,6 +116,6 @@ class CrossingStateEpisodeRunner : public CrossingTest {
   const unsigned int MAX_STEPS;
 };
 
-} // namespace mcts
+}  // namespace mcts
 
 #endif // MCTS_EPISODE_RUNNER_H_
