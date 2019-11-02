@@ -26,24 +26,20 @@
 
 namespace mcts {
 
+template<class Stats = UctStatistic<>>
 class CrossingTest {
  public:
-  CrossingTest() :
-      mcts_parameters_(make_std_mcts_parameters()),
-      mcts(mcts_parameters_) {
+  CrossingTest() : mcts_parameters_(make_std_mcts_parameters()), mcts(mcts_parameters_) {
     // SETUP LABEL EVALUATORS
-    label_evaluators.emplace_back(std::make_shared<EvaluatorLabelCollision>("collision",
-                                                                            CrossingState::crossing_point));
-    label_evaluators.emplace_back(std::make_shared<EvaluatorLabelGoalReached>("goal_reached",
-                                                                              CrossingState::ego_goal_reached_position));
-    label_evaluators.emplace_back(std::make_shared<EvaluatorLabelHoldAtXing>("at_hp_xing",
-                                                                             CrossingState::crossing_point));
+    label_evaluators.emplace_back(std::make_shared<EvaluatorLabelCollision>("collision", CrossingState::crossing_point));
+    label_evaluators.emplace_back(std::make_shared<EvaluatorLabelGoalReached>("goal_reached", CrossingState::ego_goal_reached_position));
+    label_evaluators.emplace_back(std::make_shared<EvaluatorLabelHoldAtXing>("at_hp_xing", CrossingState::crossing_point));
     label_evaluators.emplace_back(std::make_shared<EvaluatorLabelOtherNear>("other_near"));
     // SETUP RULES
     automata.resize(CrossingState::num_other_agents + 1);
 
     // Finally arrive at goal (Liveness)
-    //automata[0].emplace_back("F goal_reached", -500.f, RewardPriority::GOAL, 1.0f);
+    automata[0].emplace_back("F goal_reached", -100.f, RewardPriority::GOAL, 1.0f);
     // Do not collide with others (Safety)
     automata[0].emplace_back("G !collision", -1000.f, RewardPriority::SAFETY);
     // Copy rules to other agents
@@ -52,7 +48,7 @@ class CrossingTest {
     }
 
     // Rules only for ego
-    //automata[0].emplace_back("G((at_hp_xing & other_near) -> (X at_hp_xing))", -100.0f, RewardPriority::SAFETY);
+    automata[0].emplace_back("G((at_hp_xing & other_near) -> (X at_hp_xing))", -100.0f, RewardPriority::SAFETY);
     // Arrive before others (Guarantee)
     // Currently not possible because ego can't drive faster than others
     //automata.emplace_back("!other_goal_reached U ego_goal_reached", -1000.f, RewardPriority::GOAL);
@@ -63,7 +59,7 @@ class CrossingTest {
       }
     }
     state = std::make_shared<CrossingState>(automata, label_evaluators);
-    rewards = std::vector<Reward>(1, Reward::Zero());
+    rewards = std::vector<Reward>(state->get_agent_idx().size(), Reward::Zero());
     jt = JointAction(2, (int) Actions::FORWARD);
   }
   ~CrossingTest() {
@@ -77,36 +73,32 @@ class CrossingTest {
   JointAction jt;
   std::vector<std::size_t> pos_history;
   std::vector<size_t> pos_history_other;
-  typedef SlackUCTStatistic Stats;
-  //typedef UctStatistic<> Stats;
   Mcts<CrossingState, Stats, Stats, RandomHeuristic> mcts;
   std::shared_ptr<CrossingState> state;
 };
 
-class CrossingStateEpisodeRunner : public CrossingTest {
+class CrossingStateEpisodeRunner : public CrossingTest<UctStatistic<>> {
  public:
-  CrossingStateEpisodeRunner(const unsigned int max_steps, Viewer *viewer) :
-      viewer_(viewer),
-      current_step_(0),
-      MAX_STEPS(max_steps) {};
+  CrossingStateEpisodeRunner(const unsigned int max_steps, Viewer *viewer)
+      : viewer_(viewer), current_step_(0), MAX_STEPS(max_steps) {};
 
   void step() {
-    if (state->is_terminal() || current_step_ > MAX_STEPS) {
+    if (this->state->is_terminal() || current_step_ > MAX_STEPS) {
       return;
     }
     std::vector<Reward> rewards(2);
 
-        JointAction jointaction(state->get_agent_idx().size());
-        mcts.search(*state, 5000, 1000);
-        jointaction = mcts.returnBestAction();
-        std::cout << "Step " << current_step_ << ", Action = " << jointaction << ", " << state->sprintf()
-                  << std::endl;
-        state = state->execute(jointaction, rewards);
+    JointAction jointaction(this->state->get_agent_idx().size());
+    this->mcts.search(*(this->state), 5000, 1000);
+    jointaction = this->mcts.returnBestAction();
+    std::cout << "Step " << current_step_ << ", Action = " << jointaction << ", " << this->state->sprintf()
+              << std::endl;
+    this->state = this->state->execute(jointaction, rewards);
 
     current_step_ += 1;
 
     if (viewer_) {
-      state->draw(viewer_);
+      this->state->draw(viewer_);
     }
   }
 

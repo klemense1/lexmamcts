@@ -20,43 +20,17 @@
 #include "test/crossing_test/evaluator_label_other_near.hpp"
 #include "test/crossing_test/crossing_state_episode_runner.h"
 #include "test/crossing_test/evaluator_label_speed.hpp"
+#include "test/crossing_test/tests/common.h"
 
-class CrossingTestF : protected CrossingTest, public ::testing::Test {
+class CrossingTestF : public CrossingTest<>, public ::testing::Test {
  public:
-  CrossingTestF() : CrossingTest() {};
+  CrossingTestF() : CrossingTest<>() {};
 };
-
-std::vector<Reward> get_optimal_reward(std::shared_ptr<CrossingState> state) {
-  JointAction jt(state->get_agent_idx().size(), aconv(Actions::FORWARD));
-  std::vector<Reward> rewards(state->get_agent_idx().size(), Reward::Zero());
-  std::vector<Reward> accu_reward(state->get_agent_idx().size(), Reward::Zero());
-
-  jt[state->ego_agent_idx] = aconv(Actions::WAIT);
-  for (int i = 0; i < 2; ++i) {
-    state = state->execute(jt, rewards);
-    accu_reward += rewards;
-    LOG(INFO) << state->sprintf();
-  }
-
-  jt[state->ego_agent_idx] = aconv(Actions::FORWARD);
-  for (; !state->is_terminal(); state = state->execute(jt, rewards)) {
-    LOG(INFO) << state->sprintf();
-    accu_reward += rewards;
-  }
-
-  accu_reward += state->get_final_reward();
-  LOG(INFO) << "Optimal rewards:";
-  LOG(INFO) << "Ego:" << accu_reward.at(0).transpose();
-  for (size_t otr_idx = 1; otr_idx < state->num_other_agents + 1; ++otr_idx) {
-    LOG(INFO) << "Agent " << otr_idx << ":" << accu_reward.at(otr_idx).transpose();
-  }
-  return accu_reward;
-}
 
 TEST_F(CrossingTestF, general) {
   const int MAX_STEPS = 40;
   int steps = 0;
-  std::vector<Reward> optimal_reward = get_optimal_reward(state->clone());
+  std::vector<Reward> optimal_reward = get_optimal_reward(state);
   std::vector<Reward> accu_reward(state->get_agent_idx().size(), Reward::Zero());
   pos_history.emplace_back(state->get_ego_pos());
   pos_history_other.emplace_back(state->get_agent_states()[1].x_pos);
