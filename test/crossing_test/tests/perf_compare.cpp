@@ -4,11 +4,16 @@
 //
 
 #include <vector>
+#include <iostream>
+#include <fstream>
 
 #include "test/crossing_test/crossing_state_episode_runner.h"
 #include "test/crossing_test/tests/common.h"
 
 using std::vector;
+using std::ostream;
+using std::ofstream;
+using std::stringstream;
 using Eigen::MatrixXf;
 
 template<class T>
@@ -28,6 +33,7 @@ void run_test(T &test_f, size_t num_iter) {
     test_f.pos_history_other.emplace_back(test_f.state->get_agent_states()[1].x_pos);
     ++steps;
   }
+  test_f.rewards += test_f.state->get_final_reward();
 }
 
 MatrixXf rewards_to_mat(vector<Reward> const &rewards) {
@@ -39,7 +45,14 @@ MatrixXf rewards_to_mat(vector<Reward> const &rewards) {
 }
 
 void compare_result(vector<Reward> const &optimal, vector<Reward> const &candidate) {
-  LOG(WARNING) << (rewards_to_mat(optimal) - rewards_to_mat(candidate)).cwiseAbs();
+  LOG(WARNING) << (rewards_to_mat(optimal) - rewards_to_mat(candidate)).rowwise().sum().norm();
+}
+
+void write_plot_output(ostream &os, vector<Reward> const &rewards) {
+  //Eigen::IOFormat gnuplot(Eigen::FullPrecision, 0, "\t", "", "", "","","\t");
+  //os << v.transpose().format(gnuplot);
+  auto v = rewards_to_mat(rewards).rowwise().sum();
+  os << v(0) << "\t" << v(1) << "\t";
 }
 
 int main(int argc, char **argv) {
@@ -48,6 +61,10 @@ int main(int argc, char **argv) {
   FLAGS_alsologtostderr = 1;
   CrossingTest<UctStatistic<>> optimal;
   size_t num_agents = 2;
+
+  ofstream ofs;
+  ofs.open("/tmp/policy_comp.dat");
+  ofs << "# Iterations\tUCT x\ty\tParetoUCT x\ty\tSlack x\ty\n";
 
   vector<Reward> opti_reward(num_agents, Reward::Zero());
   opti_reward = get_optimal_reward(optimal.state);
@@ -62,7 +79,13 @@ int main(int argc, char **argv) {
     run_test(pareto, num_iter[i]);
     run_test(slack, num_iter[i]);
 
-    LOG(WARNING) << "Absolute Errors:";
+    ofs << num_iter[i] << "\t";
+    write_plot_output(ofs, uct.rewards);
+    write_plot_output(ofs, pareto.rewards);
+    write_plot_output(ofs, slack.rewards);
+    ofs << "\n";
+
+    LOG(WARNING) << "L2 Norm:";
 
     LOG(WARNING) << "Optimal vs UCT:";
     compare_result(opti_reward, uct.rewards);
@@ -73,6 +96,7 @@ int main(int argc, char **argv) {
     LOG(WARNING) << "Optimal vs Pareto:";
     compare_result(opti_reward, pareto.rewards);
   }
+  ofs.close();
   return 0;
 }
 
