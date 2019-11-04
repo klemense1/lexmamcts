@@ -5,9 +5,8 @@
 
 #include <vector>
 #include <iostream>
-#include <fstream>
 
-#include "test/crossing_test/crossing_state_episode_runner.h"
+#include "test/crossing_test/tests/crossing_test.h"
 #include "test/crossing_test/tests/common.h"
 
 using std::vector;
@@ -15,6 +14,7 @@ using std::ostream;
 using std::ofstream;
 using std::stringstream;
 using Eigen::MatrixXf;
+using Eigen::ArrayXi;
 
 template<class T>
 void run_test(T &test_f, size_t num_iter) {
@@ -44,57 +44,54 @@ MatrixXf rewards_to_mat(vector<Reward> const &rewards) {
   return mat;
 }
 
-void compare_result(vector<Reward> const &optimal, vector<Reward> const &candidate) {
-  LOG(WARNING) << (rewards_to_mat(optimal) - rewards_to_mat(candidate)).rowwise().sum().norm();
+double calculate_regret(vector<Reward> const &candidate, vector<Reward> const &optimal) {
+   return (rewards_to_mat(optimal) - rewards_to_mat(candidate)).rowwise().sum().norm();
 }
 
-void write_plot_output(ostream &os, vector<Reward> const &rewards) {
-  //Eigen::IOFormat gnuplot(Eigen::FullPrecision, 0, "\t", "", "", "","","\t");
-  //os << v.transpose().format(gnuplot);
-  auto v = rewards_to_mat(rewards).rowwise().sum();
-  os << v(0) << "\t" << v(1) << "\t";
+void write_plot_output(ostream &os, vector<Reward> const &candidate, vector<Reward> const &optimal) {
+  os << calculate_regret(candidate, optimal) << "\t";
 }
 
 int main(int argc, char **argv) {
   google::InitGoogleLogging(argv[0]);
-  FLAGS_log_dir = "/tmp/log";
-  FLAGS_alsologtostderr = 1;
+  FLAGS_minloglevel = 1;
+  FLAGS_logtostderr = 1;
   CrossingTest<UctStatistic<>> optimal;
   size_t num_agents = 2;
 
   ofstream ofs;
-  ofs.open("/tmp/policy_comp.dat");
-  ofs << "# Iterations\tUCT x\ty\tParetoUCT x\ty\tSlack x\ty\n";
+  ofs.open("/tmp/policy_comp.dat", std::ios::out | std::ios::app);
+  ofs << "# Iterations\tUCT\tParetoUCT\tSlack\n";
 
   vector<Reward> opti_reward(num_agents, Reward::Zero());
   opti_reward = get_optimal_reward(optimal.state);
 
-  vector<size_t> const num_iter = {10, 100, 1000, 5000, 10000};
-  for (size_t i = 0; i < num_iter.size(); ++i) {
+  ArrayXi num_iters = ArrayXi::LinSpaced(50,10,1000);
+  for(int i : num_iters){
     CrossingTest<UctStatistic<>> uct;
     CrossingTest<ParetoUCTStatistic> pareto;
     CrossingTest<SlackUCTStatistic> slack;
 
-    run_test(uct, num_iter[i]);
-    run_test(pareto, num_iter[i]);
-    run_test(slack, num_iter[i]);
+    run_test(uct, i);
+    run_test(pareto, i);
+    run_test(slack, i);
 
-    ofs << num_iter[i] << "\t";
-    write_plot_output(ofs, uct.rewards);
-    write_plot_output(ofs, pareto.rewards);
-    write_plot_output(ofs, slack.rewards);
+    ofs << i << "\t";
+    write_plot_output(ofs, uct.rewards, opti_reward);
+    write_plot_output(ofs, pareto.rewards, opti_reward);
+    write_plot_output(ofs, slack.rewards, opti_reward);
     ofs << "\n";
 
     LOG(WARNING) << "L2 Norm:";
 
     LOG(WARNING) << "Optimal vs UCT:";
-    compare_result(opti_reward, uct.rewards);
+    LOG(WARNING) << calculate_regret(uct.rewards, opti_reward);
 
     LOG(WARNING) << "Optimal vs Slack:";
-    compare_result(opti_reward, slack.rewards);
+    LOG(WARNING) << calculate_regret(slack.rewards, opti_reward);
 
     LOG(WARNING) << "Optimal vs Pareto:";
-    compare_result(opti_reward, pareto.rewards);
+    LOG(WARNING) << calculate_regret(pareto.rewards, opti_reward);
   }
   ofs.close();
   return 0;
