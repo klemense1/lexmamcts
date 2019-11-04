@@ -10,11 +10,11 @@
 
 #include "external/com_github_google_glog/_virtual_includes/glog/glog/logging.h"
 
-#include "test/crossing_test/tests/crossing_test.h"
+#include "test/crossing_test/tests/crossing_test_env.h"
 
 namespace mcts {
 
-class CrossingStateEpisodeRunner : public CrossingTest<UctStatistic<>> {
+class CrossingStateEpisodeRunner : public CrossingTestEnv<UctStatistic<>> {
  public:
   CrossingStateEpisodeRunner(const unsigned int max_steps, Viewer *viewer)
       : viewer_(viewer), current_step_(0), MAX_STEPS(max_steps) {};

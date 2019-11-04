@@ -3,8 +3,8 @@
 // Copyright (c) 2019 Luis Gressenbuch. All rights reserved.
 //
 
-#ifndef MAMCTS_TEST_CROSSING_TEST_CROSSING_TEST_H_
-#define MAMCTS_TEST_CROSSING_TEST_CROSSING_TEST_H_
+#ifndef MAMCTS_TEST_CROSSING_TEST_CROSSING_TEST_ENV_H_
+#define MAMCTS_TEST_CROSSING_TEST_CROSSING_TEST_ENV_H_
 
 #include "mcts/mcts.h"
 #include "mcts/statistics/uct_statistic.h"
@@ -23,9 +23,9 @@
 namespace mcts {
 
 template<class Stats = UctStatistic<>>
-class CrossingTest {
+class CrossingTestEnv {
  public:
-  CrossingTest() : mcts_parameters_(make_std_mcts_parameters()), mcts(mcts_parameters_) {
+  CrossingTestEnv() : mcts_parameters_(make_std_mcts_parameters()), mcts(mcts_parameters_) {
     // SETUP LABEL EVALUATORS
     label_evaluators.emplace_back(std::make_shared<EvaluatorLabelCollision>("collision",
                                                                             CrossingState::crossing_point));
@@ -61,7 +61,7 @@ class CrossingTest {
     rewards = std::vector<Reward>(state->get_agent_idx().size(), Reward::Zero());
     jt = JointAction(2, (int) Actions::FORWARD);
   }
-  ~CrossingTest() {
+  ~CrossingTestEnv() {
     LOG(INFO) << "Ego positions:" << pos_history;
     LOG(INFO) << "Otr positions:" << pos_history_other;
   }
@@ -78,4 +78,4 @@ class CrossingTest {
 
 }
 
-#endif //MAMCTS_TEST_CROSSING_TEST_CROSSING_TEST_H_
+#endif  // MAMCTS_TEST_CROSSING_TEST_CROSSING_TEST_ENV_H_

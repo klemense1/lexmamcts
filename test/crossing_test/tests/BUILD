@@ -4,7 +4,7 @@ cc_library(
     hdrs = [
         "common.h",
         "crossing_state_episode_runner.h",
-        "crossing_test.h",
+        "crossing_test_env.h",
     ],
     visibility = ["//visibility:public"],
     deps = [

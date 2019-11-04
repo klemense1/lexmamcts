@@ -6,7 +6,7 @@
 #include <vector>
 #include <iostream>
 
-#include "test/crossing_test/tests/crossing_test.h"
+#include "test/crossing_test/tests/crossing_test_env.h"
 #include "test/crossing_test/tests/common.h"
 
 using std::vector;
@@ -56,7 +56,7 @@ int main(int argc, char **argv) {
   google::InitGoogleLogging(argv[0]);
   FLAGS_minloglevel = 1;
   FLAGS_logtostderr = 1;
-  CrossingTest<UctStatistic<>> optimal;
+  CrossingTestEnv<UctStatistic<>> optimal;
   size_t num_agents = 2;
 
   ofstream ofs;
@@ -68,9 +68,9 @@ int main(int argc, char **argv) {
 
   ArrayXi num_iters = ArrayXi::LinSpaced(50,10,1000);
   for(int i : num_iters){
-    CrossingTest<UctStatistic<>> uct;
-    CrossingTest<ParetoUCTStatistic> pareto;
-    CrossingTest<SlackUCTStatistic> slack;
+    CrossingTestEnv<UctStatistic<>> uct;
+    CrossingTestEnv<ParetoUCTStatistic> pareto;
+    CrossingTestEnv<SlackUCTStatistic> slack;
 
     run_test(uct, i);
     run_test(pareto, i);

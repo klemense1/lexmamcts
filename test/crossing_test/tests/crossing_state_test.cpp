@@ -12,13 +12,13 @@
 #include "mcts/random_generator.h"
 
 #include "test/crossing_test/crossing_state.hpp"
-#include "test/crossing_test/tests/crossing_test.h"
+#include "test/crossing_test/tests/crossing_test_env.h"
 #include "test/crossing_test/evaluator_label_speed.hpp"
 #include "test/crossing_test/tests/common.h"
 
-class CrossingTestF : public CrossingTest<>, public ::testing::Test {
+class CrossingTestF : public CrossingTestEnv<>, public ::testing::Test {
  public:
-  CrossingTestF() : CrossingTest<>() {};
+  CrossingTestF() : CrossingTestEnv<>() {};
 };
 
 TEST_F(CrossingTestF, general) {
