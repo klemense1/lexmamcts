@@ -6,6 +6,7 @@ cc_library(
         "crossing_state_episode_runner.h",
         "crossing_test.h",
     ],
+    visibility = ["//visibility:public"],
     deps = [
         "//mcts",
         "//test/crossing_test:crossing_state",
@@ -54,9 +55,9 @@ cc_binary(
 )
 
 cc_binary(
-    name = "perf_compare",
+    name = "policy_compare",
     srcs = [
-        "perf_compare.cpp",
+        "policy_compare.cpp",
     ],
     deps = [
         ":util",
