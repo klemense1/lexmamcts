@@ -9,16 +9,10 @@
 #include "gtest/gtest.h"
 #include "test/crossing_test/common.hpp"
 #include "mcts/mcts.h"
-#include "mcts/statistics/uct_statistic.h"
-#include "mcts/heuristics/random_heuristic.h"
 #include "mcts/random_generator.h"
 
 #include "test/crossing_test/crossing_state.hpp"
-#include "test/crossing_test/evaluator_label_collision.hpp"
-#include "test/crossing_test/evaluator_label_goal_reached.hpp"
-#include "test/crossing_test/evaluator_label_hold_at_xing.hpp"
-#include "test/crossing_test/evaluator_label_other_near.hpp"
-#include "test/crossing_test/crossing_state_episode_runner.h"
+#include "test/crossing_test/crossing_test.h"
 #include "test/crossing_test/evaluator_label_speed.hpp"
 #include "test/crossing_test/tests/common.h"
 

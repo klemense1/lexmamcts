@@ -8,6 +8,7 @@ cc_library(
         "common.hpp",
         "crossing_state.hpp",
         "crossing_state_episode_runner.h",
+        "crossing_test.h",
         "evaluator_label_base.hpp",
         "evaluator_label_collision.hpp",
         "evaluator_label_goal_reached.hpp",
