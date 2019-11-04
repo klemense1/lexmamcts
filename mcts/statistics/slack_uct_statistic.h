@@ -30,10 +30,8 @@ bool slack_compare(Eigen::VectorXf const &a,
     }
   }
   // Approximate Equal
-  // Fall back to find lowest priority goal that is truly less
-  auto a_r = a.reverse();
-  auto b_r = b.reverse();
-  return std::lexicographical_compare(a_r.begin(), a_r.end(), b_r.begin(), b_r.end());
+  // Fall back to lexicographic ordering
+  return std::lexicographical_compare(a.begin(), a.end(), b.begin(), b.end());
 }
 
 class SlackUCTStatistic : public UctStatistic<SlackUCTStatistic> {
@@ -48,7 +46,7 @@ class SlackUCTStatistic : public UctStatistic<SlackUCTStatistic> {
     // Lexicographical ordering of the UCT value vectors
     std::vector<ObjectiveVec> slack;
     calculate_slack_values(ucb_statistics_, slack);
-    LOG(INFO) << "Slack: " << slack;
+    VLOG(1) << "Slack: " << slack;
     auto max = std::max_element(ucb_statistics_.begin(),
                                 ucb_statistics_.end(),
                                 [slack](ActionUCBMap::value_type const &a, ActionUCBMap::value_type const &b) {
