@@ -1,3 +1,19 @@
+cc_library(
+    name = "util",
+    srcs = ["common.cpp"],
+    hdrs = [
+        "common.h",
+        "crossing_state_episode_runner.h",
+        "crossing_test.h",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//mcts",
+        "//test/crossing_test:crossing_state",
+        "@com_github_google_glog//:glog",
+    ],
+)
+
 py_test(
     name = "py_crossing_state_test",
     srcs = ["py_crossing_state_test.py"],
@@ -34,6 +50,20 @@ cc_binary(
         "//test/crossing_test:crossing_state",
         "@com_github_google_glog//:glog",
         "@gtest//:main",
+        "@spot",
+    ],
+)
+
+cc_binary(
+    name = "policy_compare",
+    srcs = [
+        "policy_compare.cpp",
+    ],
+    deps = [
+        ":util",
+        "//mcts",
+        "//test/crossing_test:crossing_state",
+        "@com_github_google_glog//:glog",
         "@spot",
     ],
 )

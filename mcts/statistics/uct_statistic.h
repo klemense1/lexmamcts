@@ -10,6 +10,7 @@
 #include "mcts/mcts.h"
 #include <iostream>
 #include <iomanip>
+#include <cfloat>
 #include <type_traits>
 
 namespace mcts {
@@ -58,14 +59,15 @@ class UctStatistic :
       std::vector<Eigen::VectorXf> values;
       calculate_ucb_values(ucb_statistics_, values);
       // find largest index
-      ActionIdx selected_action = std::distance(values.begin(), std::max_element(values.begin(), values.end(),
-                                                                                 [](Eigen::VectorXf &a,
-                                                                                    Eigen::VectorXf &b) -> bool {
-                                                                                   return std::lexicographical_compare(a.begin(),
-                                                                                                                       a.end(),
-                                                                                                                       b.begin(),
-                                                                                                                       b.end());
-                                                                                 }));
+      ActionIdx selected_action = std::distance(values.begin(),
+                                                std::max_element(values.begin(),
+                                                                 values.end(),
+                                                                 [](Eigen::VectorXf &a, Eigen::VectorXf &b) -> bool {
+                                                                   return std::lexicographical_compare(a.begin(),
+                                                                                                       a.end(),
+                                                                                                       b.begin(),
+                                                                                                       b.end());
+                                                                 }));
       return selected_action;
     } else {
       // Select randomly an unexpanded action
@@ -79,8 +81,9 @@ class UctStatistic :
 
   ActionIdx get_best_action() {
     // Lexicographical ordering of the UCT value vectors
-    auto max = std::max_element(ucb_statistics_.begin(), ucb_statistics_.end(),
-                                [](ActionUCBMap::value_type &a, ActionUCBMap::value_type &b) -> bool {
+    auto max = std::max_element(ucb_statistics_.begin(),
+                                ucb_statistics_.end(),
+                                [](ActionUCBMap::value_type const &a, ActionUCBMap::value_type const &b) {
                                   if (a.second.action_count_ == 0) {
                                     return true;
                                   } else if (b.second.action_count_ == 0) {
@@ -91,8 +94,7 @@ class UctStatistic :
                                                                         b.second.action_value_.begin(),
                                                                         b.second.action_value_.end());
                                   }
-                                }
-    );
+                                });
     return max->first;
   }
 
@@ -116,7 +118,6 @@ class UctStatistic :
     ucb_pair.action_count_ += 1;
     ucb_pair.action_value_ =
         ucb_pair.action_value_ + (latest_return_ - ucb_pair.action_value_) / ucb_pair.action_count_;
-
     total_node_visits_ += 1;
     value_ = value_ + (latest_return_ - value_) / total_node_visits_;
   }
@@ -153,8 +154,8 @@ class UctStatistic :
           action_value_normalized =
           (ucb_statistics.at(idx).action_value_ - this->mcts_parameters_.uct_statistic.LOWER_BOUND).cwiseQuotient(
               this->mcts_parameters_.uct_statistic.UPPER_BOUND - this->mcts_parameters_.uct_statistic.LOWER_BOUND);
-      //MCTS_EXPECT_TRUE(action_value_normalized >= 0);
-      //MCTS_EXPECT_TRUE(action_value_normalized <= 1);
+      // MCTS_EXPECT_TRUE(action_value_normalized >= 0);
+      // MCTS_EXPECT_TRUE(action_value_normalized <= 1);
       values[idx] = action_value_normalized.array()
           + 2 * this->mcts_parameters_.DISCOUNT_FACTOR
               * sqrt((2 * log(total_node_visits_)) / (ucb_statistics.at(idx).action_count_));
@@ -162,8 +163,8 @@ class UctStatistic :
   }
 
   ObjectiveVec value_;
-  ObjectiveVec latest_return_;   // tracks the return during backpropagation
-  ActionUCBMap ucb_statistics_; // first: action selection count, action-value
+  ObjectiveVec latest_return_;  // tracks the return during backpropagation
+  ActionUCBMap ucb_statistics_;  // first: action selection count, action-value
   unsigned int total_node_visits_;
 
 };

@@ -252,13 +252,13 @@ JointAction StageNode<S, SE, SO, H>::get_best_action() {
     best[i] = int_node.get_best_action();
     ++i;
   }
-  LOG(INFO) << "Ego:" << std::endl;
+  VLOG(1) << "Ego:" << std::endl;
   for (int i = 0; i < 3; i++) {
-    LOG(INFO) << ego_int_node_.print_edge_information(i) << std::endl;
+    VLOG(1) << ego_int_node_.print_edge_information(i) << std::endl;
   }
-  LOG(INFO) << "Other:" << std::endl;
+  VLOG(1) << "Other:" << std::endl;
   for (int i = 0; i < 3; i++) {
-    LOG(INFO) << other_int_nodes_[0].print_edge_information(i) << std::endl;
+    VLOG(1) << other_int_nodes_[0].print_edge_information(i) << std::endl;
   }
   return best;
 }
