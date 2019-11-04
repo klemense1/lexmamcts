@@ -1,7 +1,11 @@
 cc_library(
     name = "util",
     srcs = ["common.cpp"],
-    hdrs = ["common.h"],
+    hdrs = [
+        "common.h",
+        "crossing_state_episode_runner.h",
+        "crossing_test.h",
+    ],
     deps = [
         "//mcts",
         "//test/crossing_test:crossing_state",

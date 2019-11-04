@@ -8,9 +8,9 @@
 #ifndef MCTS_EPISODE_RUNNER_H_
 #define MCTS_EPISODE_RUNNER_H_
 
-#include "glog/logging.h"
+#include "external/com_github_google_glog/_virtual_includes/glog/glog/logging.h"
 
-#include "test/crossing_test/crossing_test.h"
+#include "test/crossing_test/tests/crossing_test.h"
 
 namespace mcts {
 

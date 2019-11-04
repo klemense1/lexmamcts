@@ -7,7 +7,7 @@
 #include "python/bindings/define_environments.hpp"
 #include "mcts/mcts.h"
 #include "test/crossing_test/crossing_state.hpp"
-#include "test/crossing_test/crossing_state_episode_runner.h"
+#include "test/crossing_test/tests/crossing_state_episode_runner.h"
 
 namespace py = pybind11;
 using namespace mcts;

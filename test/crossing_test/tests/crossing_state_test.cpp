@@ -12,7 +12,7 @@
 #include "mcts/random_generator.h"
 
 #include "test/crossing_test/crossing_state.hpp"
-#include "test/crossing_test/crossing_test.h"
+#include "test/crossing_test/tests/crossing_test.h"
 #include "test/crossing_test/evaluator_label_speed.hpp"
 #include "test/crossing_test/tests/common.h"
 
