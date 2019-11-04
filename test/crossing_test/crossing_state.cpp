@@ -66,17 +66,17 @@ void CrossingState::draw(mcts::Viewer *viewer) const {
 }
 Reward CrossingState::get_action_cost(ActionIdx action) {
     Reward reward = Reward::Zero();
-    reward(static_cast<int>(RewardPriority::TIME)) += -1.0f;
-    switch (aconv(action)) {
-        case Actions::FORWARD :reward(static_cast<int>(RewardPriority::EFFICIENCY)) = -1.0f;
-            break;
-        case Actions::WAIT:reward(static_cast<int>(RewardPriority::EFFICIENCY)) = 0.0f;
-            break;
-        case Actions::FASTFORWARD:reward(static_cast<int>(RewardPriority::EFFICIENCY)) = -2.0f;
-            break;
-        default:reward(static_cast<int>(RewardPriority::EFFICIENCY)) = 0.0f;
-            break;
-    }
+  /*reward(static_cast<int>(RewardPriority::TIME)) += -1.0f;
+  switch (aconv(action)) {
+      case Actions::FORWARD :reward(static_cast<int>(RewardPriority::EFFICIENCY)) = -1.0f;
+          break;
+      case Actions::WAIT:reward(static_cast<int>(RewardPriority::EFFICIENCY)) = 0.0f;
+          break;
+      case Actions::FASTFORWARD:reward(static_cast<int>(RewardPriority::EFFICIENCY)) = -2.0f;
+          break;
+      default:reward(static_cast<int>(RewardPriority::EFFICIENCY)) = 0.0f;
+          break;
+  }*/
   reward(static_cast<int>(RewardPriority::GOAL)) =
       -std::abs(static_cast<int>(aconv(action)) - static_cast<int>(Actions::FORWARD));
     return reward;

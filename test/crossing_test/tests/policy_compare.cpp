@@ -57,41 +57,64 @@ int main(int argc, char **argv) {
   FLAGS_minloglevel = 1;
   FLAGS_logtostderr = 1;
   CrossingTestEnv<UctStatistic<>> optimal;
-  size_t num_agents = 2;
+  size_t const num_agents = 2;
+  int const n = 30;
 
   ofstream ofs;
-  ofs.open("/tmp/policy_comp.dat", std::ios::out | std::ios::app);
+  ofs.open("/tmp/policy_comp.dat");
   ofs << "# Iterations\tUCT\tParetoUCT\tSlack\n";
 
   vector<Reward> opti_reward(num_agents, Reward::Zero());
   opti_reward = get_optimal_reward(optimal.state);
 
-  ArrayXi num_iters = ArrayXi::LinSpaced(50,10,1000);
-  for(int i : num_iters){
-    CrossingTestEnv<UctStatistic<>> uct;
-    CrossingTestEnv<ParetoUCTStatistic> pareto;
-    CrossingTestEnv<SlackUCTStatistic> slack;
-
-    run_test(uct, i);
-    run_test(pareto, i);
-    run_test(slack, i);
+  ArrayXi sample_sizes = ArrayXi::LinSpaced(50, 10, 1000);
+  int step = 0;
+  for (int i : sample_sizes) {
+    LOG(WARNING) << "Sample size: " << i << "  [ " << step << " / " << sample_sizes.size() << " ]";
+    vector<Reward> uct_avg(num_agents, Reward::Zero());
+    vector<Reward> pareto_avg(num_agents, Reward::Zero());
+    vector<Reward> slack_avg(num_agents, Reward::Zero());
+    for (int j = 0; j < n; ++j) {
+      CrossingTestEnv<UctStatistic<>> uct;
+      CrossingTestEnv<ParetoUCTStatistic> pareto;
+      CrossingTestEnv<SlackUCTStatistic> slack;
+      run_test(uct, i);
+      run_test(pareto, i);
+      run_test(slack, i);
+      uct_avg += uct.rewards;
+      pareto_avg += pareto.rewards;
+      slack_avg += slack.rewards;
+    }
+    std::transform(uct_avg.begin(),
+                   uct_avg.end(),
+                   uct_avg.begin(),
+                   [n](Reward const &r) { return r / static_cast<float>(n); });
+    std::transform(pareto_avg.begin(),
+                   pareto_avg.end(),
+                   pareto_avg.begin(),
+                   [n](Reward const &r) { return r / static_cast<float>(n); });
+    std::transform(slack_avg.begin(),
+                   slack_avg.end(),
+                   slack_avg.begin(),
+                   [n](Reward const &r) { return r / static_cast<float>(n); });
 
     ofs << i << "\t";
-    write_plot_output(ofs, uct.rewards, opti_reward);
-    write_plot_output(ofs, pareto.rewards, opti_reward);
-    write_plot_output(ofs, slack.rewards, opti_reward);
+    write_plot_output(ofs, uct_avg, opti_reward);
+    write_plot_output(ofs, pareto_avg, opti_reward);
+    write_plot_output(ofs, slack_avg, opti_reward);
     ofs << "\n";
 
     LOG(WARNING) << "L2 Norm:";
 
     LOG(WARNING) << "Optimal vs UCT:";
-    LOG(WARNING) << calculate_regret(uct.rewards, opti_reward);
+    LOG(WARNING) << calculate_regret(uct_avg, opti_reward);
 
     LOG(WARNING) << "Optimal vs Slack:";
-    LOG(WARNING) << calculate_regret(slack.rewards, opti_reward);
+    LOG(WARNING) << calculate_regret(slack_avg, opti_reward);
 
     LOG(WARNING) << "Optimal vs Pareto:";
-    LOG(WARNING) << calculate_regret(pareto.rewards, opti_reward);
+    LOG(WARNING) << calculate_regret(pareto_avg, opti_reward);
+    ++step;
   }
   ofs.close();
   return 0;
