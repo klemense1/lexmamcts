@@ -7,11 +7,9 @@
 #define PLAN_DEBUG_INFO
 
 #include "gtest/gtest.h"
-#include "test/mo_deep_sea_state.hpp"
+#include "test/mo_deep_sea/mo_deep_sea_state.hpp"
 
-std::mt19937  mcts::RandomGenerator::random_generator_;
-
-class SeaMapTest : public ::testing::Test {
+class DeepSeaTest : public ::testing::Test {
  protected:
   void SetUp() override {
     sea_map_.emplace_back(MODSMapElement{1, 1.0f});
@@ -25,14 +23,15 @@ class SeaMapTest : public ::testing::Test {
     sea_map_.emplace_back(MODSMapElement{8, 74.0f});
     sea_map_.emplace_back(MODSMapElement{10, 124.0f});
     init_pos << 0, 0;
-    MctsParameters::DISCOUNT_FACTOR = 1.0;
-    //MctsParameters::LOWER_BOUND = 1.0;
-    //MctsParameters::UPPER_BOUND = 124.0;
+    mcts_parameters_ = make_std_mcts_parameters();
+    mcts_parameters_.uct_statistic.LOWER_BOUND << 0.0f, -100.0f, 0.0f, 0.0f;
+    mcts_parameters_.uct_statistic.UPPER_BOUND << 124.0f, 0.0f, 0.0f, 0.0f;
   }
 
   // void TearDown() override {}
   SeaMap sea_map_;
   Eigen::Vector2i init_pos;
+  MctsParameters mcts_parameters_;
 };
 
 void print_solution(std::vector<Eigen::Vector2i> &pos_history, SeaMap &sea_map) {
@@ -66,7 +65,8 @@ void print_solution(std::vector<Eigen::Vector2i> &pos_history, SeaMap &sea_map) 
   std::cout << out.str() << std::endl;
 }
 
-TEST_F(SeaMapTest, move) {
+TEST_F(DeepSeaTest, move
+) {
   MoDeepSeaState init_state(sea_map_, init_pos);
   std::vector<Reward> rewards(1, Reward::Zero());
   JointAction jt;
@@ -99,9 +99,9 @@ TEST_F(SeaMapTest, move) {
   ASSERT_EQ(rewards[0](0), sea_map_[1].reward);
 }
 
-TEST_F(SeaMapTest, general) {
-  RandomGenerator::random_generator_ = std::mt19937(1000);
-  Mcts<MoDeepSeaState, UctStatistic, UctStatistic, RandomHeuristic> mcts;
+TEST_F(DeepSeaTest, general
+) {
+Mcts<MoDeepSeaState, UctStatistic<>, UctStatistic<>, RandomHeuristic> mcts(mcts_parameters_);
   auto state = std::make_shared<MoDeepSeaState>(sea_map_, init_pos);
   std::vector<Reward> rewards(1, Reward::Zero());
   JointAction jt;
@@ -111,7 +111,8 @@ TEST_F(SeaMapTest, general) {
   pos_history.emplace_back(state->get_ego_pos());
   while (!state->is_terminal()) {
     mcts.search(*state, 50000, 10000);
-    jt[0] = mcts.returnBestAction();
+jt[0] = mcts.
+returnBestAction()[0];
     state = state->execute(jt, rewards);
     pos_history.emplace_back(state->get_ego_pos());
   }

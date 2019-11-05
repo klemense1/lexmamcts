@@ -2,7 +2,7 @@
 // Created by luis on 08.10.19.
 //
 
-#include "mo_deep_sea_state.hpp"
+#include "test/mo_deep_sea/mo_deep_sea_state.hpp"
 std::shared_ptr<MoDeepSeaState> MoDeepSeaState::execute(const JointAction &joint_action,
                                                         std::vector<Reward> &rewards) const {
   assert(!is_terminal());
