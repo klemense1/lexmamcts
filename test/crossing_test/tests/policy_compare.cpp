@@ -8,6 +8,7 @@
 
 #include "test/crossing_test/tests/crossing_test_env.h"
 #include "test/crossing_test/tests/common.h"
+#include "mcts/statistics/e_greedy_uct_statistic.h"
 
 using std::vector;
 using std::ostream;
@@ -15,6 +16,10 @@ using std::ofstream;
 using std::stringstream;
 using Eigen::MatrixXf;
 using Eigen::ArrayXi;
+
+enum StatStrategy {
+  UCT = 0, PARETO, SLACK, EGREEDY, NUM
+};
 
 template<class T>
 void run_test(T &test_f, size_t num_iter) {
@@ -58,7 +63,7 @@ int main(int argc, char **argv) {
   FLAGS_logtostderr = 1;
   CrossingTestEnv<UctStatistic<>> optimal;
   size_t const num_agents = 2;
-  int const n = 30;
+  int const n = 10;
 
   ofstream ofs;
   ofs.open("/tmp/policy_comp.dat");
@@ -67,53 +72,50 @@ int main(int argc, char **argv) {
   vector<Reward> opti_reward(num_agents, Reward::Zero());
   opti_reward = get_optimal_reward(optimal.state);
 
-  ArrayXi sample_sizes = ArrayXi::LinSpaced(50, 10, 1000);
-  int step = 0;
+  ArrayXi sample_sizes = ArrayXi::LinSpaced(10, 10, 1000);
+  int step = 1;
   for (int i : sample_sizes) {
     LOG(WARNING) << "Sample size: " << i << "  [ " << step << " / " << sample_sizes.size() << " ]";
-    vector<Reward> uct_avg(num_agents, Reward::Zero());
-    vector<Reward> pareto_avg(num_agents, Reward::Zero());
-    vector<Reward> slack_avg(num_agents, Reward::Zero());
+    vector<vector<Reward>> avg(StatStrategy::NUM, vector<Reward>(num_agents, Reward::Zero()));
+
     for (int j = 0; j < n; ++j) {
       CrossingTestEnv<UctStatistic<>> uct;
       CrossingTestEnv<ParetoUCTStatistic> pareto;
       CrossingTestEnv<SlackUCTStatistic> slack;
+      CrossingTestEnv<EGreedyUCTStatistic> egreedy;
       run_test(uct, i);
       run_test(pareto, i);
       run_test(slack, i);
-      uct_avg += uct.rewards;
-      pareto_avg += pareto.rewards;
-      slack_avg += slack.rewards;
+      run_test(egreedy, i);
+      avg[StatStrategy::UCT] += uct.rewards;
+      avg[StatStrategy::PARETO] += pareto.rewards;
+      avg[StatStrategy::SLACK] += slack.rewards;
+      avg[StatStrategy::EGREEDY] += egreedy.rewards;
     }
-    std::transform(uct_avg.begin(),
-                   uct_avg.end(),
-                   uct_avg.begin(),
-                   [n](Reward const &r) { return r / static_cast<float>(n); });
-    std::transform(pareto_avg.begin(),
-                   pareto_avg.end(),
-                   pareto_avg.begin(),
-                   [n](Reward const &r) { return r / static_cast<float>(n); });
-    std::transform(slack_avg.begin(),
-                   slack_avg.end(),
-                   slack_avg.begin(),
-                   [n](Reward const &r) { return r / static_cast<float>(n); });
 
     ofs << i << "\t";
-    write_plot_output(ofs, uct_avg, opti_reward);
-    write_plot_output(ofs, pareto_avg, opti_reward);
-    write_plot_output(ofs, slack_avg, opti_reward);
+    for (auto &iter : avg) {
+      std::transform(iter.begin(),
+                     iter.end(),
+                     iter.begin(),
+                     [n](Reward const &r) { return r / static_cast<float>(n); });
+      write_plot_output(ofs, iter, opti_reward);
+    }
     ofs << "\n";
 
     LOG(WARNING) << "L2 Norm:";
 
     LOG(WARNING) << "Optimal vs UCT:";
-    LOG(WARNING) << calculate_regret(uct_avg, opti_reward);
-
-    LOG(WARNING) << "Optimal vs Slack:";
-    LOG(WARNING) << calculate_regret(slack_avg, opti_reward);
+    LOG(WARNING) << calculate_regret(avg[StatStrategy::UCT], opti_reward);
 
     LOG(WARNING) << "Optimal vs Pareto:";
-    LOG(WARNING) << calculate_regret(pareto_avg, opti_reward);
+    LOG(WARNING) << calculate_regret(avg[StatStrategy::PARETO], opti_reward);
+
+    LOG(WARNING) << "Optimal vs Slack:";
+    LOG(WARNING) << calculate_regret(avg[StatStrategy::SLACK], opti_reward);
+
+    LOG(WARNING) << "Optimal vs Slack:";
+    LOG(WARNING) << calculate_regret(avg[StatStrategy::EGREEDY], opti_reward);
     ++step;
   }
   ofs.close();

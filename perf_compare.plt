@@ -18,4 +18,5 @@ set label 1 sprintf("UCT mean: %.2f\nApproximate pareto-optimal UCT mean: %.2f\n
 
 plot "/tmp/policy_comp.dat" u 1:2 w linespoints t "UCT", \
 "" u 1:3 w linespoints t "Approximate pareto-optimal UCT",\
-"" u 1:4 w linespoints t "UCT with 95% Confidence bounds"
+"" u 1:4 w linespoints t "UCT with 95% Confidence bounds",\
+"" u 1:5 w linespoints t "Epsilon-Greedy UCT"
