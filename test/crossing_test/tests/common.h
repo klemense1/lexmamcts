@@ -9,9 +9,12 @@
 #include <vector>
 #include <memory>
 
+#include "Eigen/Core"
+
 #include "test/crossing_test/crossing_state.hpp"
 #include "mcts/mcts.h"
 
 std::vector<Reward> get_optimal_reward(std::shared_ptr<CrossingState> const state);
+Eigen::MatrixXf rewards_to_mat(std::vector<Reward> const &rewards);
 
 #endif //MAMCTS_TEST_CROSSING_TEST_TESTS_COMMON_H_

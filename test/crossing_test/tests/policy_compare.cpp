@@ -16,6 +16,7 @@ using std::ofstream;
 using std::stringstream;
 using Eigen::MatrixXf;
 using Eigen::ArrayXi;
+typedef vector<Reward> JointReward;
 
 enum StatStrategy {
   UCT = 0, PARETO, SLACK, EGREEDY, NUM
@@ -23,38 +24,17 @@ enum StatStrategy {
 
 template<class T>
 void run_test(T &test_f, size_t num_iter) {
-  const int MAX_STEPS = 40;
-  int steps = 0;
   std::vector<Reward> step_reward(test_f.rewards);
-  test_f.pos_history.emplace_back(test_f.state->get_ego_pos());
-  test_f.pos_history_other.emplace_back(test_f.state->get_agent_states()[1].x_pos);
-  while (!test_f.state->is_terminal() && steps < MAX_STEPS) {
-    test_f.mcts.search(*test_f.state, 50000, num_iter);
-    test_f.jt = test_f.mcts.returnBestAction();
-    test_f.state = test_f.state->execute(test_f.jt, step_reward);
-    test_f.rewards += step_reward;
-    test_f.state->reset_depth();
-    test_f.pos_history.emplace_back(test_f.state->get_ego_pos());
-    test_f.pos_history_other.emplace_back(test_f.state->get_agent_states()[1].x_pos);
-    ++steps;
-  }
-  test_f.rewards += test_f.state->get_final_reward();
+  test_f.mcts.search(*test_f.state, 50000, num_iter);
+  test_f.rewards = test_f.mcts.get_root()->get_value();
 }
 
-MatrixXf rewards_to_mat(vector<Reward> const &rewards) {
-  MatrixXf mat(Reward::RowsAtCompileTime, rewards.size());
-  for (size_t i = 0; i < rewards.size(); ++i) {
-    mat.col(i) = rewards[i];
-  }
-  return mat;
+double calculate_metric(JointReward &candidate, JointReward &optimal) {
+  return rewards_to_mat(candidate).cwiseAbs().sum();
 }
 
-double calculate_regret(vector<Reward> const &candidate, vector<Reward> const &optimal) {
-   return (rewards_to_mat(optimal) - rewards_to_mat(candidate)).rowwise().sum().norm();
-}
-
-void write_plot_output(ostream &os, vector<Reward> const &candidate, vector<Reward> const &optimal) {
-  os << calculate_regret(candidate, optimal) << "\t";
+void write_plot_output(ostream &os, JointReward &candidate, JointReward &optimal) {
+  os << calculate_metric(candidate, optimal) << "\t";
 }
 
 int main(int argc, char **argv) {
@@ -63,20 +43,20 @@ int main(int argc, char **argv) {
   FLAGS_logtostderr = 1;
   CrossingTestEnv<UctStatistic<>> optimal;
   size_t const num_agents = 2;
-  int const n = 10;
+  int const n = 5;
 
   ofstream ofs;
   ofs.open("/tmp/policy_comp.dat");
-  ofs << "# Iterations\tUCT\tParetoUCT\tSlack\n";
+  ofs << "# Iterations\tUCT\tParetoUCT\tSlack\tEpsilonGreedy\n";
 
-  vector<Reward> opti_reward(num_agents, Reward::Zero());
-  opti_reward = get_optimal_reward(optimal.state);
+  JointReward opti_reward(num_agents, Reward::Zero());
+  //opti_reward = get_optimal_reward(optimal.state);
 
-  ArrayXi sample_sizes = ArrayXi::LinSpaced(10, 10, 1000);
+  ArrayXi sample_sizes = ArrayXi::LinSpaced(30, 10, 100000);
   int step = 1;
   for (int i : sample_sizes) {
     LOG(WARNING) << "Sample size: " << i << "  [ " << step << " / " << sample_sizes.size() << " ]";
-    vector<vector<Reward>> avg(StatStrategy::NUM, vector<Reward>(num_agents, Reward::Zero()));
+    vector<JointReward> avg(StatStrategy::NUM, JointReward(num_agents, Reward::Zero()));
 
     for (int j = 0; j < n; ++j) {
       CrossingTestEnv<UctStatistic<>> uct;
@@ -103,19 +83,19 @@ int main(int argc, char **argv) {
     }
     ofs << "\n";
 
-    LOG(WARNING) << "L2 Norm:";
+    LOG(WARNING) << "Metrics:";
 
     LOG(WARNING) << "Optimal vs UCT:";
-    LOG(WARNING) << calculate_regret(avg[StatStrategy::UCT], opti_reward);
+    LOG(WARNING) << calculate_metric(avg[StatStrategy::UCT], opti_reward);
 
     LOG(WARNING) << "Optimal vs Pareto:";
-    LOG(WARNING) << calculate_regret(avg[StatStrategy::PARETO], opti_reward);
+    LOG(WARNING) << calculate_metric(avg[StatStrategy::PARETO], opti_reward);
 
     LOG(WARNING) << "Optimal vs Slack:";
-    LOG(WARNING) << calculate_regret(avg[StatStrategy::SLACK], opti_reward);
+    LOG(WARNING) << calculate_metric(avg[StatStrategy::SLACK], opti_reward);
 
-    LOG(WARNING) << "Optimal vs Slack:";
-    LOG(WARNING) << calculate_regret(avg[StatStrategy::EGREEDY], opti_reward);
+    LOG(WARNING) << "Optimal vs E-Greedy:";
+    LOG(WARNING) << calculate_metric(avg[StatStrategy::EGREEDY], opti_reward);
     ++step;
   }
   ofs.close();
