@@ -24,6 +24,7 @@ typedef unsigned char AgentIdx;
 typedef std::vector<ActionIdx> JointAction;
 
 typedef Eigen::Matrix<float, REWARD_DIM, 1> Reward;
+typedef std::vector<Reward> JointReward;
 
     template <typename T>
 inline std::vector<T> operator+(const std::vector<T>& a, const std::vector<T>& b)
