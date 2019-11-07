@@ -102,13 +102,18 @@ class SlackUCTStatistic : public UctStatistic<SlackUCTStatistic> {
     for (ActionIdx idx = 0; idx < ucb_statistics.size(); ++idx) {
       UcbPair pair = ucb_statistics.at(idx);
       // Students t distribution with n-1 degrees of freedom
-      boost::math::students_t dist(pair.action_count_ - 1);
-      double t = quantile(complement(dist, ALPHA / 2));
-      // Standard deviation according to
-      // https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance
-      ObjectiveVec std_dev = (m_2_.at(idx) / static_cast<double>(pair.action_count_)).cwiseSqrt();
-      // confidence interval radius
-      values[idx] = t * std_dev / sqrt(static_cast<double>(pair.action_count_));
+      VLOG_IF(1, pair.action_count_ < 2) << "action_count < 2 -> falling back to lexicographical compare";
+      if(pair.action_count_ >= 2) {
+        boost::math::students_t dist(pair.action_count_ - 1);
+        double t = quantile(complement(dist, ALPHA / 2));
+        // Standard deviation according to
+        // https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance
+        ObjectiveVec std_dev = (m_2_.at(idx) / static_cast<double>(pair.action_count_)).cwiseSqrt();
+        // confidence interval radius
+        values[idx] = t * std_dev / sqrt(static_cast<double>(pair.action_count_));
+      } else {
+        values[idx] = ObjectiveVec::Zero();
+      }
     }
   }
 
