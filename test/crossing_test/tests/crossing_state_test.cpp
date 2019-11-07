@@ -6,19 +6,25 @@
 #define DEBUG
 #define PLAN_DEBUG_INFO
 
+#include "gflags/gflags.h"
 #include "gtest/gtest.h"
 #include "test/crossing_test/common.hpp"
 #include "mcts/mcts.h"
-#include "mcts/random_generator.h"
 
+#include "mcts/random_generator.h"
 #include "test/crossing_test/crossing_state.hpp"
 #include "test/crossing_test/tests/crossing_test_env.h"
 #include "test/crossing_test/evaluator_label_speed.hpp"
 #include "test/crossing_test/tests/common.h"
+#include "mcts/statistics/e_greedy_uct_statistic.h"
 
-class CrossingTestF : public CrossingTestEnv<>, public ::testing::Test {
+//typedef EGreedyUCTStatistic Stat;
+//typedef SlackUCTStatistic Stat;
+typedef UctStatistic<> Stat;
+
+class CrossingTestF : public CrossingTestEnv<Stat>, public ::testing::Test {
  public:
-  CrossingTestF() : CrossingTestEnv<>() {};
+  CrossingTestF() : CrossingTestEnv<Stat>() {};
 };
 
 TEST_F(CrossingTestF, general) {
@@ -35,11 +41,12 @@ TEST_F(CrossingTestF, general) {
     LOG(INFO) << "Performing action:" << jt;
     state = state->execute(jt, rewards);
     accu_reward += rewards;
-    state->reset_depth();
+    //state->reset_depth();
     pos_history.emplace_back(state->get_ego_pos());
     pos_history_other.emplace_back(state->get_agent_states()[1].x_pos);
     ++steps;
   }
+  accu_reward += state->get_final_reward();
   LOG(INFO) << "Accumulated rewards:";
   LOG(INFO) << "Ego:" << accu_reward.at(0).transpose();
   for (size_t otr_idx = 1; otr_idx < state->num_other_agents + 1; ++otr_idx) {
@@ -48,15 +55,9 @@ TEST_F(CrossingTestF, general) {
   //Should not hit the maximum # of steps
   EXPECT_LT(steps, MAX_STEPS);
   EXPECT_TRUE(state->ego_goal_reached());
-  std::vector<bool> result;
-  std::transform(accu_reward.begin(),
-                 accu_reward.end(),
-                 optimal_reward.begin(),
-                 std::back_inserter(result),
-                 [](Reward const &a, Reward const &b) {
-                   return std::lexicographical_compare(a.begin(), a.end(), b.begin(), b.end());
-                 });
-  EXPECT_TRUE(std::all_of(result.begin(), result.end(), [](bool i) { return i; }));
+  Reward row_sum_accu = rewards_to_mat(accu_reward).rowwise().sum();
+  Reward row_sum_opti = rewards_to_mat(optimal_reward).rowwise().sum();
+  EXPECT_TRUE(std::lexicographical_compare(row_sum_accu.begin(), row_sum_accu.end(),row_sum_opti.begin(),row_sum_opti.end()) || row_sum_accu == row_sum_opti);
 }
 
 TEST_F(CrossingTestF, belief) {
@@ -134,9 +135,9 @@ TEST_F(CrossingTestF, LexicographicOrder) {
 }
 
 int main(int argc, char **argv) {
+  google::AllowCommandLineReparsing();
+  google::ParseCommandLineFlags(&argc, &argv, false);
   google::InitGoogleLogging(argv[0]);
-  FLAGS_log_dir = "/tmp/log";
   ::testing::InitGoogleTest(&argc, argv);
-  FLAGS_alsologtostderr = 1;
   return RUN_ALL_TESTS();
 }
