@@ -15,11 +15,6 @@
 #include "test/crossing_test/common.hpp"
 #include "test/crossing_test/evaluator_label_base.hpp"
 
-#define NUM_OTHER_AGENTS 1
-#define EGO_GOAL_POS 19
-#define X_LNGTH 21
-#define XING_POINT (X_LNGTH - 1) / 2 + 1
-
 using namespace mcts;
 using namespace modules::models::behavior;
 
@@ -33,11 +28,12 @@ typedef std::vector<std::vector<EvaluatorRuleLTL>> Automata;
 class CrossingState : public mcts::StateInterface<CrossingState> {
 
  public:
-    static const unsigned int num_other_agents = NUM_OTHER_AGENTS;
-    static const int state_x_length = X_LNGTH;
-    static const int ego_goal_reached_position = EGO_GOAL_POS;
-    static const int crossing_point = XING_POINT;
-    static constexpr float ALPHA = 5.0f;
+  static const unsigned int num_other_agents = 1;
+  static const int state_x_length = 13;
+  static const int ego_goal_reached_position = 13;
+  static const int terminal_depth_ = 30;
+  static constexpr float ALPHA = 10.0f;
+  static constexpr int crossing_point = (state_x_length - 1) / 2 + 1;
 
     CrossingState(Automata &automata,
                   const std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> label_evaluator) :
@@ -106,7 +102,7 @@ class CrossingState : public mcts::StateInterface<CrossingState> {
             }
             assert(ego_agent_idx == 0);
             if (agent_idx == ego_agent_idx) {
-                terminal = labels["goal_reached"] || labels["collision"] || (depth_ >= 30);
+                terminal = labels["goal_reached"] || labels["collision"] || (depth_ + 1 >= terminal_depth_);
             }
             rewards[agent_idx] = Reward::Zero();
 
