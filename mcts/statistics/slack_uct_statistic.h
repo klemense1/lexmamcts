@@ -21,17 +21,9 @@ bool slack_compare(Eigen::VectorXf const &a,
                    Eigen::VectorXf const &slack_a,
                    Eigen::VectorXf const &slack_b) {
   assert(a.rows() == b.rows() && a.rows() == slack_a.rows() && b.rows() == slack_b.rows());
-  for (auto ai = a.begin(), bi = b.begin(), sai = slack_a.begin(), sbi = slack_b.begin(); ai != a.end();
-       ++ai, ++bi, ++sai, ++sbi) {
-    if ((*ai + *sai) < (*bi - *sbi)) {
-      return true;
-    } else if ((*bi + *sbi) < (*ai - *sai)) {
-      return false;
-    }
-  }
-  // Approximate Equal
-  // Fall back to lexicographic ordering
-  return std::lexicographical_compare(a.begin(), a.end(), b.begin(), b.end());
+  Eigen::VectorXf a_upper = a + slack_a;
+  Eigen::VectorXf b_lower = b - slack_b;
+  return (a_upper.array() < b_lower.array()).any();
 }
 
 class SlackUCTStatistic : public UctStatistic<SlackUCTStatistic> {
