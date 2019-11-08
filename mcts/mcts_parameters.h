@@ -26,10 +26,18 @@ struct MctsParameters {
   };
 
   struct RandomHeuristic {
-    double RANDOM_GENERATOR_SEED;
-    double MAX_NUMBER_OF_ITERATIONS;
+    int MAX_NUMBER_OF_ITERATIONS;
     double MAX_SEARCH_TIME_RANDOM_HEURISTIC;
-    double MAX_NUMBER_OF_ITERATIONS_RANDOM_HEURISTIC;
+  };
+
+  struct EGreedyUCTStatistic {
+    /// Probability of random exploration
+    double EPSILON;
+  };
+
+  struct SlackUCTStatistic {
+    /// Confidence level 1-ALPHA
+    double ALPHA;
   };
 
   double COOP_FACTOR;
@@ -37,6 +45,8 @@ struct MctsParameters {
 
   RandomHeuristic random_heuristic;
   UctStatistic uct_statistic;
+  EGreedyUCTStatistic e_greedy_uct_statistic_;
+  SlackUCTStatistic slack_uct_statistic_;
 };
 
 MctsParameters make_std_mcts_parameters();

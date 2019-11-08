@@ -16,7 +16,6 @@ namespace mcts {
 class EGreedyUCTStatistic : public UctStatistic<EGreedyUCTStatistic> {
 
  public:
-  float const EPSILON = 0.3;
 
   EGreedyUCTStatistic(ActionIdx num_actions, MctsParameters const &mcts_parameters) : UctStatistic<EGreedyUCTStatistic>(
       num_actions,
@@ -28,7 +27,7 @@ class EGreedyUCTStatistic : public UctStatistic<EGreedyUCTStatistic> {
     ActionIdx selected_action = UctStatistic<EGreedyUCTStatistic>::choose_next_action(state, unexpanded_actions);
     if (fully_expanded) {
       std::uniform_real_distribution<float> uniform_norm(0, 1);
-      if (uniform_norm(random_generator_) >= EPSILON) {
+      if (uniform_norm(random_generator_) >= mcts_parameters_.e_greedy_uct_statistic_.EPSILON) {
         return selected_action;
       } else {
         std::uniform_int_distribution<ActionIdx> uniform_action(0, num_actions_ - 2);
