@@ -10,6 +10,7 @@ cc_library(
     deps = [
         "//mcts",
         "//test/crossing_test:crossing_state",
+        "@com_github_eigen_eigen//:eigen",
         "@com_github_google_glog//:glog",
     ],
 )
@@ -31,8 +32,10 @@ cc_test(
     ],
     copts = ["-Iexternal/gtest/include"],
     deps = [
+        ":util",
         "//mcts",
         "//test/crossing_test:crossing_state",
+        "@com_github_gflags_gflags//:gflags",
         "@com_github_google_glog//:glog",
         "@gtest//:main",
         "@spot",
@@ -46,6 +49,7 @@ cc_binary(
     ],
     copts = ["-Iexternal/gtest/include"],
     deps = [
+        ":util",
         "//mcts",
         "//test/crossing_test:crossing_state",
         "@com_github_google_glog//:glog",
@@ -65,5 +69,18 @@ cc_binary(
         "//test/crossing_test:crossing_state",
         "@com_github_google_glog//:glog",
         "@spot",
+    ],
+)
+
+cc_binary(
+    name = "full_expand",
+    srcs = [
+        "full_expand.cpp",
+    ],
+    deps = [
+        ":util",
+        "//mcts",
+        "//test/crossing_test:crossing_state",
+        "@com_github_google_glog//:glog",
     ],
 )
