@@ -46,7 +46,7 @@ class CrossingState : public mcts::StateInterface<CrossingState> {
 
   std::shared_ptr<CrossingState> clone() const;
 
-  std::shared_ptr<CrossingState> execute(const JointAction &joint_action, std::vector<Reward> &rewards);
+  std::shared_ptr<CrossingState> execute(const JointAction &joint_action, std::vector<Reward> &rewards) const;
 
   std::vector<Reward> get_final_reward() const;
 
@@ -82,7 +82,7 @@ class CrossingState : public mcts::StateInterface<CrossingState> {
   std::string sprintf() const;
 
  private:
-  Reward get_action_cost(ActionIdx action);
+  Reward get_action_cost(ActionIdx action) const;
 
   std::vector<AgentState> agent_states_;
   bool terminal_;

@@ -37,7 +37,7 @@ CrossingState::CrossingState(const std::vector<AgentState> &agent_states,
       label_evaluator_(label_evaluator),
       depth_(depth) {}
 
-std::shared_ptr<CrossingState> CrossingState::execute(const JointAction &joint_action, std::vector<Reward> &rewards) {
+std::shared_ptr<CrossingState> CrossingState::execute(const JointAction &joint_action, std::vector<Reward> &rewards) const {
 
   EvaluationMap labels;
   Automata next_automata(automata_);
@@ -86,7 +86,7 @@ std::shared_ptr<CrossingState> CrossingState::execute(const JointAction &joint_a
 
   return std::make_shared<CrossingState>(next_agent_states, terminal, next_automata, label_evaluator_, depth_ + 1);
 }
-Reward CrossingState::get_action_cost(ActionIdx action) {
+Reward CrossingState::get_action_cost(ActionIdx action) const {
   Reward reward = Reward::Zero();
   reward(static_cast<int>(RewardPriority::TIME)) += -1.0f;
   //  switch (aconv(action)) {
