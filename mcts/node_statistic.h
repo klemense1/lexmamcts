@@ -32,6 +32,8 @@ public:
 
     void collect_reward(const Reward& reward, const ActionIdx& action_idx);
 
+    std::map<ActionIdx,Reward> get_expected_rewards();
+
     std::string print_node_information() const;
     std::string print_edge_information(const ActionIdx& action) const;
 
@@ -95,7 +97,10 @@ template <class Implementation>
 void NodeStatistic<Implementation>::set_heuristic_estimate(const Reward& accum_rewards) {
     return impl().set_heuristic_estimate(accum_rewards);
 }
-
+template<class Implementation>
+std::map<ActionIdx,Reward> NodeStatistic<Implementation>::get_expected_rewards() {
+  return impl().get_expected_rewards();
+}
 
 } // namespace mcts
 

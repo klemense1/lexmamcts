@@ -31,6 +31,9 @@ struct container_hash {
   }
 };
 
+typedef std::unordered_map<JointAction, JointReward, container_hash<JointAction>>
+    StageRewardMap;
+
 /*
     * S: State Model
     * SE: Statistics Ego Agent
@@ -43,8 +46,7 @@ class StageNode : public std::enable_shared_from_this<StageNode<S, SE, SO, H>> {
   using StageNodeSPtr = std::shared_ptr<StageNode<S, SE, SO, H>>;
   using StageNodeWPtr = std::weak_ptr<StageNode<S, SE, SO, H>>;
   typedef std::unordered_map<JointAction, StageNodeSPtr, container_hash<JointAction>> StageChildMap;
-  typedef std::unordered_map<JointAction, std::vector<Reward>, container_hash<JointAction>>
-      StageRewardMap; //< remembers joint rewards
+   //< remembers joint rewards
   //of state execute to avoid rerunning execute during node selection
 
   // Environment State
@@ -94,6 +96,8 @@ class StageNode : public std::enable_shared_from_this<StageNode<S, SE, SO, H>> {
   int getEgoNodeVisits();
   double getActionValue(int action);
   const StageChildMap &get_children() const;
+  JointReward get_q_func(JointAction const &joint_action);
+  JointReward get_value();
 
   static void reset_counter();
 
@@ -354,7 +358,27 @@ const std::unordered_map<JointAction, std::shared_ptr<StageNode<S, SE, SO, H>>, 
     SO,
     H>::get_children() const {
   return children_;
-};
+}
+template<class S, class SE, class SO, class H>
+JointReward StageNode<S, SE, SO, H>::get_q_func(JointAction const &joint_action) {
+  JointReward v(state_->get_agent_idx().size(), Reward::Zero());
+  ActionIdx action = joint_action.at(0);
+  v.at(0) = ego_int_node_.get_expected_rewards().at(action);
+  for(size_t i = 1;i < v.size();++i) {
+    action = joint_action.at(i);
+    v.at(i) = other_int_nodes_.at(i-1).get_expected_rewards().at(action);
+  }
+  return v;
+}
+template<class S, class SE, class SO, class H>
+JointReward StageNode<S, SE, SO, H>::get_value() {
+  JointReward v(other_int_nodes_.size() + 1);
+  v.at(0) = dynamic_cast<SE&>(ego_int_node_).get_value();
+  for(size_t i = 1; i < other_int_nodes_.size(); ++i) {
+    v.at(i) = dynamic_cast<SO&>(other_int_nodes_.at(i)).get_value();
+  }
+  return v;
+}
 
 } // namespace mcts
 

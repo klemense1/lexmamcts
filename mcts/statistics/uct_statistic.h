@@ -144,6 +144,17 @@ class UctStatistic :
     return ss.str();
   }
 
+  std::map<ActionIdx, Reward> get_expected_rewards() {
+    std::map<ActionIdx, Reward> v;
+    for(auto const &pair : ucb_statistics_) {
+      v[pair.first] = pair.second.action_value_;
+    }
+    return v;
+  }
+  const ObjectiveVec get_value() const {
+    return value_;
+  }
+
  protected:
 
   void calculate_ucb_values(const ActionUCBMap &ucb_statistics, std::vector<Eigen::VectorXf> &values) const {
