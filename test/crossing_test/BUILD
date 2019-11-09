@@ -2,11 +2,13 @@ cc_library(
     name = "crossing_state",
     srcs = [
         "crossing_state.cpp",
+        "crossing_state_parameter.cpp",
         "evaluator_rule_ltl.cpp",
     ],
     hdrs = [
         "common.hpp",
         "crossing_state.hpp",
+        "crossing_state_parameter.h",
         "evaluator_rule_ltl.hpp",
         "label_evaluator/evaluator_label_base.hpp",
         "label_evaluator/evaluator_label_collision.hpp",

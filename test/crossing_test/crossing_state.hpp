@@ -29,19 +29,15 @@ typedef std::vector<std::vector<EvaluatorRuleLTL>> Automata;
 class CrossingState : public mcts::StateInterface<CrossingState> {
 
  public:
-  static const unsigned int num_other_agents = 1;
-  static const int state_x_length = 13;
-  static const int ego_goal_reached_position = 13;
-  static const int terminal_depth_ = 30;
-  static constexpr float ALPHA = 10.0f;
-  static constexpr int crossing_point = (state_x_length - 1) / 2 + 1;
-
-  CrossingState(Automata &automata, const std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> label_evaluator);
+  CrossingState(Automata &automata,
+                const std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> label_evaluator,
+                const CrossingStateParameter &parameters);
 
   CrossingState(const std::vector<AgentState> &agent_states,
                 const bool terminal,
                 Automata &automata,
                 const std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> &label_evaluator,
+                const CrossingStateParameter &parameters,
                 int depth = 0);
   ~CrossingState() {};
 
@@ -90,6 +86,7 @@ class CrossingState : public mcts::StateInterface<CrossingState> {
   Automata automata_;
   std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> label_evaluator_;
   int depth_;
+  CrossingStateParameter parameters_;
 };
 
 #endif

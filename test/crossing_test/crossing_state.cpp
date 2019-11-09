@@ -11,16 +11,15 @@
 #include "test/crossing_test/crossing_state.hpp"
 #include "test/crossing_test/viewer.h"
 
-int const CrossingState::crossing_point;
-int const CrossingState::ego_goal_reached_position;
-
 CrossingState::CrossingState(Automata &automata,
-                             const std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> label_evaluator)
-    : agent_states_(num_other_agents + 1),
+                             const std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> label_evaluator,
+                             const CrossingStateParameter &parameters)
+    : agent_states_(parameters.num_other_agents + 1),
       terminal_(false),
       automata_(automata),
       label_evaluator_(label_evaluator),
-      depth_(0) {
+      depth_(0),
+      parameters_(parameters){
   for (auto &state : agent_states_) {
     state = AgentState();
   }
@@ -30,12 +29,14 @@ CrossingState::CrossingState(const std::vector<AgentState> &agent_states,
                              const bool terminal,
                              Automata &automata,
                              const std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> &label_evaluator,
+                             const CrossingStateParameter &parameters,
                              int depth)
     : agent_states_(agent_states),
       terminal_(terminal),
       automata_(automata),
       label_evaluator_(label_evaluator),
-      depth_(depth) {}
+      depth_(depth),
+      parameters_(parameters) {}
 
 std::shared_ptr<CrossingState> CrossingState::execute(const JointAction &joint_action, std::vector<Reward> &rewards) const {
 
@@ -44,7 +45,7 @@ std::shared_ptr<CrossingState> CrossingState::execute(const JointAction &joint_a
   World next_world;
   bool terminal;
   std::vector<AgentState> next_agent_states(agent_states_.size());
-  rewards.resize(num_other_agents + 1);
+  rewards.resize(parameters_.num_other_agents + 1);
 
   // CALCULATE NEXT STATE
   for (size_t i = 0; i < agent_states_.size(); ++i) {
@@ -72,7 +73,7 @@ std::shared_ptr<CrossingState> CrossingState::execute(const JointAction &joint_a
     }
     assert(ego_agent_idx == 0);
     if (agent_idx == ego_agent_idx) {
-      terminal = labels["goal_reached"] || labels["collision"] || (depth_ + 1 >= terminal_depth_);
+      terminal = labels["goal_reached"] || labels["collision"] || (depth_ + 1 >= parameters_.terminal_depth_);
     }
     rewards[agent_idx] = Reward::Zero();
 
@@ -84,11 +85,11 @@ std::shared_ptr<CrossingState> CrossingState::execute(const JointAction &joint_a
     labels.clear();
   } // End for each agent
 
-  return std::make_shared<CrossingState>(next_agent_states, terminal, next_automata, label_evaluator_, depth_ + 1);
+  return std::make_shared<CrossingState>(next_agent_states, terminal, next_automata, label_evaluator_, parameters_, depth_ + 1);
 }
 Reward CrossingState::get_action_cost(ActionIdx action) const {
   Reward reward = Reward::Zero();
-  reward(static_cast<int>(RewardPriority::TIME)) += -1.0f;
+  reward(parameters_.depth_prio) += -1.0f * parameters_.depth_weight;
   //  switch (aconv(action)) {
   //      case Actions::FORWARD :reward(static_cast<int>(RewardPriority::EFFICIENCY)) = -1.0f;
   //          break;
@@ -101,8 +102,8 @@ Reward CrossingState::get_action_cost(ActionIdx action) const {
   //      default:reward(static_cast<int>(RewardPriority::EFFICIENCY)) = 0.0f;
   //          break;
   //  }
-  reward(static_cast<int>(RewardPriority::GOAL)) =
-      -std::abs(static_cast<int>(aconv(action)) - static_cast<int>(Actions::FORWARD));
+  reward(parameters_.speed_deviation_prio) =
+      -std::abs(static_cast<int>(aconv(action)) - static_cast<int>(Actions::FORWARD)) * parameters_.speed_deviation_weight;
   return reward;
 }
 void CrossingState::update_rule_belief() {
@@ -142,7 +143,7 @@ ActionIdx CrossingState::get_num_actions(AgentIdx agent_idx) const {
   return static_cast<size_t>(Actions::NUM);
 }
 const std::vector<AgentIdx> CrossingState::get_agent_idx() const {
-  std::vector<AgentIdx> agent_idx(num_other_agents + 1);
+  std::vector<AgentIdx> agent_idx(parameters_.num_other_agents + 1);
   std::iota(agent_idx.begin(), agent_idx.end(), 0);
   return agent_idx; // adapt to number of agents
 }
@@ -156,7 +157,7 @@ std::string CrossingState::sprintf() const {
   return ss.str();
 }
 bool CrossingState::ego_goal_reached() const {
-  return agent_states_[ego_agent_idx].x_pos >= ego_goal_reached_position;
+  return agent_states_[ego_agent_idx].x_pos >= parameters_.ego_goal_reached_position;
 }
 void CrossingState::reset_depth() {
   depth_ = 0;
@@ -182,9 +183,9 @@ void CrossingState::draw(mcts::Viewer *viewer) const {
 
   // draw lines equally spaced angles with small points
   // indicating states and larger points indicating the current state
-  const float angle_delta = M_PI / (num_other_agents + 2);  // one for ego
-  const float line_radius = state_draw_dst * (state_x_length - 1) / 2.0f;
-  for (int i = 0; i < num_other_agents + 1; ++i) {
+  const float angle_delta = M_PI / (parameters_.num_other_agents + 2);  // one for ego
+  const float line_radius = state_draw_dst * (parameters_.state_x_length - 1) / 2.0f;
+  for (int i = 0; i < parameters_.num_other_agents + 1; ++i) {
     float start_angle = 1.5 * M_PI - (i + 1) * angle_delta;
     float end_angle = start_angle + M_PI;
     std::pair<float, float> line_x{cos(start_angle) * line_radius, cos(end_angle) * line_radius};
@@ -194,12 +195,12 @@ void CrossingState::draw(mcts::Viewer *viewer) const {
     std::tuple<float, float, float, float> current_color = gray;
     // Differentiate between ego and other agents
     AgentState state;
-    if (i == std::floor(num_other_agents / 2)) {
+    if (i == std::floor(parameters_.num_other_agents / 2)) {
       state = agent_states_[ego_agent_idx];
       color = {0.8, 0, 0, 0};
     } else {
       AgentIdx agt_idx = i;
-      if (i > std::floor(num_other_agents / 2)) {
+      if (i > std::floor(parameters_.num_other_agents / 2)) {
         agt_idx = i - 1;
       }
       state = agent_states_[agt_idx + 1];
@@ -207,11 +208,11 @@ void CrossingState::draw(mcts::Viewer *viewer) const {
     viewer->drawLine(line_x, line_y, linewidth, gray);
 
     // Draw current states
-    for (int y = 0; y < state_x_length; ++y) {
+    for (int y = 0; y < parameters_.state_x_length; ++y) {
       const auto px = line_x.first
-          + (line_x.second - line_x.first) * static_cast<float>(y) / static_cast<float>(state_x_length - 1);
+          + (line_x.second - line_x.first) * static_cast<float>(y) / static_cast<float>(parameters_.state_x_length - 1);
       const auto py = line_y.first
-          + (line_y.second - line_y.first) * static_cast<float>(y) / static_cast<float>(state_x_length - 1);
+          + (line_y.second - line_y.first) * static_cast<float>(y) / static_cast<float>(parameters_.state_x_length - 1);
       float pointsize_temp = state_draw_size * 4;
       if (state.x_pos == y) {
         current_color = color;

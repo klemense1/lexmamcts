@@ -49,7 +49,7 @@ TEST_F(CrossingTestF, general) {
   accu_reward += state->get_final_reward();
   LOG(INFO) << "Accumulated rewards:";
   LOG(INFO) << "Ego:" << accu_reward.at(0).transpose();
-  for (size_t otr_idx = 1; otr_idx < state->num_other_agents + 1; ++otr_idx) {
+  for (size_t otr_idx = 1; otr_idx < state->get_agent_idx().size(); ++otr_idx) {
     LOG(INFO) << "Agent " << otr_idx << ":" << accu_reward.at(otr_idx).transpose();
   }
   //Should not hit the maximum # of steps
@@ -67,7 +67,7 @@ TEST_F(CrossingTestF, belief) {
 
   label_evaluators.emplace_back(std::make_shared<EvaluatorLabelSpeed>("speeding"));
   automata[1].emplace_back("G !speeding", -20.0f, RewardPriority::SAFETY, 0.9);
-  std::shared_ptr<CrossingState> ego_state = std::make_shared<CrossingState>(automata, label_evaluators);
+  std::shared_ptr<CrossingState> ego_state = std::make_shared<CrossingState>(automata, label_evaluators, crossing_state_parameter_);
 
   pos_history.emplace_back(ego_state->get_ego_pos());
   std::vector<size_t> pos_history_other;
@@ -112,7 +112,7 @@ TEST_F(CrossingTestF, giveWay) {
   agent_states[1].x_pos = 8;
   agent_states[1].last_action = Actions::FORWARD;
   automata[0].emplace_back("G((at_hp_xing & other_near) -> (X at_hp_xing))", -500.0f, RewardPriority::SAFETY);
-  state = std::make_shared<CrossingState>(agent_states, false, automata, label_evaluators);
+  state = std::make_shared<CrossingState>(agent_states, false, automata, label_evaluators, crossing_state_parameter_, 0);
   state = state->execute(jt, rewards);
   state = state->execute(jt, rewards);
   state = state->execute(jt, rewards);

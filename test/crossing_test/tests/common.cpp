@@ -30,7 +30,7 @@ std::vector<Reward> get_optimal_reward(std::shared_ptr<CrossingState> const init
   accu_reward += state->get_final_reward();
   DLOG(INFO) << "Optimal rewards:";
   DLOG(INFO) << "Ego:" << accu_reward.at(0).transpose();
-  for (size_t otr_idx = 1; otr_idx < state->num_other_agents + 1; ++otr_idx) {
+  for (size_t otr_idx = 1; otr_idx <  state->get_agent_idx().size(); ++otr_idx) {
     DLOG(INFO) << "Agent " << otr_idx << ":" << accu_reward.at(otr_idx).transpose();
   }
   return accu_reward;

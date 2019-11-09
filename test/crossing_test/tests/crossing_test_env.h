@@ -25,17 +25,20 @@ namespace mcts {
 template<class Stats = UctStatistic<>>
 class CrossingTestEnv {
  public:
-  CrossingTestEnv() : mcts_parameters_(make_std_mcts_parameters()), mcts(mcts_parameters_) {
+  CrossingTestEnv(MctsParameters const &mcts_parameters, CrossingStateParameter const &crossing_state_parameter)
+      : mcts_parameters_(mcts_parameters),
+        crossing_state_parameter_(crossing_state_parameter),
+        mcts(mcts_parameters_) {
     // SETUP LABEL EVALUATORS
     label_evaluators.emplace_back(std::make_shared<EvaluatorLabelCollision>("collision",
-                                                                            CrossingState::crossing_point));
+                                                                            crossing_state_parameter_.crossing_point));
     label_evaluators.emplace_back(std::make_shared<EvaluatorLabelGoalReached>("goal_reached",
-                                                                              CrossingState::ego_goal_reached_position));
+                                                                              crossing_state_parameter_.ego_goal_reached_position));
     label_evaluators.emplace_back(std::make_shared<EvaluatorLabelHoldAtXing>("at_hp_xing",
-                                                                             CrossingState::crossing_point));
+                                                                             crossing_state_parameter_.crossing_point));
     label_evaluators.emplace_back(std::make_shared<EvaluatorLabelOtherNear>("other_near"));
     // SETUP RULES
-    automata.resize(CrossingState::num_other_agents + 1);
+    automata.resize(crossing_state_parameter_.num_other_agents + 1);
 
     // Finally arrive at goal (Liveness)
     automata[0].emplace_back("F goal_reached", -100.f, RewardPriority::GOAL, 1.0f);
@@ -57,15 +60,17 @@ class CrossingTestEnv {
         LOG(INFO) << rule;
       }
     }
-    state = std::make_shared<CrossingState>(automata, label_evaluators);
+    state = std::make_shared<CrossingState>(automata, label_evaluators, crossing_state_parameter_);
     rewards = std::vector<Reward>(state->get_agent_idx().size(), Reward::Zero());
     jt = JointAction(2, (int) Actions::FORWARD);
   }
+  CrossingTestEnv() : CrossingTestEnv(make_std_mcts_parameters(), make_default_crossing_state_parameters()) {};
   ~CrossingTestEnv() {
     LOG(INFO) << "Ego positions:" << pos_history;
     LOG(INFO) << "Otr positions:" << pos_history_other;
   }
   MctsParameters const mcts_parameters_;
+  CrossingStateParameter const crossing_state_parameter_;
   std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> label_evaluators;
   Automata automata;
   std::vector<Reward> rewards;
