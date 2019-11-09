@@ -7,7 +7,7 @@
 
 #include <string>
 #include "test/crossing_test/common.hpp"
-#include "test/crossing_test/evaluator_label_base.hpp"
+#include "test/crossing_test/label_evaluator/evaluator_label_base.hpp"
 
 class EvaluatorLabelOtherNear : public EvaluatorLabelBase<World> {
  public:
