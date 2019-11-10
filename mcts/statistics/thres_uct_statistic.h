@@ -36,11 +36,9 @@ class ThresUCTStatistic : public UctStatistic<ThresUCTStatistic> {
       mcts_parameters){}
 
   ActionIdx get_best_action() {
-    ObjectiveVec thres;
-    thres << -500,0,0,0;
     auto max = std::max_element(ucb_statistics_.begin(),
                                 ucb_statistics_.end(),
-                                [thres](ActionUCBMap::value_type const &a, ActionUCBMap::value_type const &b) {
+                                [this](ActionUCBMap::value_type const &a, ActionUCBMap::value_type const &b) {
                                   if (a.second.action_count_ == 0) {
                                     return true;
                                   } else if (b.second.action_count_ == 0) {
@@ -48,7 +46,7 @@ class ThresUCTStatistic : public UctStatistic<ThresUCTStatistic> {
                                   } else {
                                     return threshold_compare(a.second.action_value_,
                                                              b.second.action_value_,
-                                                             thres);
+                                                             mcts_parameters_.thres_uct_statistic_.THRESHOLD);
                                   }
                                 });
     return max->first;

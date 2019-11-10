@@ -26,6 +26,8 @@ MctsParameters make_std_mcts_parameters() {
 
   param.slack_uct_statistic_.ALPHA = 0.05;
 
+  param.thres_uct_statistic_.THRESHOLD << -500, 0, 0, 0;
+
   return param;
 }
 

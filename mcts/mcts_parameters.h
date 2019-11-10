@@ -40,6 +40,10 @@ struct MctsParameters {
     double ALPHA;
   };
 
+  struct ThresUCTStatistic {
+    ObjectiveVec THRESHOLD;
+  };
+
   double COOP_FACTOR;
   double DISCOUNT_FACTOR;
 
@@ -47,6 +51,7 @@ struct MctsParameters {
   UctStatistic uct_statistic;
   EGreedyUCTStatistic e_greedy_uct_statistic_;
   SlackUCTStatistic slack_uct_statistic_;
+  ThresUCTStatistic thres_uct_statistic_;
 };
 
 MctsParameters make_std_mcts_parameters();
