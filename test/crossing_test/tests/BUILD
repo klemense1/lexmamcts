@@ -68,7 +68,6 @@ cc_binary(
         "//mcts",
         "//test/crossing_test:crossing_state",
         "@com_github_google_glog//:glog",
-        "@spot",
     ],
 )
 
@@ -76,6 +75,19 @@ cc_binary(
     name = "full_expand",
     srcs = [
         "full_expand.cpp",
+    ],
+    deps = [
+        ":util",
+        "//mcts",
+        "//test/crossing_test:crossing_state",
+        "@com_github_google_glog//:glog",
+    ],
+)
+
+cc_binary(
+    name = "trajectory_compare",
+    srcs = [
+        "trajectory_compare.cpp",
     ],
     deps = [
         ":util",
