@@ -22,8 +22,17 @@ bool slack_compare(Eigen::VectorXf const &a,
                    Eigen::VectorXf const &slack_b) {
   assert(a.rows() == b.rows() && a.rows() == slack_a.rows() && b.rows() == slack_b.rows());
   Eigen::VectorXf a_upper = a + slack_a;
+  Eigen::VectorXf a_lower = a - slack_a;
+  Eigen::VectorXf b_upper = b + slack_b;
   Eigen::VectorXf b_lower = b - slack_b;
-  return (a_upper.array() < b_lower.array()).any();
+  for (int i = 0; i < a_upper.rows(); ++i) {
+    if (a_upper(i) < b_lower(i)) {
+      return true;
+    } else if (b_upper(i) < a_lower(i)) {
+      return false;
+    }
+  }
+  return false;
 }
 
 class SlackUCTStatistic : public UctStatistic<SlackUCTStatistic> {

@@ -102,7 +102,7 @@ Reward CrossingState::get_action_cost(ActionIdx action) const {
   //      default:reward(static_cast<int>(RewardPriority::EFFICIENCY)) = 0.0f;
   //          break;
   //  }
-  reward(parameters_.speed_deviation_prio) =
+  reward(parameters_.speed_deviation_prio) +=
       -std::abs(static_cast<int>(aconv(action)) - static_cast<int>(Actions::FORWARD)) * parameters_.speed_deviation_weight;
   return reward;
 }
