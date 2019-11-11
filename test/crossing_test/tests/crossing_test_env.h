@@ -19,6 +19,7 @@
 #include "test/crossing_test/common.hpp"
 #include "mcts/statistics/pareto_uct_statistic.h"
 #include "mcts/statistics/slack_uct_statistic.h"
+#include "test/crossing_test/label_evaluator/evaluator_label_speed.hpp"
 #include "common.h"
 
 using namespace mcts;
@@ -36,13 +37,16 @@ class CrossingTestEnv {
     label_evaluators.emplace_back(std::make_shared<EvaluatorLabelGoalReached>("goal_reached",
                                                                               crossing_state_parameter_.ego_goal_reached_position));
     label_evaluators.emplace_back(std::make_shared<EvaluatorLabelHoldAtXing>("at_hp_xing",
-                                                                             crossing_state_parameter_.crossing_point));
+                                                                             crossing_state_parameter_.crossing_point+1));
     label_evaluators.emplace_back(std::make_shared<EvaluatorLabelOtherNear>("other_near"));
     // SETUP RULES
     automata.resize(crossing_state_parameter_.num_other_agents + 1);
 
+    label_evaluators.emplace_back(std::make_shared<EvaluatorLabelSpeed>("speeding"));
+    //automata[0].emplace_back("G !speeding", -20.0f, RewardPriority::LEGAL_RULE_B);
+
     // Finally arrive at goal (Liveness)
-    automata[0].emplace_back("F goal_reached", -100.f, RewardPriority::GOAL, 1.0f);
+//    automata[0].emplace_back("F goal_reached", 0.f, RewardPriority::SAFETY, 1.0f, 100);
     // Do not collide with others (Safety)
     automata[0].emplace_back("G !collision", -1000.f, RewardPriority::SAFETY);
     // Copy rules to other agents
@@ -51,7 +55,7 @@ class CrossingTestEnv {
     }
 
     // Rules only for ego
-    automata[0].emplace_back("G((at_hp_xing & other_near) -> (X at_hp_xing))", -100.0f, RewardPriority::SAFETY);
+    automata[0].emplace_back("G(other_near -> !at_hp_xing)", -50.0f, RewardPriority::LEGAL_RULE);
     // Arrive before others (Guarantee)
     // Currently not possible because ego can't drive faster than others
     //automata.emplace_back("!other_goal_reached U ego_goal_reached", -1000.f, RewardPriority::GOAL);

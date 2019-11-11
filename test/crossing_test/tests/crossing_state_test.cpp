@@ -16,7 +16,10 @@
 #include "test/crossing_test/label_evaluator/evaluator_label_speed.hpp"
 #include "test/crossing_test/tests/common.h"
 #include "mcts/statistics/e_greedy_uct_statistic.h"
+#include "mcts/statistics/thres_uct_statistic.h"
+#include "mcts/heuristics/semi_random_heuristic.h"
 
+//typedef ThresUCTStatistic Stat;
 //typedef EGreedyUCTStatistic Stat;
 //typedef SlackUCTStatistic Stat;
 typedef UctStatistic<> Stat;
@@ -30,6 +33,15 @@ class CrossingTestF : public CrossingTestEnv<Stat, HeuristicType>, public ::test
 };
 
 TEST_F(CrossingTestF, general) {
+  CrossingStateParameter p = make_default_crossing_state_parameters();
+  p.depth_prio = 0;
+  p.speed_deviation_prio = 0;
+  p.acceleration_prio = 0;
+  p.potential_prio = 0;
+  p.depth_weight = 5;
+  p.speed_deviation_weight = 10;
+  p.acceleration_weight = 10;
+  state = std::make_shared<CrossingState>(automata, label_evaluators, p);
   const int MAX_STEPS = 40;
   int steps = 0;
   std::vector<Reward> optimal_reward = get_optimal_reward(state);
@@ -37,7 +49,7 @@ TEST_F(CrossingTestF, general) {
   pos_history.emplace_back(state->get_ego_pos());
   pos_history_other.emplace_back(state->get_agent_states()[1].x_pos);
   while (!state->is_terminal() && steps < MAX_STEPS) {
-    mcts.search(*state, 50000, 1000);
+    mcts.search(*state, 50000, 5000);
     //jt[0] = mcts.returnBestAction()[0];
     set_jt(mcts.returnBestAction());
     LOG(INFO) << "Performing action:" << get_jt();
