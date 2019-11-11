@@ -20,7 +20,7 @@
 #include "mcts/statistics/pareto_uct_statistic.h"
 #include "mcts/statistics/slack_uct_statistic.h"
 
-namespace mcts {
+using namespace mcts;
 
 template<class Stats = UctStatistic<>>
 class CrossingTestEnv {
@@ -64,7 +64,7 @@ class CrossingTestEnv {
     rewards = std::vector<Reward>(state->get_agent_idx().size(), Reward::Zero());
     jt = JointAction(2, (int) Actions::FORWARD);
   }
-  CrossingTestEnv() : CrossingTestEnv(make_std_mcts_parameters(), make_default_crossing_state_parameters()) {};
+  CrossingTestEnv() : CrossingTestEnv(make_default_mcts_parameters(), make_default_crossing_state_parameters()) {};
   ~CrossingTestEnv() {
     LOG(INFO) << "Ego positions:" << pos_history;
     LOG(INFO) << "Otr positions:" << pos_history_other;
@@ -80,7 +80,5 @@ class CrossingTestEnv {
   Mcts<CrossingState, Stats, Stats, RandomHeuristic> mcts;
   std::shared_ptr<CrossingState> state;
 };
-
-}
 
 #endif  // MAMCTS_TEST_CROSSING_TEST_CROSSING_TEST_ENV_H_

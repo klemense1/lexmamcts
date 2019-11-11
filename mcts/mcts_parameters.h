@@ -54,7 +54,6 @@ struct MctsParameters {
   ThresUCTStatistic thres_uct_statistic_;
 };
 
-MctsParameters make_std_mcts_parameters();
 std::ostream &operator<<(std::ostream &os, MctsParameters const &d);
 
 } // namespace mcts

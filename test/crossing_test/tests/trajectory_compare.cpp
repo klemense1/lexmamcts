@@ -114,7 +114,7 @@ int main(int argc, char **argv) {
     for (int j = 0; j < n; ++j) {
       CrossingTestEnv<UctStatistic<>> uct_env;
       CrossingTestEnv<SlackUCTStatistic> slack_env;
-      CrossingTestEnv<SlackUCTStatistic> scalarization_env(make_std_mcts_parameters(), setup_scalarization());
+      CrossingTestEnv<SlackUCTStatistic> scalarization_env(make_default_mcts_parameters(), setup_scalarization());
       CrossingTestEnv<MaxUCTStatistic> max_uct_env;
       CrossingTestEnv<SlackUCTStatistic, SemiRandomHeuristic> heuristic_env;
       CrossingTestEnv<ThresUCTStatistic> threshold_env;
