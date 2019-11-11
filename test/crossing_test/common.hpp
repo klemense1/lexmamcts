@@ -19,17 +19,17 @@ enum class Actions {
 };
 
 const std::map<ActionIdx, Actions> idx_to_action = {
-    {0, Actions::WAIT},
-    {1, Actions::FORWARD},
-    //{2, Actions::FASTFORWARD},
-    {2, Actions::BACKWARD}
+    {0, Actions::FORWARD},
+    {1, Actions::WAIT},
+    {2, Actions::BACKWARD},
+    //{3, Actions::FASTFORWARD},
 };
 
 const std::map<Actions, ActionIdx> action_to_idx = {
-    {Actions::WAIT, 0},
-    {Actions::FORWARD, 1},
-    {Actions::FASTFORWARD, 2},
-    {Actions::BACKWARD, 2}
+    {Actions::FORWARD, 0},
+    {Actions::WAIT, 1},
+    {Actions::BACKWARD, 2},
+    //{Actions::FASTFORWARD, 3},
 };
 
 static inline Actions aconv(const ActionIdx &action) {
