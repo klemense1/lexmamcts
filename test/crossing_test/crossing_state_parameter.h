@@ -20,9 +20,11 @@ struct CrossingStateParameter {
 
   size_t depth_prio;
   size_t speed_deviation_prio;
+  size_t acceleration_prio;
 
   float depth_weight;
   float speed_deviation_weight;
+  float acceleration_weight;
 };
 
 CrossingStateParameter make_default_crossing_state_parameters();

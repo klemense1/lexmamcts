@@ -79,7 +79,7 @@ class CrossingState : public mcts::StateInterface<CrossingState> {
   std::string sprintf() const;
 
  private:
-  Reward get_action_cost(ActionIdx action) const;
+  Reward get_action_cost(ActionIdx action, AgentIdx agent_idx) const;
 
   std::vector<AgentState> agent_states_;
   bool terminal_;

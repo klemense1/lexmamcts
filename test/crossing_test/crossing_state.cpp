@@ -63,7 +63,6 @@ std::shared_ptr<CrossingState> CrossingState::execute(const JointAction &joint_a
   for (size_t agent_idx = 0; agent_idx < rewards.size(); ++agent_idx) {
     // Labeling
     std::vector<AgentState> next_other_agents(next_agent_states);
-    // TODO: Improve efficiency
     next_other_agents.erase(next_other_agents.begin() + agent_idx);
     // Create perspective from current agent
     next_world = World(next_agent_states[agent_idx], next_other_agents);
@@ -81,13 +80,13 @@ std::shared_ptr<CrossingState> CrossingState::execute(const JointAction &joint_a
     for (EvaluatorRuleLTL &aut : (next_automata[agent_idx])) {
       rewards[agent_idx](aut.get_type()) += aut.evaluate(labels);
     }
-    rewards[agent_idx] += get_action_cost(joint_action[agent_idx]);
+    rewards[agent_idx] += get_action_cost(joint_action[agent_idx], agent_idx);
     labels.clear();
   } // End for each agent
 
   return std::make_shared<CrossingState>(next_agent_states, terminal, next_automata, label_evaluator_, parameters_, depth_ + 1);
 }
-Reward CrossingState::get_action_cost(ActionIdx action) const {
+Reward CrossingState::get_action_cost(ActionIdx action, AgentIdx agent_idx) const {
   Reward reward = Reward::Zero();
   reward(parameters_.depth_prio) += -1.0f * parameters_.depth_weight;
   //  switch (aconv(action)) {
@@ -104,6 +103,9 @@ Reward CrossingState::get_action_cost(ActionIdx action) const {
   //  }
   reward(parameters_.speed_deviation_prio) +=
       -std::abs(static_cast<int>(aconv(action)) - static_cast<int>(Actions::FORWARD)) * parameters_.speed_deviation_weight;
+  reward(parameters_.acceleration_prio) +=
+      -std::pow(static_cast<int>(aconv(action)) - static_cast<int>(get_last_action(agent_idx)), 2)
+          * parameters_.acceleration_weight;
   return reward;
 }
 void CrossingState::update_rule_belief() {
