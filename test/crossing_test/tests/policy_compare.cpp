@@ -30,7 +30,7 @@ void run_test(T &test_f, size_t num_iter) {
 }
 
 double calculate_metric(JointReward &candidate, JointReward &optimal) {
-  return rewards_to_mat(candidate).cwiseAbs().sum();
+  return (rewards_to_mat(candidate)-rewards_to_mat(optimal)).cwiseAbs().rowwise().sum().norm();
 }
 
 void write_plot_output(ostream &os, JointReward &candidate, JointReward &optimal) {
@@ -50,9 +50,9 @@ int main(int argc, char **argv) {
   ofs << "# Iterations\tUCT\tParetoUCT\tSlack\tEpsilonGreedy\n";
 
   JointReward opti_reward(num_agents, Reward::Zero());
-  //opti_reward = get_optimal_reward(optimal.state);
+  opti_reward = get_optimal_reward(optimal.state);
 
-  ArrayXi sample_sizes = ArrayXi::LinSpaced(30, 10, 100000);
+  ArrayXi sample_sizes = ArrayXi::LinSpaced(100, 4, 10000);
   int step = 1;
   for (int i : sample_sizes) {
     LOG(WARNING) << "Sample size: " << i << "  [ " << step << " / " << sample_sizes.size() << " ]";
