@@ -43,7 +43,7 @@ class CrossingTestEnv {
     automata.resize(crossing_state_parameter_.num_other_agents + 1);
 
     label_evaluators.emplace_back(std::make_shared<EvaluatorLabelSpeed>("speeding"));
-    //automata[0].emplace_back("G !speeding", -20.0f, RewardPriority::LEGAL_RULE_B);
+    automata[0].emplace_back("G !speeding", -20.0f, RewardPriority::LEGAL_RULE);
 
     // Finally arrive at goal (Liveness)
 //    automata[0].emplace_back("F goal_reached", 0.f, RewardPriority::SAFETY, 1.0f, 100);
