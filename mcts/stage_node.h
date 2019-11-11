@@ -1,5 +1,5 @@
 // Copyright (c) 2019 Julian Bernhard
-// 
+//
 // This work is licensed under the terms of the MIT license.
 // For a copy, see <https://opensource.org/licenses/MIT>.
 // ========================================================
@@ -7,20 +7,21 @@
 #ifndef MCTS_STAGE_NODE_H
 #define MCTS_STAGE_NODE_H
 
+#include <memory>
+#include <unordered_map>
+#include <fstream>
+#include <iostream>
+#include <string>
+#include <vector>
+
+#include "boost/functional/hash.hpp"
 #include "glog/logging.h"
 
+#include "common.h"
 #include "state.h"
 #include "intermediate_node.h"
 #include "node_statistic.h"
-#include <memory>
-#include <unordered_map>
-#include <boost/functional/hash.hpp>
-#include <iostream>
-#include "common.h"
-#include <fstream>
 #include "mcts_parameters.h"
-#include "test/crossing_test/common.hpp"
-#include <string>
 
 namespace mcts {
 
