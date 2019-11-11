@@ -17,10 +17,12 @@ CrossingStateParameter make_default_crossing_state_parameters() {
   p.depth_prio = static_cast<size_t>(RewardPriority::TIME);
   p.speed_deviation_prio = static_cast<size_t>(RewardPriority::GOAL);
   p.acceleration_prio = static_cast<size_t>(RewardPriority::GOAL);
+  p.potential_prio = static_cast<size_t>(RewardPriority::GOAL);
 
   p.depth_weight = 1.0f;
   p.speed_deviation_weight = 1.0f;
   p.acceleration_weight = 1.0f;
+  p.potential_weight = 20.0f;
 
   return p;
 };

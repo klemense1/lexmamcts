@@ -70,17 +70,19 @@ std::shared_ptr<CrossingState> CrossingState::execute(const JointAction &joint_a
     for (auto le : label_evaluator_) {
       labels[le->get_label_str()] = le->evaluate(next_world);
     }
-    assert(ego_agent_idx == 0);
-    if (agent_idx == ego_agent_idx) {
-      terminal = labels["goal_reached"] || labels["collision"] || (depth_ + 1 >= parameters_.terminal_depth_);
-    }
     rewards[agent_idx] = Reward::Zero();
 
     // Automata transit
     for (EvaluatorRuleLTL &aut : (next_automata[agent_idx])) {
       rewards[agent_idx](aut.get_type()) += aut.evaluate(labels);
     }
+
     rewards[agent_idx] += get_action_cost(joint_action[agent_idx], agent_idx);
+    assert(ego_agent_idx == 0);
+    if (agent_idx == ego_agent_idx) {
+      terminal = labels["goal_reached"] || labels["collision"] || (depth_ + 1 >= parameters_.terminal_depth_);
+    }
+    rewards[agent_idx] += get_shaping_reward(next_agent_states[agent_idx]) - get_shaping_reward(agent_states_[agent_idx]);
     labels.clear();
   } // End for each agent
 
@@ -108,6 +110,12 @@ Reward CrossingState::get_action_cost(ActionIdx action, AgentIdx agent_idx) cons
           * parameters_.acceleration_weight;
   return reward;
 }
+Reward CrossingState::get_shaping_reward(const AgentState &agent_state) const {
+  Reward reward = Reward::Zero();
+  // Potential for goal distance
+  reward(parameters_.potential_prio) += -parameters_.potential_weight * std::abs(parameters_.ego_goal_reached_position - agent_state.x_pos);
+  return reward;
+}
 void CrossingState::update_rule_belief() {
   for (size_t agent_idx = 0; agent_idx < automata_.size(); agent_idx++) {
     if (agent_idx == ego_agent_idx) {
@@ -133,8 +141,6 @@ std::vector<Reward> CrossingState::get_final_reward() const {
     for (EvaluatorRuleLTL const &aut : (automata_[agent_idx])) {
       rewards[agent_idx](aut.get_type()) += aut.get_final_reward();
     }
-    // Reward for goal proximity
-    //rewards[agent_idx](RewardPriority::GOAL) += ALPHA * fmin(agent_states_[agent_idx].x_pos, ego_goal_reached_position);
   }
   return rewards;
 }
