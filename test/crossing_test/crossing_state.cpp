@@ -82,7 +82,10 @@ std::shared_ptr<CrossingState> CrossingState::execute(const JointAction &joint_a
     if (agent_idx == ego_agent_idx) {
       terminal = labels["goal_reached"] || labels["collision"] || (depth_ + 1 >= parameters_.terminal_depth_);
     }
-    rewards[agent_idx] += get_shaping_reward(next_agent_states[agent_idx]) - get_shaping_reward(agent_states_[agent_idx]);
+    if(!labels["goal_reached"]) {
+      rewards[agent_idx] +=
+          get_shaping_reward(next_agent_states[agent_idx]) - get_shaping_reward(agent_states_[agent_idx]);
+    }
     labels.clear();
   } // End for each agent
 
