@@ -19,10 +19,11 @@
 #include "test/crossing_test/common.hpp"
 #include "mcts/statistics/pareto_uct_statistic.h"
 #include "mcts/statistics/slack_uct_statistic.h"
+#include "common.h"
 
 using namespace mcts;
 
-template<class Stats = UctStatistic<>>
+template<class Stats = UctStatistic<>, class Heuristic = RandomHeuristic>
 class CrossingTestEnv {
  public:
   CrossingTestEnv(MctsParameters const &mcts_parameters, CrossingStateParameter const &crossing_state_parameter)
@@ -69,16 +70,28 @@ class CrossingTestEnv {
     LOG(INFO) << "Ego positions:" << pos_history;
     LOG(INFO) << "Otr positions:" << pos_history_other;
   }
+  const JointAction &get_jt() const {
+    return jt;
+  }
+  void set_jt(const JointAction &jt) {
+    CrossingTestEnv::jt = jt;
+    action_history.emplace_back(jt);
+  }
+  const std::deque<JointAction> &get_action_history() const {
+    return action_history;
+  }
   MctsParameters const mcts_parameters_;
   CrossingStateParameter const crossing_state_parameter_;
   std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> label_evaluators;
   Automata automata;
   std::vector<Reward> rewards;
-  JointAction jt;
   std::vector<std::size_t> pos_history;
   std::vector<size_t> pos_history_other;
-  Mcts<CrossingState, Stats, Stats, RandomHeuristic> mcts;
+  Mcts<CrossingState, Stats, Stats, Heuristic> mcts;
   std::shared_ptr<CrossingState> state;
+ private:
+  JointAction jt;
+  std::deque<JointAction> action_history;
 };
 
 #endif  // MAMCTS_TEST_CROSSING_TEST_CROSSING_TEST_ENV_H_

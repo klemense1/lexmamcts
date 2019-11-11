@@ -11,7 +11,6 @@
 #include "test/crossing_test/common.hpp"
 #include "mcts/mcts.h"
 
-#include "mcts/random_generator.h"
 #include "test/crossing_test/crossing_state.hpp"
 #include "test/crossing_test/tests/crossing_test_env.h"
 #include "test/crossing_test/label_evaluator/evaluator_label_speed.hpp"
@@ -22,9 +21,12 @@
 //typedef SlackUCTStatistic Stat;
 typedef UctStatistic<> Stat;
 
-class CrossingTestF : public CrossingTestEnv<Stat>, public ::testing::Test {
+//typedef SemiRandomHeuristic HeuristicType;
+typedef RandomHeuristic HeuristicType;
+
+class CrossingTestF : public CrossingTestEnv<Stat, HeuristicType>, public ::testing::Test {
  public:
-  CrossingTestF() : CrossingTestEnv<Stat>() {};
+  CrossingTestF() : CrossingTestEnv<Stat, HeuristicType>() {};
 };
 
 TEST_F(CrossingTestF, general) {
@@ -37,9 +39,9 @@ TEST_F(CrossingTestF, general) {
   while (!state->is_terminal() && steps < MAX_STEPS) {
     mcts.search(*state, 50000, 1000);
     //jt[0] = mcts.returnBestAction()[0];
-    jt = mcts.returnBestAction();
-    LOG(INFO) << "Performing action:" << jt;
-    state = state->execute(jt, rewards);
+    set_jt(mcts.returnBestAction());
+    LOG(INFO) << "Performing action:" << get_jt();
+    state = state->execute(get_jt(), rewards);
     accu_reward += rewards;
     //state->reset_depth();
     pos_history.emplace_back(state->get_ego_pos());
@@ -77,16 +79,18 @@ TEST_F(CrossingTestF, belief) {
 
     // Ego search
     mcts.search(*ego_state ,50000, 1000);
-    jt[0] = mcts.returnBestAction()[0];
-    other_jt[1] = jt[0];
+    JointAction modified_jt = get_jt();
+    modified_jt[0] = mcts.returnBestAction()[0];
+    other_jt[1] = modified_jt[0];
 
     // Other search
     mcts.search(*state, 50000, 1000);
-    jt[1] = mcts.returnBestAction()[0]; //Note that other is now in the ego perspective
-    other_jt[0] = jt[1];
+    modified_jt[1] = mcts.returnBestAction()[0]; //Note that other is now in the ego perspective
+    other_jt[0] = modified_jt[1];
+    set_jt(modified_jt);
 
-    LOG(INFO) << "Performing action:" << jt;
-    ego_state = ego_state->execute(jt, rewards);
+    LOG(INFO) << "Performing action:" << get_jt();
+    ego_state = ego_state->execute(get_jt(), rewards);
 
     state = state->execute(other_jt, rewards);
 
@@ -113,12 +117,12 @@ TEST_F(CrossingTestF, giveWay) {
   agent_states[1].last_action = Actions::FORWARD;
   automata[0].emplace_back("G((at_hp_xing & other_near) -> (X at_hp_xing))", -500.0f, RewardPriority::SAFETY);
   state = std::make_shared<CrossingState>(agent_states, false, automata, label_evaluators, crossing_state_parameter_, 0);
-  state = state->execute(jt, rewards);
-  state = state->execute(jt, rewards);
-  state = state->execute(jt, rewards);
-  state = state->execute(jt, rewards);
+  state = state->execute(get_jt(), rewards);
+  state = state->execute(get_jt(), rewards);
+  state = state->execute(get_jt(), rewards);
+  state = state->execute(get_jt(), rewards);
   ASSERT_EQ(rewards[0](0), -500);
-  state->execute(jt, rewards);
+  state->execute(get_jt(), rewards);
 }
 
 TEST_F(CrossingTestF, LexicographicOrder) {
