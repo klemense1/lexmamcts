@@ -66,7 +66,7 @@ class Mcts {
 template<class S, class SE, class SO, class H>
 void Mcts<S, SE, SO, H>::search(const S &current_state, unsigned int max_search_time_ms, unsigned int max_iterations) {
   namespace chr = std::chrono;
-  LOG(INFO) << "MCTS search samples: " << max_iterations;
+  DLOG(INFO) << "MCTS search samples: " << max_iterations;
   auto start = std::chrono::high_resolution_clock::now();
 
   StageNode<S, SE, SO, H>::reset_counter();
