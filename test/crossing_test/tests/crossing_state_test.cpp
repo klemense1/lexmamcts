@@ -38,9 +38,10 @@ TEST_F(CrossingTestF, general) {
   p.speed_deviation_prio = 0;
   p.acceleration_prio = 0;
   p.potential_prio = 0;
-  p.depth_weight = 5;
+  p.depth_weight = 0;
   p.speed_deviation_weight = 10;
   p.acceleration_weight = 10;
+  p.potential_weight = 0;
   state = std::make_shared<CrossingState>(automata, label_evaluators, p);
   const int MAX_STEPS = 40;
   int steps = 0;
