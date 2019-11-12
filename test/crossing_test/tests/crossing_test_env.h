@@ -43,19 +43,20 @@ class CrossingTestEnv {
     automata.resize(crossing_state_parameter_.num_other_agents + 1);
 
     label_evaluators.emplace_back(std::make_shared<EvaluatorLabelSpeed>("speeding"));
-    automata[0].emplace_back("G !speeding", -100.0f, RewardPriority::SAFETY);
+//    automata[0].emplace_back("G !speeding", -150.0f, RewardPriority::SAFETY);
 
     // Finally arrive at goal (Liveness)
 //    automata[0].emplace_back("F goal_reached", 0.f, RewardPriority::SAFETY, 1.0f, 100);
     // Do not collide with others (Safety)
     automata[0].emplace_back("G !collision", -1000.f, RewardPriority::SAFETY);
+    automata[0].emplace_back("G(at_hp_xing -> X !at_hp_xing)", -300.f, RewardPriority::SAFETY);
     // Copy rules to other agents
     for (size_t i = 1; i < automata.size(); ++i) {
       automata[i] = Automata::value_type(automata[0]);
     }
 
     // Rules only for ego
-    automata[0].emplace_back("G(other_near -> !at_hp_xing)", -200.0f, RewardPriority::SAFETY);
+    automata[0].emplace_back("G(other_near -> !at_hp_xing)", -500.0f, RewardPriority::SAFETY);
     // Arrive before others (Guarantee)
     // Currently not possible because ego can't drive faster than others
     //automata.emplace_back("!other_goal_reached U ego_goal_reached", -1000.f, RewardPriority::GOAL);

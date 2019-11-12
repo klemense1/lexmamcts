@@ -56,11 +56,11 @@ MctsParameters make_default_mcts_parameters() {
 
   param.random_heuristic.MAX_SEARCH_TIME_RANDOM_HEURISTIC = 10000;
   param.random_heuristic.MAX_NUMBER_OF_ITERATIONS = 40;
-  param.COOP_FACTOR = 0;
+  param.COOP_FACTOR = 0.0;
   param.DISCOUNT_FACTOR = 0.9;
 
   param.uct_statistic.EXPLORATION_CONSTANT = 1;
-  param.uct_statistic.LOWER_BOUND = Eigen::Vector4f(-2000.0f, -1000.0f, -1000.0f, -1000.0f);
+  param.uct_statistic.LOWER_BOUND = Eigen::Vector4f(-80000.0f, -1000.0f, -1000.0f, -1000.0f);
   param.uct_statistic.UPPER_BOUND = Eigen::Vector4f(0.0f, 1000.0f, 0.0f, 0.0f);
 
   param.e_greedy_uct_statistic_.EPSILON = 0.1;

@@ -39,8 +39,8 @@ TEST_F(CrossingTestF, general) {
   p.acceleration_prio = 0;
   p.potential_prio = 0;
   p.depth_weight = 0;
-  p.speed_deviation_weight = 10;
-  p.acceleration_weight = 10;
+  p.speed_deviation_weight = 200;
+  p.acceleration_weight = 0;
   p.potential_weight = 0;
   state = std::make_shared<CrossingState>(automata, label_evaluators, p);
   const int MAX_STEPS = 40;
@@ -51,12 +51,10 @@ TEST_F(CrossingTestF, general) {
   pos_history_other.emplace_back(state->get_agent_states()[1].x_pos);
   while (!state->is_terminal() && steps < MAX_STEPS) {
     mcts.search(*state, 50000, 5000);
-    //jt[0] = mcts.returnBestAction()[0];
     set_jt(mcts.returnBestAction());
     LOG(INFO) << "Performing action:" << get_jt();
     state = state->execute(get_jt(), rewards);
     accu_reward += rewards;
-    //state->reset_depth();
     pos_history.emplace_back(state->get_ego_pos());
     pos_history_other.emplace_back(state->get_agent_states()[1].x_pos);
     ++steps;
