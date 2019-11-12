@@ -23,6 +23,7 @@ CrossingState::CrossingState(Automata &automata,
   for (auto &state : agent_states_) {
     state = AgentState();
   }
+  agent_states_[1].x_pos = 1;
 }
 
 CrossingState::CrossingState(const std::vector<AgentState> &agent_states,
