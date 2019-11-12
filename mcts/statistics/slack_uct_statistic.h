@@ -91,7 +91,7 @@ class SlackUCTStatistic : public UctStatistic<SlackUCTStatistic> {
     auto action_it = ucb_statistics_.find(action);
     if (action_it != ucb_statistics_.end()) {
       ss << ", sigma="
-         << (m_2_.at(action) / static_cast<double>(action_it->second.action_count_)).cwiseSqrt().transpose();
+         << (get_reward_variance(action)).cwiseSqrt().transpose();
     }
     return ss.str();
   }
@@ -108,7 +108,7 @@ class SlackUCTStatistic : public UctStatistic<SlackUCTStatistic> {
         double t = quantile(complement(dist, mcts_parameters_.slack_uct_statistic_.ALPHA / 2.0));
         // Standard deviation according to
         // https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance
-        ObjectiveVec std_dev = (m_2_.at(idx) / static_cast<double>(pair.action_count_)).cwiseSqrt();
+        ObjectiveVec std_dev = (get_reward_variance(idx)).cwiseSqrt();
         // confidence interval radius
         values[idx] = t * std_dev / sqrt(static_cast<double>(pair.action_count_));
       } else {
@@ -118,6 +118,10 @@ class SlackUCTStatistic : public UctStatistic<SlackUCTStatistic> {
   }
 
  private:
+  ObjectiveVec get_reward_variance(ActionIdx action_idx) const {
+    const UcbPair &pair = ucb_statistics_.at(action_idx);
+    return m_2_.at(action_idx) / static_cast<double>(pair.action_count_);
+  }
   std::vector<ObjectiveVec> m_2_;
 };
 }  // namespace mcts
