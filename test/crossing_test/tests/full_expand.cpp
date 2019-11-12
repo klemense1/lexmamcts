@@ -86,7 +86,7 @@ int main(int argc, char **argv) {
   FLAGS_logtostderr = 1;
   CrossingTestEnv<UctStatistic<>> optimal;
   size_t const num_agents = 2;
-  int const max_depth = optimal.state->terminal_depth_;
+  int const max_depth = optimal.state->get_parameters().terminal_depth_;
   CrossingTestEnv<> test_env;
   shared_ptr<QValPair> root = make_shared<QValPair>(num_agents);
   ActionList actions = possible_actions(static_cast<ActionIdx>(Actions::NUM), num_agents);

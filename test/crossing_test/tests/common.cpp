@@ -13,14 +13,21 @@ std::vector<Reward> get_optimal_reward(std::shared_ptr<CrossingState> const init
   std::vector<Reward> rewards(state->get_agent_idx().size(), Reward::Zero());
   std::vector<Reward> accu_reward(state->get_agent_idx().size(), Reward::Zero());
   DLOG(INFO) << state->sprintf();
-  jt[1] = aconv(Actions::WAIT);
-  for (int i = 0; i < 2; ++i) {
+
+  for (int i = 0; i < init_state->get_parameters().crossing_point-2; ++i) {
     state = state->execute(jt, rewards);
     accu_reward += rewards;
     DLOG(INFO) << state->sprintf();
   }
 
-  jt[1] = aconv(Actions::FORWARD);
+  jt[0] = aconv(Actions::WAIT);
+  for (int i = 0; i < 1; ++i) {
+    state = state->execute(jt, rewards);
+    accu_reward += rewards;
+    DLOG(INFO) << state->sprintf();
+  }
+
+  jt[0] = aconv(Actions::FORWARD);
   while (!state->is_terminal()) {
     state = state->execute(jt, rewards);
     accu_reward += rewards;

@@ -44,7 +44,7 @@ std::shared_ptr<CrossingState> CrossingState::execute(const JointAction &joint_a
   EvaluationMap labels;
   Automata next_automata(automata_);
   World next_world;
-  bool terminal;
+  bool terminal = false;
   std::vector<AgentState> next_agent_states(agent_states_.size());
   rewards.resize(parameters_.num_other_agents + 1);
 
@@ -79,10 +79,7 @@ std::shared_ptr<CrossingState> CrossingState::execute(const JointAction &joint_a
     }
 
     rewards[agent_idx] += get_action_cost(joint_action[agent_idx], agent_idx);
-    assert(ego_agent_idx == 0);
-    if (agent_idx == ego_agent_idx) {
-      terminal = labels["goal_reached"] || labels["collision"] || (depth_ + 1 >= parameters_.terminal_depth_);
-    }
+    terminal |= labels["goal_reached"] || labels["collision"] || (depth_ + 1 >= parameters_.terminal_depth_);
     if(!labels["goal_reached"]) {
       rewards[agent_idx] +=
           get_shaping_reward(next_agent_states[agent_idx]) - get_shaping_reward(agent_states_[agent_idx]);
@@ -235,4 +232,7 @@ void CrossingState::draw(mcts::Viewer *viewer) const {
     }
   }
 
+}
+const CrossingStateParameter &CrossingState::get_parameters() const {
+  return parameters_;
 }

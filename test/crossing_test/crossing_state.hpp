@@ -77,6 +77,7 @@ class CrossingState : public mcts::StateInterface<CrossingState> {
   }
 
   std::string sprintf() const;
+  const CrossingStateParameter &get_parameters() const;
 
  private:
   Reward get_action_cost(ActionIdx action, AgentIdx agent_idx) const;
