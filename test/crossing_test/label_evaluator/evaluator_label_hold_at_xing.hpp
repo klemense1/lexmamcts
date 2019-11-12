@@ -19,7 +19,8 @@ class EvaluatorLabelHoldAtXing : public EvaluatorLabelBase<World> {
 };
 
 bool EvaluatorLabelHoldAtXing::evaluate(const World &state) const {
-  return state.first.x_pos == holding_point_;
+  return ((state.first.x_pos - static_cast<int>(aconv(state.first.last_action))) < holding_point_
+      && state.first.x_pos >= holding_point_) || state.first.x_pos == holding_point_;
 }
 
 #endif //MAMCTS_TEST_CROSSING_TEST_EVALUATOR_LABEL_HOLD_AT_XING_HPP_
