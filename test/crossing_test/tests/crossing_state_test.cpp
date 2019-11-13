@@ -45,7 +45,10 @@ TEST_F(CrossingTestF, general) {
   state = std::make_shared<CrossingState>(automata, label_evaluators, p);
   const int MAX_STEPS = 40;
   int steps = 0;
-  std::vector<Reward> optimal_reward = get_optimal_reward(state);
+  CrossingTestEnv<Stat, HeuristicType> optimal_env(static_cast<CrossingTestEnv<Stat, HeuristicType>>(*this));
+  optimal_env.state = std::make_shared<CrossingState>(automata, label_evaluators, p);
+  get_optimal_reward(&optimal_env);
+  std::vector<Reward> optimal_reward = optimal_env.rewards;
   std::vector<Reward> accu_reward(state->get_agent_idx().size(), Reward::Zero());
   pos_history.emplace_back(state->get_ego_pos());
   pos_history_other.emplace_back(state->get_agent_states()[1].x_pos);
@@ -96,7 +99,7 @@ TEST_F(CrossingTestF, belief) {
 
     // Other search
     mcts.search(*state, 50000, 1000);
-    modified_jt[1] = mcts.returnBestAction()[0]; //Note that other is now in the ego perspective
+    modified_jt[1] = mcts.returnBestAction()[0]; //  Note that other is now in the ego perspective
     other_jt[0] = modified_jt[1];
     set_jt(modified_jt);
 
