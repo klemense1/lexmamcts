@@ -21,6 +21,8 @@ struct MctsParameters {
 
   struct UctStatistic {
     double EXPLORATION_CONSTANT;
+    bool PROGRESSIVE_WIDENING_ENABLED;
+    double PROGRESSIVE_WIDENING_ALPHA;
     ObjectiveVec LOWER_BOUND;
     ObjectiveVec UPPER_BOUND;
   };

@@ -54,7 +54,7 @@ class UctStatistic :
 
   template<class S>
   ActionIdx choose_next_action(const S &state, std::vector<int> &unexpanded_actions) {
-    if (unexpanded_actions.empty()) {
+    if (unexpanded_actions.empty() || pw_limit_reached(unexpanded_actions)) {
       // Select an action based on the UCB formula
       std::vector<Eigen::VectorXf> values;
       calculate_ucb_values(ucb_statistics_, values);
@@ -171,6 +171,12 @@ class UctStatistic :
           + 2 * this->mcts_parameters_.DISCOUNT_FACTOR
               * sqrt((2 * log(total_node_visits_)) / (ucb_statistics.at(idx).action_count_));
     }
+  }
+
+  inline bool pw_limit_reached(const std::vector<int> &unexpanded_actions) const {
+    return ((ucb_statistics_.size() - unexpanded_actions.size())
+        > std::floor(std::pow(total_node_visits_ + 1, this->mcts_parameters_.uct_statistic.PROGRESSIVE_WIDENING_ALPHA)))
+        && this->mcts_parameters_.uct_statistic.PROGRESSIVE_WIDENING_ENABLED;
   }
 
   ObjectiveVec value_;
