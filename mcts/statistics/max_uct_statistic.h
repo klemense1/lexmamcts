@@ -18,8 +18,11 @@ class MaxUCTStatistic : public UctStatistic<MaxUCTStatistic> {
 
  public:
   MaxUCTStatistic(ActionIdx num_actions, MctsParameters const &mcts_parameters) : UctStatistic<MaxUCTStatistic>(
-      num_actions,
-      mcts_parameters) {}
+      num_actions, mcts_parameters) {
+    for (auto &pair : ucb_statistics_) {
+      pair.second.action_value_ = mcts_parameters.uct_statistic.LOWER_BOUND;
+    }
+  }
 
   void update_statistic(const ParentType &changed_child_statistic) {
     const MaxUCTStatistic &changed_uct_statistic = changed_child_statistic.impl();
