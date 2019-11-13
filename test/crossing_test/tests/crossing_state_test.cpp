@@ -20,11 +20,11 @@
 #include "mcts/heuristics/semi_random_heuristic.h"
 #include "mcts/statistics/max_uct_statistic.h"
 
-typedef ThresUCTStatistic Stat;
+//typedef ThresUCTStatistic Stat;
 //typedef EGreedyUCTStatistic Stat;
 //typedef SlackUCTStatistic Stat;
 //typedef UctStatistic<> Stat;
-//typedef MaxUCTStatistic Stat;
+typedef MaxUCTStatistic Stat;
 
 //typedef SemiRandomHeuristic HeuristicType;
 typedef RandomHeuristic HeuristicType;
@@ -55,8 +55,10 @@ TEST_F(CrossingTestF, general) {
   pos_history.emplace_back(state->get_ego_pos());
   pos_history_other.emplace_back(state->get_agent_states()[1].x_pos);
   while (!state->is_terminal() && steps < MAX_STEPS) {
-    mcts.search(*state, 50000, 5000);
-    set_jt(mcts.returnBestAction());
+    mcts.search(*state, 50000, 10000);
+    JointAction jt = mcts.returnBestAction();
+//    jt[1] = aconv(Actions::FORWARD);
+    set_jt(jt);
     LOG(INFO) << "Performing action:" << get_jt();
     state = state->execute(get_jt(), rewards);
     accu_reward += rewards;

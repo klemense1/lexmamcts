@@ -46,7 +46,7 @@ class CrossingTestEnv {
     automata[0].emplace_back("G !speeding", -1.0f, RewardPriority::LEGAL_RULE_B);
 
     // Finally arrive at goal (Liveness)
-    automata[0].emplace_back("F goal_reached", -100.f, RewardPriority::GOAL, 1.0f, 100);
+//    automata[0].emplace_back("F goal_reached", -100.f, RewardPriority::GOAL, 1.0f, 100);
     // Do not collide with others (Safety)
     automata[0].emplace_back("G !collision", -1.f, RewardPriority::SAFETY);
 //    automata[0].emplace_back("G(at_hp_xing -> X !at_hp_xing)", -300.f, RewardPriority::SAFETY);
