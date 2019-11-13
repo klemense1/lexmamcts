@@ -20,11 +20,9 @@ typedef std::map<std::string, bool> EvaluationMap;
 
 enum RewardPriority {
   SAFETY = 0,
-  LEGAL_RULE = 1,
-  LEGAL_RULE_B = 2,
-  GOAL = 1,
-  TIME = 2,
-  EFFICIENCY = 3,
+  LEGAL_RULE,
+  LEGAL_RULE_B,
+  GOAL,
 };
 
 class EvaluatorRuleLTL {

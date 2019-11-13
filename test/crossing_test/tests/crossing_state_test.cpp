@@ -18,11 +18,13 @@
 #include "mcts/statistics/e_greedy_uct_statistic.h"
 #include "mcts/statistics/thres_uct_statistic.h"
 #include "mcts/heuristics/semi_random_heuristic.h"
+#include "mcts/statistics/max_uct_statistic.h"
 
-//typedef ThresUCTStatistic Stat;
+typedef ThresUCTStatistic Stat;
 //typedef EGreedyUCTStatistic Stat;
 //typedef SlackUCTStatistic Stat;
-typedef UctStatistic<> Stat;
+//typedef UctStatistic<> Stat;
+//typedef MaxUCTStatistic Stat;
 
 //typedef SemiRandomHeuristic HeuristicType;
 typedef RandomHeuristic HeuristicType;
@@ -34,14 +36,14 @@ class CrossingTestF : public CrossingTestEnv<Stat, HeuristicType>, public ::test
 
 TEST_F(CrossingTestF, general) {
   CrossingStateParameter p = make_default_crossing_state_parameters();
-  p.depth_prio = 0;
-  p.speed_deviation_prio = 0;
-  p.acceleration_prio = 0;
-  p.potential_prio = 0;
+  p.depth_prio = static_cast<int>(RewardPriority::GOAL);
+  p.speed_deviation_prio = static_cast<int>(RewardPriority::GOAL);
+  p.acceleration_prio = static_cast<int>(RewardPriority::GOAL);
+  p.potential_prio = static_cast<int>(RewardPriority::GOAL);
   p.depth_weight = 0;
-  p.speed_deviation_weight = 200;
+  p.speed_deviation_weight = 0;
   p.acceleration_weight = 0;
-  p.potential_weight = 0;
+  p.potential_weight = 1;
   state = std::make_shared<CrossingState>(automata, label_evaluators, p);
   const int MAX_STEPS = 40;
   int steps = 0;
@@ -82,7 +84,7 @@ TEST_F(CrossingTestF, belief) {
   JointAction other_jt(2);
 
   label_evaluators.emplace_back(std::make_shared<EvaluatorLabelSpeed>("speeding"));
-  automata[1].emplace_back("G !speeding", -20.0f, RewardPriority::SAFETY, 0.9);
+  automata[1].emplace_back("G !speeding", -20.0f, RewardPriority::LEGAL_RULE_B, 0.9);
   std::shared_ptr<CrossingState> ego_state = std::make_shared<CrossingState>(automata, label_evaluators, crossing_state_parameter_);
 
   pos_history.emplace_back(ego_state->get_ego_pos());

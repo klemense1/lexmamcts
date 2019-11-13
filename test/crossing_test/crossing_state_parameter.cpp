@@ -14,7 +14,7 @@ CrossingStateParameter make_default_crossing_state_parameters() {
   p.ALPHA = 10.0f;
   p.crossing_point = (p.state_x_length - 1) / 2 + 1;
 
-  p.depth_prio = static_cast<size_t>(RewardPriority::TIME);
+  p.depth_prio = static_cast<size_t>(RewardPriority::GOAL);
   p.speed_deviation_prio = static_cast<size_t>(RewardPriority::GOAL);
   p.acceleration_prio = static_cast<size_t>(RewardPriority::GOAL);
   p.potential_prio = static_cast<size_t>(RewardPriority::GOAL);
