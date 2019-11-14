@@ -17,10 +17,9 @@ using namespace mcts;
 
 
 void define_mamcts(py::module m) {
-  using mcts1 = Mcts<CrossingState, UctStatistic, UctStatistic, RandomHeuristic>;
+  using mcts1 = Mcts<CrossingState, UctStatistic<>, UctStatistic<>, RandomHeuristic>;
   py::class_<mcts1,
-             std::shared_ptr<mcts1>>(m, "MctsCrossingStateUctUct")
-      .def(py::init<>())
+             std::shared_ptr<mcts1>>(m, "MctsCrossingStateUctUct").def(py::init<MctsParameters>())
       .def("__repr__", [](const mcts1 &m) {
         return "mamcts.MctsCrossingStateUctUct";
       });

@@ -31,7 +31,8 @@ void define_environments(py::module m) {
   py::class_<CrossingState,
              std::shared_ptr<CrossingState>>(m, "CrossingState")
       .def(py::init<Automata &,
-                    const std::vector<std::shared_ptr<EvaluatorLabelBase<World>>>>())
+                    const std::vector<std::shared_ptr<EvaluatorLabelBase<World>>>,
+                    CrossingStateParameter>())
       .def("__repr__", [](const CrossingState &m) {
         return "mamcts.CrossingState";
       })
