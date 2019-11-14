@@ -21,8 +21,8 @@ MctsParameters make_default_mcts_parameters() {
   param.COOP_FACTOR = 0.0;
   param.DISCOUNT_FACTOR = 1;
 
-  param.uct_statistic.PROGRESSIVE_WIDENING_ENABLED = true;
-  param.uct_statistic.PROGRESSIVE_WIDENING_ALPHA = 0.25;
+  param.uct_statistic.PROGRESSIVE_WIDENING_ENABLED = false;
+  param.uct_statistic.PROGRESSIVE_WIDENING_ALPHA = 0.5;
 
   param.uct_statistic.EXPLORATION_CONSTANT = 1;
   param.uct_statistic.LOWER_BOUND = Eigen::Vector4f(-5000.0f, -5000.0f, -5000.0f, -5000.0f);

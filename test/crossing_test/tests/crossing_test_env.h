@@ -24,6 +24,10 @@
 
 using namespace mcts;
 
+enum Rule {
+  NO_COLLISION = 0, REACH_GOAL, NO_SPEEDING, GIVE_WAY, LEAVE_INTERSECTION, NUM,
+};
+
 template<class Stats = UctStatistic<>, class Heuristic = RandomHeuristic>
 class CrossingTestEnv {
  public:
@@ -39,34 +43,23 @@ class CrossingTestEnv {
     label_evaluators.emplace_back(std::make_shared<EvaluatorLabelHoldAtXing>("at_hp_xing",
                                                                              crossing_state_parameter_.crossing_point+1));
     label_evaluators.emplace_back(std::make_shared<EvaluatorLabelOtherNear>("other_near"));
+    label_evaluators.emplace_back(std::make_shared<EvaluatorLabelSpeed>("speeding"));
     // SETUP RULES
     automata.resize(crossing_state_parameter_.num_other_agents + 1);
 
-    label_evaluators.emplace_back(std::make_shared<EvaluatorLabelSpeed>("speeding"));
-    automata[0].emplace_back("G !speeding", -1.0f, RewardPriority::LEGAL_RULE_B);
+    automata[0].insert({Rule::NO_SPEEDING, EvaluatorRuleLTL("G !speeding", -1.0f, RewardPriority::LEGAL_RULE_B)});
+    automata[0].insert({Rule::REACH_GOAL, EvaluatorRuleLTL("F goal_reached", -100.f, RewardPriority::GOAL)});
+    automata[0].insert({Rule::NO_COLLISION, EvaluatorRuleLTL("G !collision", -1.0f, RewardPriority::SAFETY)});
+    automata[0].insert({Rule::LEAVE_INTERSECTION,
+                        EvaluatorRuleLTL("G(at_hp_xing -> X !at_hp_xing)", -300.f, RewardPriority::SAFETY)});
+    automata[0].insert({Rule::GIVE_WAY,
+                        EvaluatorRuleLTL("G(other_near -> !at_hp_xing)", -1.0f, RewardPriority::LEGAL_RULE)});
 
-    // Finally arrive at goal (Liveness)
-//    automata[0].emplace_back("F goal_reached", -100.f, RewardPriority::GOAL, 1.0f, 100);
-    // Do not collide with others (Safety)
-    automata[0].emplace_back("G !collision", -1.f, RewardPriority::SAFETY);
-//    automata[0].emplace_back("G(at_hp_xing -> X !at_hp_xing)", -300.f, RewardPriority::SAFETY);
-    // Copy rules to other agents
     for (size_t i = 1; i < automata.size(); ++i) {
-      automata[i] = Automata::value_type(automata[0]);
+      automata[i] = automata[0];
     }
 
-    // Rules only for ego
-    automata[0].emplace_back("G(other_near -> !at_hp_xing)", -1.0f, RewardPriority::LEGAL_RULE);
-    // Arrive before others (Guarantee)
-    // Currently not possible because ego can't drive faster than others
-    //automata.emplace_back("!other_goal_reached U ego_goal_reached", -1000.f, RewardPriority::GOAL);
-    for (size_t i = 0; i < automata.size(); i++) {
-      LOG(INFO) << "Rules for agent " << i << ":";
-      for (auto const &rule : automata[i]) {
-        LOG(INFO) << rule;
-      }
-    }
-    state = std::make_shared<CrossingState>(automata, label_evaluators, crossing_state_parameter_);
+    create_state();
     rewards = std::vector<Reward>(state->get_agent_idx().size(), Reward::Zero());
     jt = JointAction(2, (int) Actions::FORWARD);
   }
@@ -75,6 +68,21 @@ class CrossingTestEnv {
     LOG(INFO) << "Ego positions:" << pos_history;
     LOG(INFO) << "Otr positions:" << pos_history_other;
   }
+
+  void create_state() {
+    Automata aut_v(automata.size());
+    for (size_t i = 0; i < automata.size(); ++i) {
+      LOG(INFO) << "Rules for agent " << i << ":";
+      auto it = automata[i].begin();
+      for (size_t j = 0; j < automata[i].size(); ++j) {
+        LOG(INFO) << it->second;
+        aut_v[i].emplace_back(it->second);
+        ++it;
+      }
+    }
+    state = std::make_shared<CrossingState>(aut_v, label_evaluators, crossing_state_parameter_);
+  }
+
   const JointAction &get_jt() const {
     return jt;
   }
@@ -85,15 +93,24 @@ class CrossingTestEnv {
   const std::deque<JointAction> &get_action_history() const {
     return action_history;
   }
+  void set_automata(const std::vector<std::map<Rule, EvaluatorRuleLTL>> &automata) {
+    CrossingTestEnv::automata = automata;
+    create_state();
+  }
+  std::vector<std::map<Rule, EvaluatorRuleLTL>> get_automata() const {
+    return automata;
+  }
   MctsParameters const mcts_parameters_;
   CrossingStateParameter const crossing_state_parameter_;
   std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> label_evaluators;
-  Automata automata;
   std::vector<Reward> rewards;
   std::vector<std::size_t> pos_history;
   std::vector<size_t> pos_history_other;
   Mcts<CrossingState, Stats, Stats, Heuristic> mcts;
   std::shared_ptr<CrossingState> state;
+ protected:
+  std::vector<std::map<Rule, EvaluatorRuleLTL>> automata;
+
  private:
   JointAction jt;
   std::deque<JointAction> action_history;

@@ -125,6 +125,15 @@ spot::formula EvaluatorRuleLTL::parse_formula(std::string ltl_formula_str) {
   }
   return pf.f;
 }
+void EvaluatorRuleLTL::set_weight(float weight) {
+  weight_ = weight;
+}
+void EvaluatorRuleLTL::set_final_reward(float final_reward) {
+  final_reward_ = final_reward;
+}
+void EvaluatorRuleLTL::set_type(RewardPriority type) {
+  type_ = type;
+}
 }
 }
 }

@@ -45,9 +45,12 @@ public:
 
   void update_belief();
 
-  friend std::ostream &operator<<(std::ostream &os, EvaluatorRuleLTL const &d);
+  void set_weight(float weight);
+  void set_final_reward(float final_reward);
+  void set_type(RewardPriority type);
 
-private:
+  friend std::ostream &operator<<(std::ostream &os, EvaluatorRuleLTL const &d);
+ private:
   static spot::formula parse_formula(std::string ltl_formula_str);
   static bool bdd_eval(bdd cond, const std::set<int> &vars);
 
