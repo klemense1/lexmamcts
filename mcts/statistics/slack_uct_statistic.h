@@ -16,29 +16,33 @@
 
 namespace mcts {
 
-bool slack_compare(Eigen::VectorXf const &a,
-                   Eigen::VectorXf const &b,
-                   Eigen::VectorXf const &slack_a,
-                   Eigen::VectorXf const &slack_b) {
-  assert(a.rows() == b.rows() && a.rows() == slack_a.rows() && b.rows() == slack_b.rows());
-  Eigen::VectorXf a_upper = a + slack_a;
-  Eigen::VectorXf a_lower = a - slack_a;
-  Eigen::VectorXf b_upper = b + slack_b;
-  Eigen::VectorXf b_lower = b - slack_b;
-  for (int i = 0; i < a_upper.rows(); ++i) {
-    if (a_upper(i) < b_lower(i)) {
-      return true;
-    } else if (b_upper(i) < a_lower(i)) {
-      return false;
-    }
-  }
-  return false;
-}
-
 class SlackUCTStatistic : public UctStatistic<SlackUCTStatistic> {
   typedef NodeStatistic<SlackUCTStatistic> ParentType;
 
  public:
+
+  struct SlackComperator {
+    SlackComperator(const std::vector<ObjectiveVec> &slack) : slack_(slack) {}
+    bool operator()(const ActionUCBMap::value_type &a, const ActionUCBMap::value_type &b) const {
+      assert(a.second.action_value_.rows() == b.second.action_value_.rows()
+                 && a.second.action_value_.rows() == slack_[a.first].rows()
+                 && b.second.action_value_.rows() == slack_[b.first].rows());
+      Eigen::VectorXf a_upper = a.second.action_value_ + slack_[a.first];
+      Eigen::VectorXf a_lower = a.second.action_value_ - slack_[a.first];
+      Eigen::VectorXf b_upper = b.second.action_value_ + slack_[b.first];
+      Eigen::VectorXf b_lower = b.second.action_value_ - slack_[b.first];
+      for (int i = 0; i < a_upper.rows(); ++i) {
+        if (a_upper(i) < b_lower(i)) {
+          return true;
+        } else if (b_upper(i) < a_lower(i)) {
+          return false;
+        }
+      }
+      return false;
+    }
+    const std::vector<ObjectiveVec> slack_;
+  };
+
   SlackUCTStatistic(ActionIdx num_actions, MctsParameters const &mcts_parameters) : UctStatistic<SlackUCTStatistic>(
       num_actions,
       mcts_parameters), m_2_(num_actions, ObjectiveVec::Zero()) {}
@@ -47,19 +51,17 @@ class SlackUCTStatistic : public UctStatistic<SlackUCTStatistic> {
     // Lexicographical ordering of the UCT value vectors
     std::vector<ObjectiveVec> slack;
     calculate_slack_values(ucb_statistics_, slack);
+    SlackComperator comp(slack);
     VLOG(1) << "Slack: " << slack;
     auto max = std::max_element(ucb_statistics_.begin(),
                                 ucb_statistics_.end(),
-                                [slack](ActionUCBMap::value_type const &a, ActionUCBMap::value_type const &b) {
+                                [comp](ActionUCBMap::value_type const &a, ActionUCBMap::value_type const &b) {
                                   if (a.second.action_count_ == 0) {
                                     return true;
                                   } else if (b.second.action_count_ == 0) {
                                     return false;
                                   } else {
-                                    return slack_compare(a.second.action_value_,
-                                                         b.second.action_value_,
-                                                         slack[a.first],
-                                                         slack[b.first]);
+                                    return comp(a, b);
                                   }
                                 });
     return max->first;
