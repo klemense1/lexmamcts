@@ -57,6 +57,18 @@ inline std::ostream& operator<<(std::ostream& os, const JointAction& a)
         return os;
     }
 
+inline std::ostream &operator<<(std::ostream &os, JointReward const &d) {
+  os << "[";
+  for (JointReward::const_iterator ii = d.begin(); ii != d.end(); ++ii) {
+    os << ii->transpose();
+    if (ii >= d.end() - 1) {
+      break;
+    }
+    os << ", ";
+  }
+  os << "]";
+  return os;
+}
 
 template<typename Implementation>
 class StateInterface {
