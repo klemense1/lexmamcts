@@ -65,19 +65,6 @@ cc_binary(
 )
 
 cc_binary(
-    name = "policy_compare",
-    srcs = [
-        "policy_compare.cpp",
-    ],
-    deps = [
-        ":util",
-        "//mcts",
-        "//test/crossing_test:crossing_state",
-        "@com_github_google_glog//:glog",
-    ],
-)
-
-cc_binary(
     name = "full_expand",
     srcs = [
         "full_expand.cpp",
