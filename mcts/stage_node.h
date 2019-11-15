@@ -155,10 +155,12 @@ bool StageNode<S, SE, SO, H>::select_or_expand(StageNodeSPtr &next_node) {
     Reward coop_sum = Reward::Zero();
     coop_sum = std::accumulate(reward_list.begin(), reward_list.end(), coop_sum);
     coop_sum = coop_sum * mcts_parameters_.COOP_FACTOR;
-    ego_int_node_.collect_reward(coop_sum + (1 - mcts_parameters_.COOP_FACTOR) * reward_list[S::ego_agent_idx],
+    ego_int_node_.collect_reward((coop_sum + (1 - mcts_parameters_.COOP_FACTOR) * reward_list[S::ego_agent_idx])
+                                     / (1.0 + mcts_parameters_.COOP_FACTOR * other_int_nodes_.size()),
                                  ja[S::ego_agent_idx]);
     for (auto it = other_int_nodes_.begin(); it != other_int_nodes_.end(); ++it) {
-      it->collect_reward(coop_sum + (1 - mcts_parameters_.COOP_FACTOR) * reward_list[it->get_agent_idx()],
+      it->collect_reward((coop_sum + (1 - mcts_parameters_.COOP_FACTOR) * reward_list[it->get_agent_idx()])
+                             / (1.0 + mcts_parameters_.COOP_FACTOR * other_int_nodes_.size()),
                          ja[it->get_agent_idx()]);
     }
   };

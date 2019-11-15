@@ -65,7 +65,8 @@ public:
     // generate an extra node statistic for each agent
     std::vector<SE> statistics(num_agents, SE(num_actions, mcts_parameters_));
     for (AgentIdx ai = 0; ai < num_agents; ++ai) {
-      statistics.at(ai).set_heuristic_estimate(coop_sum + (1.0f - mcts_parameters_.COOP_FACTOR) * accum_rewards.at(ai));
+      statistics.at(ai).set_heuristic_estimate((coop_sum + (1.0f - mcts_parameters_.COOP_FACTOR) * accum_rewards.at(ai))
+                                                   / (1.0 + mcts_parameters_.COOP_FACTOR * (num_agents - 1)));
     }
 
     return statistics;
