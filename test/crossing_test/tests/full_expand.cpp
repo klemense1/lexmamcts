@@ -84,10 +84,9 @@ int main(int argc, char **argv) {
   google::InitGoogleLogging(argv[0]);
   FLAGS_minloglevel = 1;
   FLAGS_logtostderr = 1;
-  CrossingTestEnv<UctStatistic<>> optimal;
   size_t const num_agents = 2;
-  int const max_depth = optimal.state->get_parameters().terminal_depth_;
   CrossingTestEnv<> test_env;
+  int const max_depth = test_env.state->get_parameters().terminal_depth_;
   shared_ptr<QValPair> root = make_shared<QValPair>(num_agents);
   ActionList actions = possible_actions(static_cast<ActionIdx>(Actions::NUM), num_agents);
   double total_nodes = (pow(actions.size(), max_depth + 1) - 1)/ static_cast<double>(actions.size() - 1);
