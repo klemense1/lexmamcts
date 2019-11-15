@@ -13,7 +13,7 @@
 
 #include "evaluator_rule_ltl.hpp"
 #include "test/crossing_test/common.hpp"
-#include "test/crossing_test/label_evaluator/evaluator_label_base.hpp"
+#include "test/crossing_test/label_evaluator/evaluator_label_base.h"
 #include "test/crossing_test/crossing_state_parameter.h"
 
 using namespace mcts;
