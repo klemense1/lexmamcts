@@ -8,7 +8,7 @@
 #define MCTS_PARAMETERS_H
 
 #ifndef REWARD_DIM
-#define REWARD_DIM 4
+#define REWARD_DIM 5
 #endif
 
 #include "Eigen/Core"

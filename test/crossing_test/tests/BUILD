@@ -1,10 +1,16 @@
 cc_library(
     name = "util",
-    srcs = ["common.cpp"],
+    srcs = [
+        "common.cpp",
+        "test_env_factory.cpp",
+        "test_runner.cpp",
+    ],
     hdrs = [
         "common.h",
         "crossing_state_episode_runner.h",
         "crossing_test_env.h",
+        "test_env_factory.h",
+        "test_runner.h",
     ],
     visibility = ["//visibility:public"],
     deps = [
