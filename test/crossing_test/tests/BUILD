@@ -102,3 +102,16 @@ cc_binary(
         "@com_github_google_glog//:glog",
     ],
 )
+
+cc_test(
+    name = "minimum_violation",
+    srcs = ["minimum_violation_test.cpp"],
+    copts = ["-Iexternal/gtest/include"],
+    deps = [
+        ":util",
+        "//mcts",
+        "//test/crossing_test:crossing_state",
+        "@com_github_google_glog//:glog",
+        "@gtest//:main",
+    ],
+)
