@@ -23,7 +23,7 @@
 #include "test/crossing_test/common.hpp"
 #include "mcts/statistics/pareto_uct_statistic.h"
 #include "mcts/statistics/slack_uct_statistic.h"
-#include "common.h"
+#include "test/crossing_test/tests/util.h"
 
 using namespace mcts;
 using EvaluatorRuleLTLSPtr = EvaluatorRuleLTL::EvaluatorRuleLTLSPtr;

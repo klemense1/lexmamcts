@@ -10,7 +10,7 @@
 #include <future>
 
 #include "test/crossing_test/tests/crossing_test_env.h"
-#include "test/crossing_test/tests/common.h"
+#include "test/crossing_test/tests/util.h"
 
 using namespace std;
 

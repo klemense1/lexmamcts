@@ -14,7 +14,7 @@
 
 #include "test/crossing_test/crossing_state.hpp"
 #include "test/crossing_test/tests/crossing_test_env.h"
-#include "test/crossing_test/tests/common.h"
+#include "test/crossing_test/tests/util.h"
 #include "mcts/statistics/thres_uct_statistic.h"
 #include "test_env_factory.h"
 

@@ -9,7 +9,7 @@
 #include <vector>
 #include <iostream>
 
-#include "test/crossing_test/tests/common.h"
+#include "test/crossing_test/tests/util.h"
 #include "test_env_factory.h"
 #include "test_runner.h"
 

@@ -3,7 +3,7 @@
 // Copyright (c) 2019 Luis Gressenbuch. All rights reserved.
 //
 
-#include "common.h"
+#include "util.h"
 
 Eigen::MatrixXf rewards_to_mat(std::vector<Reward> const &rewards) {
   Eigen::MatrixXf mat(Reward::RowsAtCompileTime, rewards.size());
