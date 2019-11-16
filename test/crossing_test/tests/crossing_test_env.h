@@ -16,7 +16,7 @@
 #include "mcts/random_generator.h"
 #include "test/crossing_test/label_evaluator/evaluator_label_collision.h"
 #include "test/crossing_test/label_evaluator/evaluator_label_goal_reached.h"
-#include "test/crossing_test/label_evaluator/evaluator_label_hold_at_xing.h"
+#include "test/crossing_test/label_evaluator/evaluator_label_at_position.h"
 #include "test/crossing_test/label_evaluator/evaluator_label_other_near.h"
 #include "test/crossing_test/label_evaluator/evaluator_label_speed.h"
 #include "test/crossing_test/label_evaluator/evaluator_label_other_goal_reached.h"
@@ -56,9 +56,9 @@ class BaseTestEnv {
     automata[0].insert({Rule::REACH_GOAL, EvaluatorRuleLTL::make_rule("F goal_reached", -100.f, RewardPriority::GOAL)});
     automata[0].insert({Rule::NO_COLLISION,
                         EvaluatorRuleLTL::make_rule("G !collision", -1.0f, RewardPriority::SAFETY)});
-    //    automata[0].insert({Rule::LEAVE_INTERSECTION,
-    //                        EvaluatorRuleLTL::make_rule("G(at_hp_xing -> X !at_hp_xing)", -300.f, RewardPriority::SAFETY)});
-    automata[0].insert({Rule::GIVE_WAY, EvaluatorRuleLTL::make_rule("G(other_near -> !at_hp_xing)",
+    automata[0].insert({Rule::LEAVE_INTERSECTION,
+                        EvaluatorRuleLTL::make_rule("G(at_xing -> X !at_xing)", -300.f, RewardPriority::SAFETY)});
+    automata[0].insert({Rule::GIVE_WAY, EvaluatorRuleLTL::make_rule("G(other_near -> !at_xing)",
                                                                     -1.0f,
                                                                     RewardPriority::LEGAL_RULE)});
 
@@ -72,7 +72,7 @@ class BaseTestEnv {
     std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> labels;
     labels.emplace_back(std::make_shared<EvaluatorLabelCollision>("collision", params.crossing_point));
     labels.emplace_back(std::make_shared<EvaluatorLabelGoalReached>("goal_reached", params.ego_goal_reached_position));
-    labels.emplace_back(std::make_shared<EvaluatorLabelHoldAtXing>("at_hp_xing", params.crossing_point + 1));
+    labels.emplace_back(std::make_shared<EvaluatorLabelAtPosition>("at_xing", params.crossing_point));
     labels.emplace_back(std::make_shared<EvaluatorLabelOtherNear>("other_near"));
     labels.emplace_back(std::make_shared<EvaluatorLabelSpeed>("speeding"));
     labels.emplace_back(std::make_shared<EvaluatorLabelOtherGoalReached>("other_goal_reached",

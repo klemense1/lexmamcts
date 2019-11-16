@@ -91,7 +91,7 @@ TEST_F(CrossingTestF, giveWay) {
   agent_states[0].last_action = Actions::FORWARD;
   agent_states[1].x_pos = 8;
   agent_states[1].last_action = Actions::FORWARD;
-  automata_[0].insert({Rule::GIVE_WAY, EvaluatorRuleLTL::make_rule("G((at_hp_xing & other_near) -> (X at_hp_xing))",
+  automata_[0].insert({Rule::GIVE_WAY, EvaluatorRuleLTL::make_rule("G((at_xing & other_near) -> (X at_xing))",
                                                                    -500.0f,
                                                                    RewardPriority::SAFETY)});
   state = std::make_shared<CrossingState>(agent_states,
