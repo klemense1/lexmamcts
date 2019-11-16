@@ -26,16 +26,13 @@
 #include "common.h"
 
 using namespace mcts;
-
-enum Rule {
-  NO_COLLISION = 0, REACH_GOAL, NO_SPEEDING, GIVE_WAY, LEAVE_INTERSECTION, REACH_GOAL_FIRST, NUM,
-};
+using EvaluatorRuleLTLSPtr = EvaluatorRuleLTL::EvaluatorRuleLTLSPtr;
 
 class BaseTestEnv {
  public:
   BaseTestEnv(MctsParameters mcts_parameters = make_default_mcts_parameters(),
               CrossingStateParameter crossing_state_parameter = make_default_crossing_state_parameters(),
-              std::vector<std::map<Rule, EvaluatorRuleLTL>> automata = make_default_automata(
+              std::vector<std::map<Rule, EvaluatorRuleLTLSPtr>> automata = make_default_automata(
                   make_default_crossing_state_parameters().num_other_agents + 1),
               std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> label_evaluators = make_default_labels(
                   make_default_crossing_state_parameters()))
@@ -52,14 +49,18 @@ class BaseTestEnv {
     LOG(INFO) << "Otr positions:" << pos_history_other;
   }
 
-  static std::vector<std::map<Rule, EvaluatorRuleLTL>> make_default_automata(size_t num_agents) {
-    std::vector<std::map<Rule, EvaluatorRuleLTL>> automata(num_agents);
-    automata[0].insert({Rule::NO_SPEEDING, EvaluatorRuleLTL("G !speeding", -1.0f, RewardPriority::LEGAL_RULE_B)});
-    automata[0].insert({Rule::REACH_GOAL, EvaluatorRuleLTL("F goal_reached", -100.f, RewardPriority::GOAL)});
-    automata[0].insert({Rule::NO_COLLISION, EvaluatorRuleLTL("G !collision", -1.0f, RewardPriority::SAFETY)});
-    automata[0].insert({Rule::LEAVE_INTERSECTION,
-                        EvaluatorRuleLTL("G(at_hp_xing -> X !at_hp_xing)", -300.f, RewardPriority::SAFETY)});
-    automata[0].insert({Rule::GIVE_WAY, EvaluatorRuleLTL("G(other_near -> !at_hp_xing)", -1.0f, RewardPriority::LEGAL_RULE)});
+  static std::vector<std::map<Rule, EvaluatorRuleLTLSPtr>> make_default_automata(size_t num_agents) {
+    std::vector<std::map<Rule, EvaluatorRuleLTLSPtr>> automata(num_agents);
+    automata[0].insert({Rule::NO_SPEEDING,
+                        EvaluatorRuleLTL::make_rule("G !speeding", -1.0f, RewardPriority::LEGAL_RULE_B)});
+    automata[0].insert({Rule::REACH_GOAL, EvaluatorRuleLTL::make_rule("F goal_reached", -100.f, RewardPriority::GOAL)});
+    automata[0].insert({Rule::NO_COLLISION,
+                        EvaluatorRuleLTL::make_rule("G !collision", -1.0f, RewardPriority::SAFETY)});
+    //    automata[0].insert({Rule::LEAVE_INTERSECTION,
+    //                        EvaluatorRuleLTL::make_rule("G(at_hp_xing -> X !at_hp_xing)", -300.f, RewardPriority::SAFETY)});
+    automata[0].insert({Rule::GIVE_WAY, EvaluatorRuleLTL::make_rule("G(other_near -> !at_hp_xing)",
+                                                                    -1.0f,
+                                                                    RewardPriority::LEGAL_RULE)});
 
     for (size_t i = 1; i < automata.size(); ++i) {
       automata[i] = automata[0];
@@ -99,24 +100,22 @@ class BaseTestEnv {
   std::vector<size_t> pos_history_other;
   std::shared_ptr<CrossingState> state;
  protected:
-  std::vector<std::map<Rule, EvaluatorRuleLTL>> automata_;
+  std::vector<std::map<Rule, EvaluatorRuleLTLSPtr>> automata_;
 
-  Automata get_automata_vec() const {
-    Automata aut_v(automata_.size());
+  RuleStateMap get_automata_vec() const {
+    RuleStateMap aut_v(automata_.size());
     for (size_t i = 0; i < automata_.size(); ++i) {
       LOG(INFO) << "Rules for agent " << i << ":";
-      auto it = automata_[i].begin();
-      for (size_t j = 0; j < automata_[i].size(); ++j) {
-        LOG(INFO) << it->second;
-        aut_v[i].emplace_back(it->second);
-        ++it;
+      for (const auto &it : automata_[i]) {
+        LOG(INFO) << *(it.second);
+        aut_v[i].insert({it.first, it.second->make_rule_state()});
       }
     }
     return aut_v;
   }
  private:
   void create_state() {
-    Automata aut_v = get_automata_vec();
+    RuleStateMap aut_v = get_automata_vec();
     state = std::make_shared<CrossingState>(aut_v, label_evaluators_, crossing_state_parameter_);
   }
 
@@ -129,7 +128,7 @@ class CrossingTestEnv : public BaseTestEnv {
  public:
   CrossingTestEnv(MctsParameters mcts_parameters = make_default_mcts_parameters(),
                   CrossingStateParameter crossing_state_parameter = make_default_crossing_state_parameters(),
-                  std::vector<std::map<Rule, EvaluatorRuleLTL>> automata = BaseTestEnv::make_default_automata(
+                  std::vector<std::map<Rule, EvaluatorRuleLTLSPtr>> automata = BaseTestEnv::make_default_automata(
                       make_default_crossing_state_parameters().num_other_agents + 1),
                   std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> label_evaluators = BaseTestEnv::make_default_labels(
                       make_default_crossing_state_parameters())) : BaseTestEnv(mcts_parameters,

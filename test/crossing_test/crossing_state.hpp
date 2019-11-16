@@ -11,7 +11,7 @@
 #include <iostream>
 #include <random>
 
-#include "evaluator_rule_ltl.hpp"
+#include "test/crossing_test/rule_evaluator/evaluator_rule_ltl.h"
 #include "test/crossing_test/common.hpp"
 #include "test/crossing_test/label_evaluator/evaluator_label_base.h"
 #include "test/crossing_test/crossing_state_parameter.h"
@@ -23,20 +23,19 @@ namespace mcts {
 class Viewer;
 }
 
-typedef std::vector<std::vector<EvaluatorRuleLTL>> Automata;
+typedef std::vector<std::map<Rule, RuleState>> RuleStateMap;
 
 // A simple environment with a 1D state, only if both agents select different actions, they get nearer to the terminal state
 class CrossingState : public mcts::StateInterface<CrossingState> {
 
  public:
-  CrossingState(Automata &automata,
-                const std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> label_evaluator,
+  CrossingState(RuleStateMap rule_state_map, std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> label_evaluator,
                 const CrossingStateParameter &parameters);
 
-  CrossingState(const std::vector<AgentState> &agent_states,
+  CrossingState(std::vector<AgentState> agent_states,
                 const bool terminal,
-                Automata &automata,
-                const std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> &label_evaluator,
+                RuleStateMap rule_state_map,
+                std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> label_evaluator,
                 const CrossingStateParameter &parameters,
                 int depth = 0);
   ~CrossingState() {};
@@ -64,6 +63,8 @@ class CrossingState : public mcts::StateInterface<CrossingState> {
 
   const std::vector<AgentState> &get_agent_states() const;
 
+  const RuleStateMap &get_rule_state_map() const;
+
   void draw(Viewer *viewer) const;
 
   void reset_depth();
@@ -85,7 +86,7 @@ class CrossingState : public mcts::StateInterface<CrossingState> {
 
   std::vector<AgentState> agent_states_;
   bool terminal_;
-  Automata automata_;
+  RuleStateMap rule_state_map_;
   std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> label_evaluator_;
   int depth_;
   CrossingStateParameter parameters_;

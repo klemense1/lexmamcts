@@ -6,14 +6,17 @@
 #include "spot/twa/bddprint.hh"
 #include "spot/tl/print.hh"
 #include "spot/tl/apcollect.hh"
-#include "evaluator_rule_ltl.hpp"
+#include "evaluator_rule_ltl.h"
 
 namespace modules {
 namespace models {
 namespace behavior {
 EvaluatorRuleLTL::EvaluatorRuleLTL(spot::formula ltl_formula, float weight, RewardPriority type, float init_belief,
-                                   float final_reward) :
-        weight_(weight), final_reward_(final_reward), ltl_formula_(ltl_formula), type_(type), violated_(false) {
+                                   float final_reward) : weight_(weight),
+                                                         final_reward_(final_reward),
+                                                         ltl_formula_(ltl_formula),
+                                                         type_(type),
+                                                         init_belief_(init_belief) {
 
   assert(init_belief <= 1.0 && init_belief >= 0.0);
   spot::translator trans;
@@ -26,8 +29,6 @@ EvaluatorRuleLTL::EvaluatorRuleLTL(spot::formula ltl_formula, float weight, Rewa
   }
   aut_ = trans.run(ltl_formula);
   spot::atomic_prop_collect(ltl_formula_, &alphabet_);
-  reset_state();
-  rule_belief_ << init_belief, 1.0 - init_belief;
   observation_prob_ << 0.9, 0.1, 0.5, 0.5;
 }
 
@@ -35,15 +36,19 @@ EvaluatorRuleLTL::EvaluatorRuleLTL(std::string ltl_formula_str, float weight, Re
                                    float final_reward) :
         EvaluatorRuleLTL(parse_formula(ltl_formula_str), weight, type, init_belief, final_reward) {}
 
-float EvaluatorRuleLTL::evaluate(EvaluationMap &labels) {
+RuleState EvaluatorRuleLTL::make_rule_state() const {
+  return RuleState(aut_->get_init_state_number(), init_belief_, 0, shared_from_this());
+}
+
+float EvaluatorRuleLTL::evaluate(EvaluationMap const &labels, RuleState &state) const {
   std::set<int> bddvars = std::set<int>();
   spot::bdd_dict_ptr bddDictPtr = aut_->get_dict();
   // Self looping behavior
-  uint32_t next_state = current_state_;
+  uint32_t next_state = state.current_state_;
   for (const auto ap: alphabet_) {
     // Ensure the the label is decided
     assert(labels.find(ap.ap_name()) != labels.end());
-    if (labels[ap.ap_name()]) {
+    if (labels.at(ap.ap_name())) {
       int bdd_var = bddDictPtr->has_registered_proposition(ap, aut_);
       // Label is in the alphabet_ so it should be assigned
       assert(bdd_var >= 0);
@@ -51,22 +56,17 @@ float EvaluatorRuleLTL::evaluate(EvaluationMap &labels) {
     }
   }
   bool transition_found = false;
-  for (auto transition :  aut_->out(current_state_)) {
+  for (auto transition :  aut_->out(state.current_state_)) {
     if (EvaluatorRuleLTL::bdd_eval(transition.cond, bddvars)) {
-      //std::cout << std::endl << "  edge(" << current_state_ << " -> " << transition.dst << ")\n    label = ";
-      //spot::bdd_print_formula(std::cout, aut_->get_dict(), transition.cond);
       next_state = transition.dst;
       transition_found = true;
       break;
     }
   }
-  current_state_ = next_state;
-  violated_ = violated_ || !transition_found;
-  return !transition_found ? rule_belief_(0) * weight_ : 0.0f;
-}
+  state.current_state_ = next_state;
+  state.violated_ = transition_found ? state.violated_ : state.violated_ + 1;
 
-void EvaluatorRuleLTL::reset_state() {
-  current_state_ = aut_->get_init_state_number();
+  return !transition_found ? state.rule_belief_ * weight_ : 0.0f;
 }
 
 bool EvaluatorRuleLTL::bdd_eval(bdd cond, const std::set<int> &vars) {
@@ -81,40 +81,32 @@ bool EvaluatorRuleLTL::bdd_eval(bdd cond, const std::set<int> &vars) {
   return bdd_node == bddtrue;
 }
 
-float EvaluatorRuleLTL::get_final_reward() const {
+float EvaluatorRuleLTL::get_final_reward(const RuleState &state) const {
   float penalty = final_reward_;
   // Check if formula has liveness property and is in accepting state
-  if (!ltl_formula_.is_syntactic_safety() && !aut_->state_is_accepting(current_state_)) {
+  if (!ltl_formula_.is_syntactic_safety() && !aut_->state_is_accepting(state.current_state_)) {
     penalty = weight_;
   }
-  return rule_belief_(0) * penalty;
-}
-
-RewardPriority EvaluatorRuleLTL::get_type() const {
-  return type_;
+  return state.rule_belief_ * penalty;
 }
 
 std::ostream &operator<<(std::ostream &os, EvaluatorRuleLTL const &d) {
   os << "\"";
   spot::print_psl(os, d.ltl_formula_);
   os << "\", weight: " << d.weight_;
-  os << ", priority: " << d.get_type();
-  os << ", belief state: " << d.rule_belief_.transpose();
   return os;
 }
 
-void EvaluatorRuleLTL::reset_violation() {
-  violated_ = false;
-}
-
-void EvaluatorRuleLTL::update_belief() {
-  if (!ltl_formula_.is_syntactic_safety() && !aut_->state_is_accepting(current_state_)) {
-    violated_ = true;
+void EvaluatorRuleLTL::update_belief(RuleState &state) const {
+  Eigen::Vector2d belief_v(state.rule_belief_, 1.0 - state.rule_belief_);
+  if (!ltl_formula_.is_syntactic_safety() && !aut_->state_is_accepting(state.current_state_)) {
+    ++state.violated_;
   }
-  if (violated_) {
-    int observation = violated_ ? 1 : 0;
-    double eta = 1.0 / (observation_prob_.col(observation).transpose() * rule_belief_)(0);
-    rule_belief_ = eta * observation_prob_.col(observation).cwiseProduct(rule_belief_);
+  if (state.violated_ > 0) {
+    int observation = 1;
+    double eta = 1.0 / (observation_prob_.col(observation).transpose() * belief_v)(0);
+    belief_v = eta * observation_prob_.col(observation).cwiseProduct(belief_v);
+    state.rule_belief_ = belief_v(0);
   }
 }
 
@@ -133,6 +125,9 @@ void EvaluatorRuleLTL::set_final_reward(float final_reward) {
 }
 void EvaluatorRuleLTL::set_type(RewardPriority type) {
   type_ = type;
+}
+RewardPriority EvaluatorRuleLTL::get_type() const {
+  return type_;
 }
 }
 }

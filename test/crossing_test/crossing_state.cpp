@@ -11,13 +11,11 @@
 #include "test/crossing_test/crossing_state.hpp"
 #include "test/crossing_test/viewer.h"
 
-CrossingState::CrossingState(Automata &automata,
-                             const std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> label_evaluator,
+CrossingState::CrossingState(RuleStateMap rule_state_map,
+                             std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> label_evaluator,
                              const CrossingStateParameter &parameters)
     : agent_states_(parameters.num_other_agents + 1),
-      terminal_(false),
-      automata_(automata),
-      label_evaluator_(label_evaluator),
+      terminal_(false), rule_state_map_(std::move(rule_state_map)), label_evaluator_(std::move(label_evaluator)),
       depth_(0),
       parameters_(parameters){
   for (auto &state : agent_states_) {
@@ -26,23 +24,22 @@ CrossingState::CrossingState(Automata &automata,
   agent_states_[1].x_pos = 1;
 }
 
-CrossingState::CrossingState(const std::vector<AgentState> &agent_states,
+CrossingState::CrossingState(std::vector<AgentState> agent_states,
                              const bool terminal,
-                             Automata &automata,
-                             const std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> &label_evaluator,
+                             RuleStateMap rule_state_map,
+                             std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> label_evaluator,
                              const CrossingStateParameter &parameters,
-                             int depth)
-    : agent_states_(agent_states),
-      terminal_(terminal),
-      automata_(automata),
-      label_evaluator_(label_evaluator),
-      depth_(depth),
-      parameters_(parameters) {}
+                             int depth) : agent_states_(std::move(agent_states)),
+                                          terminal_(terminal),
+                                          rule_state_map_(std::move(rule_state_map)),
+                                          label_evaluator_(std::move(label_evaluator)),
+                                          depth_(depth),
+                                          parameters_(parameters) {}
 
 std::shared_ptr<CrossingState> CrossingState::execute(const JointAction &joint_action, std::vector<Reward> &rewards) const {
 
   EvaluationMap labels;
-  Automata next_automata(automata_);
+  RuleStateMap next_automata(rule_state_map_);
   World next_world;
   bool terminal = false;
   std::vector<AgentState> next_agent_states(agent_states_.size());
@@ -74,8 +71,8 @@ std::shared_ptr<CrossingState> CrossingState::execute(const JointAction &joint_a
     rewards[agent_idx] = Reward::Zero();
 
     // Automata transit
-    for (EvaluatorRuleLTL &aut : (next_automata[agent_idx])) {
-      rewards[agent_idx](aut.get_type()) += aut.evaluate(labels);
+    for (auto &aut : (next_automata[agent_idx])) {
+      rewards[agent_idx](aut.second.get_type()) += aut.second.get_automaton()->evaluate(labels, aut.second);
     }
 
     rewards[agent_idx] += get_action_cost(joint_action[agent_idx], agent_idx);
@@ -92,18 +89,6 @@ std::shared_ptr<CrossingState> CrossingState::execute(const JointAction &joint_a
 Reward CrossingState::get_action_cost(ActionIdx action, AgentIdx agent_idx) const {
   Reward reward = Reward::Zero();
   reward(parameters_.depth_prio) += -1.0f * parameters_.depth_weight;
-  //  switch (aconv(action)) {
-  //      case Actions::FORWARD :reward(static_cast<int>(RewardPriority::EFFICIENCY)) = -1.0f;
-  //          break;
-  //      case Actions::WAIT:reward(static_cast<int>(RewardPriority::EFFICIENCY)) = 0.0f;
-  //          break;
-  //      case Actions::FASTFORWARD:reward(static_cast<int>(RewardPriority::EFFICIENCY)) = -2.0f;
-  //          break;
-  //    case Actions::BACKWARD:reward(static_cast<int>(RewardPriority::EFFICIENCY)) = -3.0f;
-  //      break;
-  //      default:reward(static_cast<int>(RewardPriority::EFFICIENCY)) = 0.0f;
-  //          break;
-  //  }
   reward(parameters_.speed_deviation_prio) +=
       -std::abs(static_cast<int>(aconv(action)) - static_cast<int>(Actions::FORWARD)) * parameters_.speed_deviation_weight;
   reward(parameters_.acceleration_prio) +=
@@ -118,20 +103,20 @@ Reward CrossingState::get_shaping_reward(const AgentState &agent_state) const {
   return reward;
 }
 void CrossingState::update_rule_belief() {
-  for (size_t agent_idx = 0; agent_idx < automata_.size(); agent_idx++) {
+  for (size_t agent_idx = 0; agent_idx < rule_state_map_.size(); agent_idx++) {
     if (agent_idx == ego_agent_idx) {
       continue;
     }
-    for (auto &aut : automata_[agent_idx]) {
-      aut.update_belief();
-      LOG(INFO) << aut;
+    for (auto &aut : rule_state_map_[agent_idx]) {
+      aut.second.get_automaton()->update_belief(aut.second);
+      LOG(INFO) << aut.second;
     }
   }
 }
 void CrossingState::reset_violations() {
-  for (auto &agent : automata_) {
+  for (auto &agent : rule_state_map_) {
     for (auto &aut : agent) {
-      aut.reset_violation();
+      aut.second.reset_violations();
     }
   }
 }
@@ -139,8 +124,8 @@ std::vector<Reward> CrossingState::get_final_reward() const {
   std::vector<Reward> rewards(agent_states_.size(), Reward::Zero());
   for (size_t agent_idx = 0; agent_idx < rewards.size(); ++agent_idx) {
     // Automata transit
-    for (EvaluatorRuleLTL const &aut : (automata_[agent_idx])) {
-      rewards[agent_idx](aut.get_type()) += aut.get_final_reward();
+    for (const auto &aut : (rule_state_map_[agent_idx])) {
+      rewards[agent_idx](aut.second.get_type()) += aut.second.get_automaton()->get_final_reward(aut.second);
     }
   }
   return rewards;
@@ -235,4 +220,7 @@ void CrossingState::draw(mcts::Viewer *viewer) const {
 }
 const CrossingStateParameter &CrossingState::get_parameters() const {
   return parameters_;
+}
+const RuleStateMap &CrossingState::get_rule_state_map() const {
+  return rule_state_map_;
 }

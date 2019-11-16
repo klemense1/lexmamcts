@@ -1,5 +1,6 @@
 //
-// Created by luis on 10.10.19.
+// Created by Luis Gressenbuch on 09.11.19.
+// Copyright (c) 2019 Luis Gressenbuch. All rights reserved.
 //
 
 #define UNIT_TESTING
@@ -15,6 +16,7 @@
 #include "test/crossing_test/tests/crossing_test_env.h"
 #include "test/crossing_test/tests/common.h"
 #include "mcts/statistics/thres_uct_statistic.h"
+#include "test_env_factory.h"
 
 typedef ThresUCTStatistic Stat;
 typedef RandomHeuristic HeuristicType;
@@ -25,47 +27,35 @@ class CrossingTestF : public CrossingTestEnv<Stat, HeuristicType>, public ::test
 };
 
 TEST(CrossingTest, general) {
-  CrossingStateParameter p = make_default_crossing_state_parameters();
-  p.depth_prio = static_cast<int>(RewardPriority::GOAL);
-  p.speed_deviation_prio = static_cast<int>(RewardPriority::GOAL);
-  p.acceleration_prio = static_cast<int>(RewardPriority::GOAL);
-  p.potential_prio = static_cast<int>(RewardPriority::GOAL);
-  p.depth_weight = 0;
-  p.speed_deviation_weight = 0;
-  p.acceleration_weight = 0;
-  p.potential_weight = 1;
-  CrossingTestEnv<> test_env(make_default_mcts_parameters(),
-                             p,
-                             BaseTestEnv::make_default_automata(p.num_other_agents + 1),
-                             BaseTestEnv::make_default_labels(p));
+  auto test_env = static_cast<CrossingTestEnv<ThresUCTStatistic,
+                                              RandomHeuristic> *>(ThresholdTestEnvFactory().make_test_env().get());
   const int MAX_STEPS = 40;
   int steps = 0;
-  CrossingTestEnv<> optimal_env(test_env);
+  auto optimal_env(*test_env);
   get_optimal_reward(&optimal_env);
   std::vector<Reward> optimal_reward = optimal_env.rewards;
-  std::vector<Reward> accu_reward(test_env.state->get_agent_idx().size(), Reward::Zero());
-  test_env.pos_history.emplace_back(test_env.state->get_ego_pos());
-  test_env.pos_history_other.emplace_back(test_env.state->get_agent_states()[1].x_pos);
-  while (!test_env.state->is_terminal() && steps < MAX_STEPS) {
-    test_env.mcts.search(*test_env.state, 50000, 10000);
-    JointAction jt = test_env.mcts.returnBestAction();
-    test_env.set_jt(jt);
-    LOG(INFO) << "Performing action:" << test_env.get_jt();
-    test_env.state = test_env.state->execute(test_env.get_jt(), test_env.rewards);
-    accu_reward += test_env.rewards;
-    test_env.pos_history.emplace_back(test_env.state->get_ego_pos());
-    test_env.pos_history_other.emplace_back(test_env.state->get_agent_states()[1].x_pos);
+  std::vector<Reward> accu_reward(test_env->state->get_agent_idx().size(), Reward::Zero());
+  test_env->pos_history.emplace_back(test_env->state->get_ego_pos());
+  test_env->pos_history_other.emplace_back(test_env->state->get_agent_states()[1].x_pos);
+  while (!test_env->state->is_terminal() && steps < MAX_STEPS) {
+    test_env->mcts.search(*test_env->state, 50000, 10000);
+    JointAction jt = test_env->mcts.returnBestAction();
+    test_env->set_jt(jt);
+    LOG(INFO) << "Performing action:" << test_env->get_jt();
+    test_env->state = test_env->state->execute(test_env->get_jt(), test_env->rewards);
+    accu_reward += test_env->rewards;
+    test_env->pos_history.emplace_back(test_env->state->get_ego_pos());
+    test_env->pos_history_other.emplace_back(test_env->state->get_agent_states()[1].x_pos);
     ++steps;
   }
-  accu_reward += test_env.state->get_final_reward();
+  accu_reward += test_env->state->get_final_reward();
   LOG(INFO) << "Accumulated rewards:";
   LOG(INFO) << "Ego:" << accu_reward.at(0).transpose();
-  for (size_t otr_idx = 1; otr_idx < test_env.state->get_agent_idx().size(); ++otr_idx) {
+  for (size_t otr_idx = 1; otr_idx < test_env->state->get_agent_idx().size(); ++otr_idx) {
     LOG(INFO) << "Agent " << otr_idx << ":" << accu_reward.at(otr_idx).transpose();
   }
   //Should not hit the maximum # of steps
   EXPECT_LT(steps, MAX_STEPS);
-  EXPECT_TRUE(test_env.state->ego_goal_reached());
   Reward row_sum_accu = rewards_to_mat(accu_reward).rowwise().sum();
   Reward row_sum_opti = rewards_to_mat(optimal_reward).rowwise().sum();
   // We should not be better than our constructed optimum
@@ -80,7 +70,9 @@ TEST_F(CrossingTestF, belief) {
   int steps = 0;
   JointAction other_jt(2);
 
-  automata_[0].at(Rule::NO_SPEEDING) = EvaluatorRuleLTL("G !speeding", -1.0f, RewardPriority::LEGAL_RULE_B, 0.9);
+  automata_[1].erase(Rule::NO_SPEEDING);
+  automata_[1].insert({Rule::NO_SPEEDING,
+                       EvaluatorRuleLTL::make_rule("G !speeding", -1.0f, RewardPriority::LEGAL_RULE_B, 0.9)});
   state = std::make_shared<CrossingState>(get_automata_vec(), label_evaluators_, crossing_state_parameter_);
 
   JointAction jt = get_jt();
@@ -90,7 +82,7 @@ TEST_F(CrossingTestF, belief) {
   auto succ_state = state->execute(jt, rewards);
   succ_state->update_rule_belief();
   succ_state->reset_violations();
-  // TODO: Check for lowered belief
+  ASSERT_LT(succ_state->get_rule_state_map()[1].at(Rule::NO_SPEEDING).get_rule_belief(), 0.9);
 }
 
 TEST_F(CrossingTestF, giveWay) {
@@ -99,8 +91,9 @@ TEST_F(CrossingTestF, giveWay) {
   agent_states[0].last_action = Actions::FORWARD;
   agent_states[1].x_pos = 8;
   agent_states[1].last_action = Actions::FORWARD;
-  automata_[0].at(Rule::GIVE_WAY) =
-      EvaluatorRuleLTL("G((at_hp_xing & other_near) -> (X at_hp_xing))", -500.0f, RewardPriority::SAFETY);
+  automata_[0].insert({Rule::GIVE_WAY, EvaluatorRuleLTL::make_rule("G((at_hp_xing & other_near) -> (X at_hp_xing))",
+                                                                   -500.0f,
+                                                                   RewardPriority::SAFETY)});
   state = std::make_shared<CrossingState>(agent_states,
                                           false,
                                           get_automata_vec(),

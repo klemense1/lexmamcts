@@ -18,6 +18,10 @@ enum class Actions {
   NUM = 4
 };
 
+enum Rule {
+  NO_COLLISION = 0, REACH_GOAL, NO_SPEEDING, GIVE_WAY, LEAVE_INTERSECTION, REACH_GOAL_FIRST, NUM,
+};
+
 const std::map<ActionIdx, Actions> idx_to_action = {
     {0, Actions::FORWARD},
     {1, Actions::WAIT},

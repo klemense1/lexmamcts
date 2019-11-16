@@ -6,7 +6,7 @@
 #ifndef MAMCTS_TEST_CROSSING_TEST_CROSSING_STATE_PARAMETER_H_
 #define MAMCTS_TEST_CROSSING_TEST_CROSSING_STATE_PARAMETER_H_
 
-#include "evaluator_rule_ltl.hpp"
+#include "test/crossing_test/rule_evaluator/evaluator_rule_ltl.h"
 
 using modules::models::behavior::RewardPriority;
 

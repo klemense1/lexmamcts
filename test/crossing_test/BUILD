@@ -13,19 +13,10 @@ cc_library(
     srcs = [
         "crossing_state.cpp",
         "crossing_state_parameter.cpp",
-        "evaluator_rule_ltl.cpp",
     ],
     hdrs = [
         "crossing_state.hpp",
         "crossing_state_parameter.h",
-        "evaluator_rule_ltl.hpp",
-        #        "label_evaluator/evaluator_label_base.hpp",
-        #        "label_evaluator/evaluator_label_collision.hpp",
-        #        "label_evaluator/evaluator_label_goal_reached.hpp",
-        #        "label_evaluator/evaluator_label_hold_at_xing.hpp",
-        #        "label_evaluator/evaluator_label_other_goal_reached.hpp",
-        #        "label_evaluator/evaluator_label_other_near.hpp",
-        #        "label_evaluator/evaluator_label_speed.hpp",
         "viewer.h",
     ],
     visibility = ["//visibility:public"],
@@ -33,8 +24,8 @@ cc_library(
         ":common",
         "//mcts",
         "//test/crossing_test/label_evaluator:label_evaluators",
+        "//test/crossing_test/rule_evaluator",
         "@com_github_google_glog//:glog",
-        "@spot",
     ],
 )
 
