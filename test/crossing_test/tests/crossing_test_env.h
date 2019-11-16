@@ -101,8 +101,7 @@ class BaseTestEnv {
  protected:
   std::vector<std::map<Rule, EvaluatorRuleLTL>> automata_;
 
- private:
-  void create_state() {
+  Automata get_automata_vec() const {
     Automata aut_v(automata_.size());
     for (size_t i = 0; i < automata_.size(); ++i) {
       LOG(INFO) << "Rules for agent " << i << ":";
@@ -113,6 +112,11 @@ class BaseTestEnv {
         ++it;
       }
     }
+    return aut_v;
+  }
+ private:
+  void create_state() {
+    Automata aut_v = get_automata_vec();
     state = std::make_shared<CrossingState>(aut_v, label_evaluators_, crossing_state_parameter_);
   }
 
