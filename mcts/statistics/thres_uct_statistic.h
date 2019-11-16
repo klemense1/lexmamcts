@@ -61,12 +61,10 @@ class ThresUCTStatistic : public UctStatistic<ThresUCTStatistic> {
 
   ActionIdx get_best_action() {
     Eigen::MatrixXf mat(Reward::RowsAtCompileTime, ucb_statistics_.size());
-    for (ActionIdx i = 0; i < mat.cols(); ++i) {
+    for (ActionIdx i = 0; i < static_cast<ActionIdx>(mat.cols()); ++i) {
       mat.col(i) = ucb_statistics_[i].action_value_;
     }
 
-    //    Reward max_v = mat.rowwise().maxCoeff();
-    //    Reward thr = max_v - max_v.cwiseAbs().cwiseProduct(Reward::Constant(0.2f));
     Reward thr = mcts_parameters_.thres_uct_statistic_.THRESHOLD;
     DVLOG(1) << "Thresholds:" << thr.transpose();
     auto max = std::max_element(ucb_statistics_.begin(),

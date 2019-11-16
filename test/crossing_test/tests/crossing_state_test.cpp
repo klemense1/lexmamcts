@@ -66,8 +66,6 @@ TEST(CrossingTest, general) {
 }
 
 TEST_F(CrossingTestF, belief) {
-  const int MAX_STEPS = 40;
-  int steps = 0;
   JointAction other_jt(2);
 
   automata_[1].erase(Rule::NO_SPEEDING);

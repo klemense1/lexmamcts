@@ -179,7 +179,7 @@ void CrossingState::draw(mcts::Viewer *viewer) const {
   // indicating states and larger points indicating the current state
   const float angle_delta = M_PI / (parameters_.num_other_agents + 2);  // one for ego
   const float line_radius = state_draw_dst * (parameters_.state_x_length - 1) / 2.0f;
-  for (int i = 0; i < parameters_.num_other_agents + 1; ++i) {
+  for (size_t i = 0; i < parameters_.num_other_agents + 1; ++i) {
     float start_angle = 1.5 * M_PI - (i + 1) * angle_delta;
     float end_angle = start_angle + M_PI;
     std::pair<float, float> line_x{cos(start_angle) * line_radius, cos(end_angle) * line_radius};
