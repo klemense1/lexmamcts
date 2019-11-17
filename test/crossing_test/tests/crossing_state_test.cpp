@@ -27,13 +27,14 @@ class CrossingTestF : public CrossingTestEnv<Stat, HeuristicType>, public ::test
 };
 
 TEST(CrossingTest, general) {
-  auto test_env = static_cast<CrossingTestEnv<ThresUCTStatistic,
-                                              RandomHeuristic> *>(ThresholdTestEnvFactory().make_test_env().get());
+  auto test_env = std::dynamic_pointer_cast<CrossingTestEnv<ThresUCTStatistic,
+                                                            RandomHeuristic>>(ThresholdTestEnvFactory().make_test_env());
   const int MAX_STEPS = 40;
   int steps = 0;
-  auto optimal_env(*test_env);
-  get_optimal_reward(&optimal_env);
-  std::vector<Reward> optimal_reward = optimal_env.rewards;
+  auto optimal_env = std::dynamic_pointer_cast<CrossingTestEnv<ThresUCTStatistic,
+                                                               RandomHeuristic>>(ThresholdTestEnvFactory().make_test_env());
+  get_optimal_reward(optimal_env.get());
+  std::vector<Reward> optimal_reward = optimal_env->rewards;
   std::vector<Reward> accu_reward(test_env->state->get_agent_idx().size(), Reward::Zero());
   test_env->pos_history.emplace_back(test_env->state->get_ego_pos());
   test_env->pos_history_other.emplace_back(test_env->state->get_agent_states()[1].x_pos);
