@@ -24,7 +24,7 @@ cc_library(
         ":common",
         "//mcts",
         "//test/crossing_test/label_evaluator:label_evaluators",
-        "//test/crossing_test/rule_evaluator",
+        "//ltl_evaluator:rule_evaluator",
         "@com_github_google_glog//:glog",
     ],
 )

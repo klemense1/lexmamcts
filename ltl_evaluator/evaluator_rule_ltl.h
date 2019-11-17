@@ -14,7 +14,7 @@
 #include "Eigen/Core"
 #include "spot/tl/parse.hh"
 #include "spot/twaalgos/translate.hh"
-#include "test/crossing_test/rule_evaluator/rule_state.h"
+#include "ltl_evaluator/rule_state.h"
 
 namespace modules {
 namespace models {

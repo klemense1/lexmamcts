@@ -11,9 +11,9 @@
 #include <iostream>
 #include <random>
 
-#include "test/crossing_test/rule_evaluator/evaluator_rule_ltl.h"
+#include "ltl_evaluator/evaluator_rule_ltl.h"
 #include "test/crossing_test/common.hpp"
-#include "test/crossing_test/label_evaluator/evaluator_label_base.h"
+#include "ltl_evaluator/evaluator_label_base.h"
 #include "test/crossing_test/crossing_state_parameter.h"
 
 using namespace mcts;

@@ -6,12 +6,24 @@ cc_library(
     ],
     hdrs = [
         "common.h",
+        "evaluator_label_base.h",
         "evaluator_rule_ltl.h",
         "rule_state.h",
     ],
     visibility = ["//visibility:public"],
     deps = [
-        "//test/crossing_test/label_evaluator:label_evaluators",
+        "@com_github_eigen_eigen//:eigen",
+        "@com_github_google_glog//:glog",
+        "@spot",
+    ],
+)
+
+cc_library(
+    name = "include",
+    hdrs = glob(["*.h"]),
+    deps = [
+        "@com_github_eigen_eigen//:eigen",
+        "@com_github_google_glog//:glog",
         "@spot",
     ],
 )

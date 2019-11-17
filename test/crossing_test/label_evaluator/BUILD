@@ -7,5 +7,6 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         "//test/crossing_test:common",
+        "//ltl_evaluator:rule_evaluator",
     ],
 )

@@ -3,7 +3,7 @@
 // Copyright (c) 2019 Luis Gressenbuch. All rights reserved.
 //
 
-#include "test/crossing_test/rule_evaluator/rule_state.h"
+#include "ltl_evaluator/rule_state.h"
 
 namespace modules {
 namespace models {
