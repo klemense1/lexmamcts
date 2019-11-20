@@ -8,6 +8,7 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         "@boost//:math",
+	"@boost//:container_hash",
         "@com_github_eigen_eigen//:eigen",
         "@com_github_google_glog//:glog",
     ],
