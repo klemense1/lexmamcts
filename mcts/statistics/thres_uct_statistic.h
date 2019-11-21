@@ -24,7 +24,7 @@ class ThresUCTStatistic : public UctStatistic<ThresUCTStatistic> {
       mcts_parameters){}
   struct ThresholdComparator {
     ThresholdComparator(const Eigen::VectorXf &thr) : thr_(thr) {};
-    const Eigen::VectorXf &thr_;
+    const Eigen::VectorXf thr_;
     bool operator()(Eigen::VectorXf const &a, Eigen::VectorXf const &b) const {
       assert(a.rows() == b.rows() && a.rows() == thr_.rows());
       for (auto ai = a.begin(), bi = b.begin(), thri = thr_.begin(); ai != a.end(); ++ai, ++bi, ++thri) {

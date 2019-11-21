@@ -11,35 +11,40 @@
 using namespace mcts;
 
 TEST(ComperatorTest, slack_comperator) {
-  ObjectiveVec a = ObjectiveVec::Ones();
-  ObjectiveVec b = ObjectiveVec::Ones();
-  ObjectiveVec slack_a = ObjectiveVec::Zero();
-  ObjectiveVec slack_b = ObjectiveVec::Zero();
-  a << 0, 0, 0, 0;
-  b << 4, 4, 4, 4;
-  slack_a << 2, 2, 4, 0;
-  slack_b << 2, 3, 0, 4;
+  ActionUCBMap::value_type a = {0, UcbPair()};
+  ActionUCBMap::value_type b = {1, UcbPair()};
+  std::vector<ObjectiveVec> slack = {ObjectiveVec::Zero(), ObjectiveVec::Zero()};
+  ObjectiveVec &slack_a = slack[0];
+  ObjectiveVec &slack_b = slack[1];
+  a.second.action_value_ << 0, 0, 0, 0, 0;
+  b.second.action_value_ << 4, 4, 4, 4, 4;
+  slack_a << 2, 2, 4, 0, 0;
+  slack_b << 2, 3, 0, 4, 4;
   // a == b
-  ASSERT_FALSE(slack_compare(a, b, slack_a, slack_b));
-  ASSERT_FALSE(slack_compare(b, a, slack_b, slack_a));
+  SlackUCTStatistic::SlackComperator slack_compare(slack);
+  ASSERT_FALSE(slack_compare(a, b));
+  ASSERT_FALSE(slack_compare(b, a));
   // a < b
-  slack_a << 1, 1, 0, 0;
-  slack_b << 1, 1, 0, 0;
-  ASSERT_TRUE(slack_compare(a, b, slack_a, slack_b));
-  ASSERT_FALSE(slack_compare(b, a, slack_b, slack_a));
+  slack_a << 1, 1, 0, 0, 0;
+  slack_b << 1, 1, 0, 0, 0;
+  SlackUCTStatistic::SlackComperator slack_compare1(slack);
+  ASSERT_TRUE(slack_compare1(a, b));
+  ASSERT_FALSE(slack_compare1(b, a));
   // a > b
-  a << 4, 4, 4, 4;
-  b << 0, 0, 0, 0;
-  slack_a << 1, 1, 0, 0;
-  slack_b << 1, 1, 0, 0;
-  ASSERT_FALSE(slack_compare(a, b, slack_a, slack_b));
-  ASSERT_TRUE(slack_compare(b, a, slack_b, slack_a));
+  a.second.action_value_ << 4, 4, 4, 4, 4;
+  b.second.action_value_ << 0, 0, 0, 0, 0;
+  slack_a << 1, 1, 0, 0, 0;
+  slack_b << 1, 1, 0, 0, 0;
+  SlackUCTStatistic::SlackComperator slack_compare2(slack);
+  ASSERT_FALSE(slack_compare2(a, b));
+  ASSERT_TRUE(slack_compare2(b, a));
 }
 
 TEST(ComperatorTest, threshold_comperator_random) {
   ObjectiveVec a = ObjectiveVec::Ones();
   ObjectiveVec b = ObjectiveVec::Ones();
   ObjectiveVec thr = ObjectiveVec::Constant(std::numeric_limits<float>::max());
+  ThresUCTStatistic::ThresholdComparator threshold_compare(thr);
   std::mt19937 prng(1000);
   std::uniform_int_distribution<int> distr(-100, 100);
   auto gen = [&distr, &prng]() {
@@ -49,7 +54,7 @@ TEST(ComperatorTest, threshold_comperator_random) {
     std::generate(a.begin(), a.end(), gen);
     std::generate(b.begin(), b.end(), gen);
     a(0) = b(0);
-    ASSERT_EQ(std::lexicographical_compare(a.begin(), a.end(), b.begin(), b.end()), threshold_compare(a, b, thr));
+    ASSERT_EQ(std::lexicographical_compare(a.begin(), a.end(), b.begin(), b.end()), threshold_compare(a, b));
   }
 }
 
@@ -57,11 +62,12 @@ TEST(ComperatorTest, threshold_comperator) {
   ObjectiveVec a;
   ObjectiveVec b;
   ObjectiveVec thr;
-  a << 20, 10, 20, 10;
-  b << 10, 20, 10, 20;
-  thr << 10, 100, 100, 100;
+  a << 20, 10, 20, 10, 10;
+  b << 10, 20, 10, 20, 20;
+  thr << 10, 100, 100, 100, 100;
+  ThresUCTStatistic::ThresholdComparator threshold_compare(thr);
   ASSERT_FALSE(std::lexicographical_compare(a.begin(), a.end(), b.begin(), b.end()));
-  ASSERT_TRUE(threshold_compare(a, b, thr));
+  ASSERT_TRUE(threshold_compare(a, b));
 }
 
 int main(int argc, char **argv) {

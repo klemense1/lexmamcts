@@ -179,17 +179,14 @@ cc_library(
             "spot/**/*.hxx",
             "spot/*.h",
             "spot/**/*.hh",
-        ],
-        exclude = [
-            ":spot_export_hdrs",
-        ],
-    ),
+        ],),
     hdrs = [
         ":spot_export_hdrs",
     ],
     copts = [
         "-std=c++14",
     ],
+    includes = ["buddy/src"],
     defines = [
         "VERSION=23",
         "BUDDY_DLL_EXPORTS",
@@ -201,7 +198,7 @@ cc_library(
         "//visibility:public",
     ],
     deps = [
-        "bddx",
+        ":bddx",
         ":configure",
         ":hashfunc",
         ":picosat",
@@ -218,13 +215,7 @@ cc_library(
             "buddy/src/*.c",
             "buddy/src/*.h",
             "buddy/src/*.cxx",
-        ],
-        exclude = [
-            "buddy/src/bddx.h",
-            "buddy/src/fddx.h",
-            "buddy/src/bvecx.h",
-        ],
-    ),
+        ]),
     hdrs = [
         "buddy/src/bddx.h",
         "buddy/src/bvecx.h",
@@ -235,8 +226,6 @@ cc_library(
         "BUDDY_DLL_EXPORTS",
         "BUDDY_DLL",
     ],
-    include_prefix = "buddy",
-    strip_include_prefix = "buddy/src",
     visibility = [
         "//visibility:public",
     ],
