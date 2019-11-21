@@ -4,7 +4,7 @@
 //
 
 #include "gtest/gtest.h"
-#include "evaluator_rule_ltl.h"
+#include "ltl_evaluator/evaluator_rule_ltl.h"
 
 using namespace modules::models::behavior;
 using EvaluatorRuleLTLSPtr = EvaluatorRuleLTL::EvaluatorRuleLTLSPtr;

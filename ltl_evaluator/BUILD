@@ -30,7 +30,7 @@ cc_library(
 
 cc_test(
     name = "automaton_test",
-    srcs = ["automaton_test.cpp"],
+    srcs = ["test/automaton_test.cpp"],
     copts = ["-Iexternal/gtest/include"],
     deps = [
         ":rule_evaluator",
