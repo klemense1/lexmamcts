@@ -11,9 +11,10 @@
 using namespace mcts;
 
 TEST(ComperatorTest, slack_comperator) {
-  ActionUCBMap::value_type a = {0, UcbPair()};
-  ActionUCBMap::value_type b = {1, UcbPair()};
-  std::vector<ObjectiveVec> slack = {ObjectiveVec::Zero(), ObjectiveVec::Zero()};
+  const size_t reward_vec_size = 5;
+  ActionUCBMap::value_type a = {0, UcbPair(reward_vec_size)};
+  ActionUCBMap::value_type b = {1, UcbPair(reward_vec_size)};
+  std::vector<ObjectiveVec> slack = {ObjectiveVec::Zero(reward_vec_size), ObjectiveVec::Zero(reward_vec_size)};
   ObjectiveVec &slack_a = slack[0];
   ObjectiveVec &slack_b = slack[1];
   a.second.action_value_ << 0, 0, 0, 0, 0;
@@ -41,9 +42,10 @@ TEST(ComperatorTest, slack_comperator) {
 }
 
 TEST(ComperatorTest, threshold_comperator_random) {
-  ObjectiveVec a = ObjectiveVec::Ones();
-  ObjectiveVec b = ObjectiveVec::Ones();
-  ObjectiveVec thr = ObjectiveVec::Constant(std::numeric_limits<float>::max());
+  const size_t reward_vec_size = 5;
+  ObjectiveVec a = ObjectiveVec::Ones(reward_vec_size);
+  ObjectiveVec b = ObjectiveVec::Ones(reward_vec_size);
+  ObjectiveVec thr = ObjectiveVec::Constant(reward_vec_size, std::numeric_limits<ObjectiveVec::Scalar>::max());
   ThresUCTStatistic::ThresholdComparator threshold_compare(thr);
   std::mt19937 prng(1000);
   std::uniform_int_distribution<int> distr(-100, 100);
@@ -59,9 +61,10 @@ TEST(ComperatorTest, threshold_comperator_random) {
 }
 
 TEST(ComperatorTest, threshold_comperator) {
-  ObjectiveVec a;
-  ObjectiveVec b;
-  ObjectiveVec thr;
+  size_t vec_size = 5;
+  ObjectiveVec a = ObjectiveVec::Zero(vec_size);
+  ObjectiveVec b = ObjectiveVec::Zero(vec_size);
+  ObjectiveVec thr = ObjectiveVec::Zero(vec_size);
   a << 20, 10, 20, 10, 10;
   b << 10, 20, 10, 20, 20;
   thr << 10, 100, 100, 100, 100;

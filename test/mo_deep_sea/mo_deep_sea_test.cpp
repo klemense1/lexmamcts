@@ -68,7 +68,7 @@ void print_solution(std::vector<Eigen::Vector2i> &pos_history, SeaMap &sea_map) 
 TEST_F(DeepSeaTest, move
 ) {
   MoDeepSeaState init_state(sea_map_, init_pos);
-  std::vector<Reward> rewards(1, Reward::Zero());
+  std::vector<Reward> rewards(1, Reward::Zero(mcts_parameters_.REWARD_VEC_SIZE));
   JointAction jt;
   jt.resize(1);
   jt[0] = 3; //Right
@@ -103,7 +103,7 @@ TEST_F(DeepSeaTest, general
 ) {
 Mcts<MoDeepSeaState, UctStatistic<>, UctStatistic<>, RandomHeuristic> mcts(mcts_parameters_);
   auto state = std::make_shared<MoDeepSeaState>(sea_map_, init_pos);
-  std::vector<Reward> rewards(1, Reward::Zero());
+  std::vector<Reward> rewards(1, Reward::Zero(mcts_parameters_.REWARD_VEC_SIZE));
   JointAction jt;
   jt.resize(1);
   std::vector<Eigen::Vector2i> pos_history;

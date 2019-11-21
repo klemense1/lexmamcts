@@ -37,7 +37,7 @@ ActionList possible_actions(ActionIdx n, size_t k) {
 }
 
 struct QValPair {
-  QValPair(size_t num_agents) : action(num_agents, 0), qval(num_agents, Reward::Zero()) {};
+  QValPair(size_t num_agents, size_t reward_vec_size) : action(num_agents, 0), qval(num_agents, Reward::Zero(reward_vec_size)) {};
   JointAction action;
   JointReward qval;
   shared_ptr<QValPair> child;
@@ -61,14 +61,14 @@ bool dfs(CrossingStateSPtr root, ActionList const &actions, shared_ptr<QValPair>
     qval->child = shared_ptr<QValPair>();
     return false;
   }
-  JointReward step_reward(root->get_agent_idx().size(), Reward::Zero());
-  JointReward total_reward(root->get_agent_idx().size(), Reward::Zero());
+  JointReward step_reward(root->get_agent_idx().size(), Reward::Zero(qval->qval.size()));
+  JointReward total_reward(root->get_agent_idx().size(), Reward::Zero(qval->qval.size()));
   JointAction best_action;
 
-  qval->qval = JointReward(root->get_agent_idx().size(), Reward::Constant(-FLT_MAX));
+  qval->qval = JointReward(root->get_agent_idx().size(), Reward::Constant(qval->qval.size(), -std::numeric_limits<Reward::Scalar>::max()));
   for (auto const &act : actions) {
     CrossingStateSPtr next_state = root->execute(act, step_reward);
-    shared_ptr<QValPair> candidate = make_shared<QValPair>(root->get_agent_idx().size());
+    shared_ptr<QValPair> candidate = make_shared<QValPair>(root->get_agent_idx().size(), qval->qval.size());
     dfs(next_state, actions, candidate);
     total_reward = candidate->qval + step_reward;
     if (cmp_lt(qval->qval, total_reward)) {
@@ -87,7 +87,7 @@ int main(int argc, char **argv) {
   size_t const num_agents = 2;
   CrossingTestEnv<> test_env;
   int const max_depth = test_env.state->get_parameters().terminal_depth_;
-  shared_ptr<QValPair> root = make_shared<QValPair>(num_agents);
+  shared_ptr<QValPair> root = make_shared<QValPair>(num_agents, test_env.mcts_parameters_.REWARD_VEC_SIZE);
   ActionList actions = possible_actions(static_cast<ActionIdx>(Actions::NUM), num_agents);
   double total_nodes = (pow(actions.size(), max_depth + 1) - 1)/ static_cast<double>(actions.size() - 1);
   LOG(WARNING) << "# Actions: " << actions.size();

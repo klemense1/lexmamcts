@@ -24,5 +24,7 @@ CrossingStateParameter make_default_crossing_state_parameters() {
   p.acceleration_weight = 1.0f;
   p.potential_weight = 20.0f;
 
+  p.reward_vec_size = 5;
+
   return p;
 };

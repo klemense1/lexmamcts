@@ -45,7 +45,7 @@ class SlackUCTStatistic : public UctStatistic<SlackUCTStatistic> {
 
   SlackUCTStatistic(ActionIdx num_actions, MctsParameters const &mcts_parameters) : UctStatistic<SlackUCTStatistic>(
       num_actions,
-      mcts_parameters), m_2_(num_actions, ObjectiveVec::Zero()) {}
+      mcts_parameters), m_2_(num_actions, ObjectiveVec::Zero(mcts_parameters.REWARD_VEC_SIZE)) {}
 
   ActionIdx get_best_action() {
     // Lexicographical ordering of the UCT value vectors
@@ -70,16 +70,16 @@ class SlackUCTStatistic : public UctStatistic<SlackUCTStatistic> {
   void update_statistic(const ParentType &changed_child_statistic) {
     const SlackUCTStatistic &changed_uct_statistic = changed_child_statistic.impl();
     // Action Value update step
-    UcbPair &ucb_pair = ucb_statistics_[this->collected_reward_.first];
+    auto ucb_pair = ucb_statistics_.find(this->collected_reward_.first);
     // we remembered for which action we got the reward,
     // must be the same as during backprop,
     // if we linked parents and childs correctly
     // action value: Q'(s,a) = Q'(s,a) + (latest_return - Q'(s,a))/N
     Reward reward =
         this->collected_reward_.second + this->mcts_parameters_.DISCOUNT_FACTOR * changed_uct_statistic.latest_return_;
-    size_t action_count = ucb_pair.action_count_ + 1;
-    ObjectiveVec delta = reward - ucb_pair.action_value_;
-    ObjectiveVec action_value = ucb_pair.action_value_ + (reward - ucb_pair.action_value_) / action_count;
+    size_t action_count = ucb_pair->second.action_count_ + 1;
+    ObjectiveVec delta = reward - ucb_pair->second.action_value_;
+    ObjectiveVec action_value = ucb_pair->second.action_value_ + (reward - ucb_pair->second.action_value_) / action_count;
     ObjectiveVec delta2 = reward - action_value;
     // Recursive variance calculation
     // https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance
@@ -114,7 +114,7 @@ class SlackUCTStatistic : public UctStatistic<SlackUCTStatistic> {
         // confidence interval radius
         values[idx] = t * std_dev / sqrt(static_cast<double>(pair.action_count_));
       } else {
-        values[idx] = ObjectiveVec::Zero();
+        values[idx] = ObjectiveVec::Zero(mcts_parameters_.REWARD_VEC_SIZE);
       }
     }
   }

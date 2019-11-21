@@ -40,7 +40,7 @@ std::shared_ptr<BaseTestEnv> MinimumViolationTestEnvFactory::make_test_env() {
   MctsParameters mcts_params = make_default_mcts_parameters();
   mcts_params.uct_statistic.LOWER_BOUND << -30.0f, -30.0f, -30.0f, -30.0f, -5000.0f;
   mcts_params.uct_statistic.UPPER_BOUND << 0.0f, 0.0f, 0.0f, 0.0f, 5000.0f;
-  mcts_params.thres_uct_statistic_.THRESHOLD << -0.43, -0.59, -0.1, -0.99, std::numeric_limits<float>::max();
+  mcts_params.thres_uct_statistic_.THRESHOLD << -0.43, -0.59, -0.1, -0.99, std::numeric_limits<ObjectiveVec::Scalar>::max();
 
   CrossingStateParameter crossing_params = make_default_crossing_state_parameters();
   crossing_params.ego_goal_reached_position = 15;

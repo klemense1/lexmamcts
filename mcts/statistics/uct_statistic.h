@@ -16,7 +16,7 @@
 namespace mcts {
 
 typedef struct UcbPair {
-  UcbPair() : action_count_(0), action_value_(ObjectiveVec::Zero()) {};
+  UcbPair(size_t reward_vec_size) : action_count_(0), action_value_(ObjectiveVec::Zero(reward_vec_size)) {};
   unsigned action_count_;
   ObjectiveVec action_value_;
 } UcbPair;
@@ -41,11 +41,11 @@ class UctStatistic :
 
   UctStatistic(ActionIdx num_actions, MctsParameters const &mcts_parameters) :
       ParentType(num_actions, mcts_parameters),
-      value_(),
-      latest_return_(),
+      value_(ObjectiveVec::Zero(mcts_parameters.REWARD_VEC_SIZE)),
+      latest_return_(ObjectiveVec::Zero(mcts_parameters.REWARD_VEC_SIZE)),
       ucb_statistics_([&]() -> ActionUCBMap {
         ActionUCBMap map;
-        for (ActionIdx ai = 0; ai < num_actions; ++ai) { map[ai] = UcbPair(); }
+        for (ActionIdx ai = 0; ai < num_actions; ++ai) { map.insert({ai, UcbPair(mcts_parameters.REWARD_VEC_SIZE)}); }
         return map;
       }()),
       total_node_visits_(0) {};
@@ -110,14 +110,14 @@ class UctStatistic :
     const ThisType &changed_uct_statistic = changed_child_statistic.impl();
 
     //Action Value update step
-    UcbPair &ucb_pair =
-        ucb_statistics_[this->collected_reward_.first]; // we remembered for which action we got the reward, must be the same as during backprop, if we linked parents and childs correctly
+    auto ucb_pair =
+        ucb_statistics_.find(this->collected_reward_.first); // we remembered for which action we got the reward, must be the same as during backprop, if we linked parents and childs correctly
     //action value: Q'(s,a) = Q'(s,a) + (latest_return - Q'(s,a))/N
     latest_return_ =
         this->collected_reward_.second + this->mcts_parameters_.DISCOUNT_FACTOR * changed_uct_statistic.latest_return_;
-    ucb_pair.action_count_ += 1;
-    ucb_pair.action_value_ =
-        ucb_pair.action_value_ + (latest_return_ - ucb_pair.action_value_) / ucb_pair.action_count_;
+    ucb_pair->second.action_count_ += 1;
+    ucb_pair->second.action_value_ =
+        ucb_pair->second.action_value_ + (latest_return_ - ucb_pair->second.action_value_) / ucb_pair->second.action_count_;
     total_node_visits_ += 1;
     value_ = value_ + (latest_return_ - value_) / total_node_visits_;
   }
@@ -165,8 +165,8 @@ class UctStatistic :
           action_value_normalized =
           (ucb_statistics.at(idx).action_value_ - this->mcts_parameters_.uct_statistic.LOWER_BOUND).cwiseQuotient(
               this->mcts_parameters_.uct_statistic.UPPER_BOUND - this->mcts_parameters_.uct_statistic.LOWER_BOUND);
-      LOG_IF(FATAL, !(action_value_normalized.array() >= ObjectiveVec::Constant(0).array()).all()) << "Normalized values < 0: " << action_value_normalized.transpose();
-      LOG_IF(FATAL, !(action_value_normalized.array() <= ObjectiveVec::Constant(1).array()).all()) << "Normalized values > 1: " << action_value_normalized.transpose();
+      LOG_IF(FATAL, !(action_value_normalized.array() >= ObjectiveVec::Constant(this->mcts_parameters_.REWARD_VEC_SIZE, 0).array()).all()) << "Normalized values < 0: " << action_value_normalized.transpose();
+      LOG_IF(FATAL, !(action_value_normalized.array() <= ObjectiveVec::Constant(this->mcts_parameters_.REWARD_VEC_SIZE, 1).array()).all()) << "Normalized values > 1: " << action_value_normalized.transpose();
       values[idx] = action_value_normalized.array()
           + 2 * this->mcts_parameters_.DISCOUNT_FACTOR
               * sqrt((2 * log(total_node_visits_)) / (ucb_statistics.at(idx).action_count_));

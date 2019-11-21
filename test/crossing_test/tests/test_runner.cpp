@@ -25,8 +25,8 @@ void TestRunner::run_test(size_t num_iter) {
   LOG(INFO) << "Otr history:" << latest_test_env_->pos_history_other;
 }
 JointReward TestRunner::calculate_default_reward() {
-  JointReward step_reward(latest_test_env_->rewards.size(), Reward::Zero());
-  JointReward accu_reward(latest_test_env_->rewards.size(), Reward::Zero());
+  JointReward step_reward(latest_test_env_->rewards.size(), Reward::Zero(latest_test_env_->mcts_parameters_.REWARD_VEC_SIZE));
+  JointReward accu_reward(latest_test_env_->rewards.size(), Reward::Zero(latest_test_env_->mcts_parameters_.REWARD_VEC_SIZE));
   auto const &actions = latest_test_env_->get_action_history();
   auto d_test_env = DefaultTestEnvFactory().make_test_env();
   for (auto const &jt : actions) {

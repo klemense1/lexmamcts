@@ -25,7 +25,7 @@ class SemiRandomHeuristic : public mcts::Heuristic<SemiRandomHeuristic>, mcts::R
       const ActionIdx num_actions = node->get_state()->get_num_actions(S::ego_agent_idx);
       std::vector<SE> statistics(num_agents, SE(num_actions, mcts_parameters_));
       for (AgentIdx ai = 0; ai < num_agents; ++ai) {
-        statistics.at(ai).set_heuristic_estimate(Reward::Zero());
+        statistics.at(ai).set_heuristic_estimate(Reward::Zero(mcts_parameters_.REWARD_VEC_SIZE));
       }
       return statistics;
     }
@@ -36,8 +36,8 @@ class SemiRandomHeuristic : public mcts::Heuristic<SemiRandomHeuristic>, mcts::R
     const AgentIdx num_agents = node->get_state()->get_agent_idx().size();
     const ActionIdx num_actions = node->get_state()->get_num_actions(S::ego_agent_idx);
 
-    std::vector<Reward> accum_rewards(num_agents, Reward::Zero());
-    std::vector<Reward> step_rewards(num_agents, Reward::Zero());
+    std::vector<Reward> accum_rewards(num_agents, Reward::Zero(mcts_parameters_.REWARD_VEC_SIZE));
+    std::vector<Reward> step_rewards(num_agents, Reward::Zero(mcts_parameters_.REWARD_VEC_SIZE));
     const double k_discount_factor = mcts_parameters_.DISCOUNT_FACTOR;
     double modified_discount_factor = k_discount_factor;
     int num_iterations = 0;
@@ -58,7 +58,7 @@ class SemiRandomHeuristic : public mcts::Heuristic<SemiRandomHeuristic>, mcts::R
 
     accum_rewards += state->get_final_reward();
 
-    Reward coop_sum = Reward::Zero();
+    Reward coop_sum = Reward::Zero(mcts_parameters_.REWARD_VEC_SIZE);
     coop_sum = std::accumulate(accum_rewards.begin(), accum_rewards.end(), coop_sum);
     coop_sum = coop_sum * mcts_parameters_.COOP_FACTOR;
     // generate an extra node statistic for each agent

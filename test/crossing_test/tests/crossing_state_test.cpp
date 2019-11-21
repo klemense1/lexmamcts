@@ -35,7 +35,7 @@ TEST(CrossingTest, general) {
                                                                RandomHeuristic>>(ThresholdTestEnvFactory().make_test_env());
   get_optimal_reward(optimal_env.get());
   std::vector<Reward> optimal_reward = optimal_env->rewards;
-  std::vector<Reward> accu_reward(test_env->state->get_agent_idx().size(), Reward::Zero());
+  std::vector<Reward> accu_reward(test_env->state->get_agent_idx().size(), Reward::Zero(test_env->mcts_parameters_.REWARD_VEC_SIZE));
   test_env->pos_history.emplace_back(test_env->state->get_ego_pos());
   test_env->pos_history_other.emplace_back(test_env->state->get_agent_states()[1].x_pos);
   while (!test_env->state->is_terminal() && steps < MAX_STEPS) {

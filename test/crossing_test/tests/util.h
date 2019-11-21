@@ -17,8 +17,8 @@
 template <class TestEnv>
 void get_optimal_reward(TestEnv* t_env) {
   JointAction jt(t_env->state->get_agent_idx().size(), aconv(Actions::FORWARD));
-  std::vector<Reward> rewards(t_env->state->get_agent_idx().size(), Reward::Zero());
-  std::vector<Reward> accu_reward(t_env->state->get_agent_idx().size(), Reward::Zero());
+  std::vector<Reward> rewards(t_env->state->get_agent_idx().size(), Reward::Zero(t_env->mcts_parameters_.REWARD_VEC_SIZE));
+  std::vector<Reward> accu_reward(t_env->state->get_agent_idx().size(), Reward::Zero(t_env->mcts_parameters_.REWARD_VEC_SIZE));
   DLOG(INFO) << t_env->state->sprintf();
 
   for (int i = 0; i < t_env->state->get_parameters().crossing_point-2; ++i) {

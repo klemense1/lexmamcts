@@ -7,15 +7,11 @@
 #ifndef MCTS_PARAMETERS_H
 #define MCTS_PARAMETERS_H
 
-#ifndef REWARD_DIM
-#define REWARD_DIM 5
-#endif
-
 #include "Eigen/Core"
 
 namespace mcts {
 
-typedef Eigen::Matrix<float, REWARD_DIM, 1> ObjectiveVec;
+typedef Eigen::VectorXf ObjectiveVec;
 
 struct MctsParameters {
 
@@ -45,6 +41,8 @@ struct MctsParameters {
   struct ThresUCTStatistic {
     ObjectiveVec THRESHOLD;
   };
+
+  size_t REWARD_VEC_SIZE = 5;
 
   double COOP_FACTOR;
   double DISCOUNT_FACTOR;

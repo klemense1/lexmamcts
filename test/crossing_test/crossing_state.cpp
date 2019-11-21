@@ -68,7 +68,7 @@ std::shared_ptr<CrossingState> CrossingState::execute(const JointAction &joint_a
     for (auto le : label_evaluator_) {
       labels[le->get_label_str()] = le->evaluate(next_world);
     }
-    rewards[agent_idx] = Reward::Zero();
+    rewards[agent_idx] = Reward::Zero(parameters_.reward_vec_size);
 
     // Automata transit
     for (auto &aut : (next_automata[agent_idx])) {
@@ -87,7 +87,7 @@ std::shared_ptr<CrossingState> CrossingState::execute(const JointAction &joint_a
   return std::make_shared<CrossingState>(next_agent_states, terminal, next_automata, label_evaluator_, parameters_, depth_ + 1);
 }
 Reward CrossingState::get_action_cost(ActionIdx action, AgentIdx agent_idx) const {
-  Reward reward = Reward::Zero();
+  Reward reward = Reward::Zero(parameters_.reward_vec_size);
   reward(parameters_.depth_prio) += -1.0f * parameters_.depth_weight;
   reward(parameters_.speed_deviation_prio) +=
       -std::abs(static_cast<int>(aconv(action)) - static_cast<int>(Actions::FORWARD)) * parameters_.speed_deviation_weight;
@@ -97,7 +97,7 @@ Reward CrossingState::get_action_cost(ActionIdx action, AgentIdx agent_idx) cons
   return reward;
 }
 Reward CrossingState::get_shaping_reward(const AgentState &agent_state) const {
-  Reward reward = Reward::Zero();
+  Reward reward = Reward::Zero(parameters_.reward_vec_size);
   // Potential for goal distance
   reward(parameters_.potential_prio) += -parameters_.potential_weight * std::abs(parameters_.ego_goal_reached_position - agent_state.x_pos);
   return reward;
@@ -121,7 +121,7 @@ void CrossingState::reset_violations() {
   }
 }
 std::vector<Reward> CrossingState::get_final_reward() const {
-  std::vector<Reward> rewards(agent_states_.size(), Reward::Zero());
+  std::vector<Reward> rewards(agent_states_.size(), Reward::Zero(parameters_.reward_vec_size));
   for (size_t agent_idx = 0; agent_idx < rewards.size(); ++agent_idx) {
     // Automata transit
     for (const auto &aut : (rule_state_map_[agent_idx])) {

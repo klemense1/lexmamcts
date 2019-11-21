@@ -27,6 +27,8 @@ struct CrossingStateParameter {
   float speed_deviation_weight;
   float acceleration_weight;
   float potential_weight;
+
+  size_t reward_vec_size;
 };
 
 CrossingStateParameter make_default_crossing_state_parameters();

@@ -39,7 +39,7 @@ class BaseTestEnv {
       : mcts_parameters_(std::move(mcts_parameters)),
         crossing_state_parameter_(std::move(crossing_state_parameter)),
         label_evaluators_(std::move(label_evaluators)),
-        rewards(crossing_state_parameter.num_other_agents + 1, Reward::Zero()),
+        rewards(crossing_state_parameter.num_other_agents + 1, Reward::Zero(mcts_parameters.REWARD_VEC_SIZE)),
         automata_(std::move(automata)),
         jt(2, static_cast<int>(Actions::FORWARD)) {
     create_state();

@@ -152,7 +152,7 @@ template<class S, class SE, class SO, class H>
 bool StageNode<S, SE, SO, H>::select_or_expand(StageNodeSPtr &next_node) {
   // helper function to fill rewards
   auto fill_rewards = [this](const std::vector<Reward> &reward_list, const JointAction &ja) {
-    Reward coop_sum = Reward::Zero();
+    Reward coop_sum = Reward::Zero(mcts_parameters_.REWARD_VEC_SIZE);
     coop_sum = std::accumulate(reward_list.begin(), reward_list.end(), coop_sum);
     coop_sum = coop_sum * mcts_parameters_.COOP_FACTOR;
     ego_int_node_.collect_reward((coop_sum + (1 - mcts_parameters_.COOP_FACTOR) * reward_list[S::ego_agent_idx])
@@ -186,7 +186,7 @@ bool StageNode<S, SE, SO, H>::select_or_expand(StageNodeSPtr &next_node) {
     fill_rewards(joint_rewards_[joint_action], joint_action);
     return true;
   } else {   // EXPAND NEW NODE BASED ON NEW JOINT ACTION
-    std::vector<Reward> rewards(state_->get_agent_idx().size(), Reward::Zero());
+    std::vector<Reward> rewards(state_->get_agent_idx().size(), Reward::Zero(mcts_parameters_.REWARD_VEC_SIZE));
     next_node = std::make_shared<StageNode<S, SE, SO, H>,
                                  StageNodeSPtr,
                                  std::shared_ptr<S>,
@@ -365,7 +365,7 @@ const std::unordered_map<JointAction, std::shared_ptr<StageNode<S, SE, SO, H>>, 
 }
 template<class S, class SE, class SO, class H>
 JointReward StageNode<S, SE, SO, H>::get_q_func(JointAction const &joint_action) {
-  JointReward v(state_->get_agent_idx().size(), Reward::Zero());
+  JointReward v(state_->get_agent_idx().size(), Reward::Zero(mcts_parameters_.REWARD_VEC_SIZE));
   ActionIdx action = joint_action.at(0);
   v.at(0) = ego_int_node_.get_expected_rewards().at(action);
   for (size_t i = 1; i < v.size(); ++i) {

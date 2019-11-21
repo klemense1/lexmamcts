@@ -60,9 +60,9 @@ class ThresUCTStatistic : public UctStatistic<ThresUCTStatistic> {
   }
 
   ActionIdx get_best_action() {
-    Eigen::MatrixXf mat(Reward::RowsAtCompileTime, ucb_statistics_.size());
+    Eigen::MatrixXf mat(this->mcts_parameters_.REWARD_VEC_SIZE, ucb_statistics_.size());
     for (ActionIdx i = 0; i < static_cast<ActionIdx>(mat.cols()); ++i) {
-      mat.col(i) = ucb_statistics_[i].action_value_;
+      mat.col(i) = ucb_statistics_.find(i)->second.action_value_;
     }
 
     Reward thr = mcts_parameters_.thres_uct_statistic_.THRESHOLD;

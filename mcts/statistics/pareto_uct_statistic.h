@@ -47,7 +47,7 @@ class ParetoUCTStatistic : public UctStatistic<ParetoUCTStatistic> {
       //MCTS_EXPECT_TRUE(action_value_normalized >= 0);
       //MCTS_EXPECT_TRUE(action_value_normalized <= 1);
       values[idx] = action_value_normalized.array()
-          + sqrt((4 * log(total_node_visits_) + log(REWARD_DIM)) / (2 * ucb_statistics.at(idx).action_count_));
+          + sqrt((4 * log(total_node_visits_) + log(this->mcts_parameters_.REWARD_VEC_SIZE)) / (2 * ucb_statistics.at(idx).action_count_));
     }
   }
 };
