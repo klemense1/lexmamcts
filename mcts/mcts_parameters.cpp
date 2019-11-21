@@ -10,19 +10,47 @@
 
 namespace mcts {
 
-std::ostream &operator<<(std::ostream &os, MctsParameters const &d) {
-  LOG(INFO) << "MCTS Parameters:";
-  LOG(INFO) << "MctsParameters::MAX_NUMBER_OF_ITERATIONS: "
-            << d.random_heuristic.MAX_NUMBER_OF_ITERATIONS;
-  LOG(INFO) << "MctsParameters::MAX_SEARCH_TIME_RANDOM_HEURISTIC: " << d.random_heuristic.MAX_SEARCH_TIME_RANDOM_HEURISTIC;
-  LOG(INFO) << "MctsParameters::DISCOUNT_FACTOR: " << d.DISCOUNT_FACTOR;
-  LOG(INFO) << "MctsParameters::EXPLORATION_CONSTANT: " << d.uct_statistic.EXPLORATION_CONSTANT;
-  LOG(INFO) << "MctsParameters::LOWER_BOUND: " << d.uct_statistic.LOWER_BOUND.transpose();
-  LOG(INFO) << "MctsParameters::UPPER_BOUND: " << d.uct_statistic.UPPER_BOUND.transpose();
-  LOG(INFO) << "MctsParameters::COOP_FACTOR: " << d.COOP_FACTOR;
-  LOG(INFO) << "MctsParameters::EPSILON: " << d.e_greedy_uct_statistic_.EPSILON;
-  LOG(INFO) << "MctsParameters::ALPHA: " << d.slack_uct_statistic_.ALPHA;
+std::ostream& operator<<(std::ostream& os, const MctsParameters& parameters) {
+  os << "REWARD_VEC_SIZE: " << parameters.REWARD_VEC_SIZE
+     << " COOP_FACTOR: " << parameters.COOP_FACTOR
+     << " DISCOUNT_FACTOR: " << parameters.DISCOUNT_FACTOR
+     << " random_heuristic: " << parameters.random_heuristic
+     << " uct_statistic: " << parameters.uct_statistic
+     << " e_greedy_uct_statistic_: " << parameters.e_greedy_uct_statistic_
+     << " slack_uct_statistic_: " << parameters.slack_uct_statistic_
+     << " thres_uct_statistic_: " << parameters.thres_uct_statistic_;
   return os;
 }
-
+std::ostream& operator<<(std::ostream& os,
+                         const MctsParameters::UctStatistic& statistic) {
+  os << "EXPLORATION_CONSTANT: " << statistic.EXPLORATION_CONSTANT
+     << " PROGRESSIVE_WIDENING_ENABLED: "
+     << statistic.PROGRESSIVE_WIDENING_ENABLED
+     << " PROGRESSIVE_WIDENING_ALPHA: " << statistic.PROGRESSIVE_WIDENING_ALPHA
+     << " LOWER_BOUND: " << statistic.LOWER_BOUND
+     << " UPPER_BOUND: " << statistic.UPPER_BOUND;
+  return os;
+}
+std::ostream& operator<<(std::ostream& os,
+                         const MctsParameters::RandomHeuristic& heuristic) {
+  os << "MAX_NUMBER_OF_ITERATIONS: " << heuristic.MAX_NUMBER_OF_ITERATIONS
+     << " MAX_SEARCH_TIME_RANDOM_HEURISTIC: "
+     << heuristic.MAX_SEARCH_TIME_RANDOM_HEURISTIC;
+  return os;
+}
+std::ostream& operator<<(std::ostream& os,
+                         const MctsParameters::EGreedyUCTStatistic& statistic) {
+  os << "EPSILON: " << statistic.EPSILON;
+  return os;
+}
+std::ostream& operator<<(std::ostream& os,
+                         const MctsParameters::SlackUCTStatistic& statistic) {
+  os << "ALPHA: " << statistic.ALPHA;
+  return os;
+}
+std::ostream& operator<<(std::ostream& os,
+                         const MctsParameters::ThresUCTStatistic& statistic) {
+  os << "THRESHOLD: " << statistic.THRESHOLD;
+  return os;
+}
 } // namespace mcts

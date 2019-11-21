@@ -32,7 +32,7 @@ class Mcts {
 
   Mcts(MctsParameters const &mcts_parameters)
       : root_(), num_iterations(0), heuristic_(mcts_parameters), mcts_parameters_(mcts_parameters) {
-    LOG(INFO) << mcts_parameters_;
+    DVLOG(1) << mcts_parameters_;
   };
 
   ~Mcts() {}
@@ -66,7 +66,7 @@ class Mcts {
 template<class S, class SE, class SO, class H>
 void Mcts<S, SE, SO, H>::search(const S &current_state, unsigned int max_search_time_ms, unsigned int max_iterations) {
   namespace chr = std::chrono;
-  DLOG(INFO) << "MCTS search samples: " << max_iterations;
+  DLOG(INFO) << "Max search samples: " << max_iterations;
   auto start = std::chrono::high_resolution_clock::now();
 
   StageNode<S, SE, SO, H>::reset_counter();
@@ -74,7 +74,7 @@ void Mcts<S, SE, SO, H>::search(const S &current_state, unsigned int max_search_
 #ifdef PLAN_DEBUG_INFO
   LOG(INFO) << "starting state: " << current_state.sprintf();
 #endif
-
+  LOG_IF(FATAL, current_state.is_terminal()) << "Cannot search from terminal state! Aborting!";
   root_ = std::make_shared<StageNode<S, SE, SO, H>, StageNodeSPtr, std::shared_ptr<S>, const JointAction &,
                            const unsigned int &>(nullptr, current_state.clone(), JointAction(), 0, mcts_parameters_);
 
@@ -85,7 +85,7 @@ void Mcts<S, SE, SO, H>::search(const S &current_state, unsigned int max_search_
     iterate(root_);
     num_iterations += 1;
   }
-
+  VLOG(1) << "Search time: " << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count() << " ms";
 }
 
 template<class S, class SE, class SO, class H>

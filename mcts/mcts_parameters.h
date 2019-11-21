@@ -7,6 +7,7 @@
 #ifndef MCTS_PARAMETERS_H
 #define MCTS_PARAMETERS_H
 
+#include <ostream>
 #include "Eigen/Core"
 
 namespace mcts {
@@ -14,8 +15,12 @@ namespace mcts {
 typedef Eigen::VectorXf ObjectiveVec;
 
 struct MctsParameters {
+  friend std::ostream& operator<<(std::ostream& os,
+                                  const MctsParameters& parameters);
 
   struct UctStatistic {
+    friend std::ostream& operator<<(std::ostream& os,
+                                    const UctStatistic& statistic);
     double EXPLORATION_CONSTANT;
     bool PROGRESSIVE_WIDENING_ENABLED;
     double PROGRESSIVE_WIDENING_ALPHA;
@@ -24,21 +29,29 @@ struct MctsParameters {
   };
 
   struct RandomHeuristic {
+    friend std::ostream& operator<<(std::ostream& os,
+                                    const RandomHeuristic& heuristic);
     int MAX_NUMBER_OF_ITERATIONS;
     double MAX_SEARCH_TIME_RANDOM_HEURISTIC;
   };
 
   struct EGreedyUCTStatistic {
+    friend std::ostream& operator<<(std::ostream& os,
+                                    const EGreedyUCTStatistic& statistic);
     /// Probability of random exploration
     double EPSILON;
   };
 
   struct SlackUCTStatistic {
+    friend std::ostream& operator<<(std::ostream& os,
+                                    const SlackUCTStatistic& statistic);
     /// Confidence level 1-ALPHA
     double ALPHA;
   };
 
   struct ThresUCTStatistic {
+    friend std::ostream& operator<<(std::ostream& os,
+                                    const ThresUCTStatistic& statistic);
     ObjectiveVec THRESHOLD;
   };
 
@@ -53,8 +66,6 @@ struct MctsParameters {
   SlackUCTStatistic slack_uct_statistic_;
   ThresUCTStatistic thres_uct_statistic_;
 };
-
-std::ostream &operator<<(std::ostream &os, MctsParameters const &d);
 
 } // namespace mcts
 
