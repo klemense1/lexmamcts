@@ -3,7 +3,7 @@ load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository")
 
 http_archive(
     name = "gtest",
-    build_file = "@//test/external:gtest.BUILD",
+    build_file = "@//tools:gtest.BUILD",
     sha256 = "b58cb7547a28b2c718d1e38aee18a3659c9e3ff52440297e965f5edffe34b6d0",
     strip_prefix = "googletest-release-1.7.0",
     url = "https://github.com/google/googletest/archive/release-1.7.0.zip",
@@ -12,7 +12,7 @@ http_archive(
 http_archive(
     # Need Eigen 3.4 (which is in development) for STL-compatible iterators
     name = "com_github_eigen_eigen",
-    build_file = "@//test/external:eigen.BUILD",
+    build_file = "@//tools:eigen.BUILD",
     sha256 = "4b1120abc5d4a63620a886dcc5d7a7a27bf5b048c8c74ac57521dd27845b1d9f",
     strip_prefix = "eigen-git-mirror-98e54de5e25aefc6b984c168fb3009868a93e217",
     urls = [
@@ -22,7 +22,7 @@ http_archive(
 
 http_archive(
     name = "spot",
-    build_file = "@//test/external:spot.BUILD",
+    build_file = "@//tools:spot.BUILD",
     patch_cmds = ["./configure"],
     sha256 = "dcb7aa684725304afb3d435f26f25b51fbd6e9a6ef610e16163cc0030ad5eab4",
     strip_prefix = "spot-2.8.1",
