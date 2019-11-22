@@ -139,6 +139,7 @@ class CrossingTestEnv : public BaseTestEnv {
   JointAction search(size_t num_iterations) override {
     mcts.search(*(this->state), 50000, num_iterations);
     this->set_jt(mcts.returnBestAction());
+    VLOG(1) << "Best action: " << this->get_jt();
     return this->get_jt();
   }
   Mcts<CrossingState, Stats, Stats, Heuristic> mcts;

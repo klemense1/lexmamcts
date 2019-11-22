@@ -6,7 +6,7 @@
 #include "util.h"
 
 Eigen::MatrixXf rewards_to_mat(std::vector<Reward> const &rewards) {
-  Eigen::MatrixXf mat(Reward::RowsAtCompileTime, rewards.size());
+  Eigen::MatrixXf mat(rewards[0].rows(), rewards.size());
   for (size_t i = 0; i < rewards.size(); ++i) {
     mat.col(i) = rewards[i];
   }

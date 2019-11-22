@@ -11,7 +11,7 @@
 
 TEST(MinimumViolation, main) {
   TestRunner test_runner(new MinimumViolationTestEnvFactory());
-  test_runner.run_test(10000);
+  test_runner.run_test(5000);
   LOG(INFO) << "Trajectories:";
   LOG(INFO) << "Ego: " << test_runner.get_latest_test_env()->pos_history;
   LOG(INFO) << "Other: " << test_runner.get_latest_test_env()->pos_history_other;
@@ -21,5 +21,6 @@ int main(int argc, char **argv) {
   google::InitGoogleLogging(argv[0]);
   ::testing::InitGoogleTest(&argc, argv);
   FLAGS_logtostderr = true;
+  FLAGS_v = 1;
   return RUN_ALL_TESTS();
 }

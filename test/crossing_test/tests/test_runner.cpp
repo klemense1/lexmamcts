@@ -14,6 +14,7 @@ void TestRunner::run_test(size_t num_iter) {
   while (!latest_test_env_->state->is_terminal() && steps < MAX_STEPS) {
     latest_test_env_->search(num_iter);
     latest_test_env_->state = latest_test_env_->state->execute(latest_test_env_->get_jt(), step_reward);
+    VLOG(1) << "Next state: " << latest_test_env_->state->sprintf();
     latest_test_env_->rewards += step_reward;
     latest_test_env_->pos_history.emplace_back(latest_test_env_->state->get_ego_pos());
     latest_test_env_->pos_history_other.emplace_back(latest_test_env_->state->get_agent_states()[1].x_pos);

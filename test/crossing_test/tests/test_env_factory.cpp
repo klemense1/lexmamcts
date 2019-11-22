@@ -68,9 +68,11 @@ std::shared_ptr<BaseTestEnv> MinimumViolationTestEnvFactory::make_test_env() {
                                                                           -1.f,
                                                                           RewardPriority::LEGAL_RULE_B)});
 
-  return std::make_shared<CrossingTestEnv<ThresUCTStatistic>>(make_default_mcts_parameters(),
-                                                              crossing_params,
-                                                              automata);
+  auto test_env_ptr = std::make_shared<CrossingTestEnv<ThresUCTStatistic>>(mcts_params,
+                                                                           crossing_params,
+                                                                           automata,
+                                                                           BaseTestEnv::make_default_labels(crossing_params));
+  return std::dynamic_pointer_cast<BaseTestEnv>(test_env_ptr);
 }
 std::shared_ptr<BaseTestEnv> MaxUCTTestEnvFactory::make_test_env() {
   CrossingStateParameter crossing_params = make_default_crossing_state_parameters();
