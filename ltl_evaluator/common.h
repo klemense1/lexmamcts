@@ -10,6 +10,7 @@ namespace modules {
 namespace models {
 namespace behavior {
 
+typedef unsigned int RulePriority;
 enum RewardPriority {
   SAFETY = 0, LEGAL_RULE, LEGAL_RULE_B, LEGAL_RULE_C, GOAL,
 };

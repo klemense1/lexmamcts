@@ -11,7 +11,7 @@ namespace behavior {
 uint32_t RuleState::get_current_state() const {
   return current_state_;
 }
-RewardPriority RuleState::get_type() const {
+RulePriority RuleState::get_type() const {
   return automaton_->get_type();
 }
 double RuleState::get_rule_belief() const {

@@ -41,25 +41,25 @@ class EvaluatorRuleLTL : public std::enable_shared_from_this<EvaluatorRuleLTL> {
 
   void update_belief(RuleState &state) const;
 
-  RewardPriority get_type() const;
+  RulePriority get_type() const;
 
   void set_weight(float weight);
 
   void set_final_reward(float final_reward);
 
-  void set_type(RewardPriority type);
+  void set_type(RulePriority type);
 
   friend std::ostream &operator<<(std::ostream &os, EvaluatorRuleLTL const &d);
  private:
   EvaluatorRuleLTL(spot::formula ltl_formula,
                    float weight,
-                   RewardPriority type,
+                   RulePriority type,
                    float init_belief = 1.0,
                    float final_reward = 0.0f);
 
   EvaluatorRuleLTL(std::string ltl_formula_str,
                    float weight,
-                   RewardPriority type,
+                   RulePriority type,
                    float init_belief = 1.0,
                    float final_reward = 0.0f);
   static spot::formula parse_formula(std::string ltl_formula_str);
@@ -70,7 +70,7 @@ class EvaluatorRuleLTL : public std::enable_shared_from_this<EvaluatorRuleLTL> {
   spot::twa_graph_ptr aut_;
   std::set<spot::formula> alphabet_;
   spot::formula ltl_formula_;
-  RewardPriority type_;
+  RulePriority type_;
   Eigen::Matrix2d observation_prob_;
   const float init_belief_;
 };

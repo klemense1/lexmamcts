@@ -11,7 +11,7 @@
 namespace modules {
 namespace models {
 namespace behavior {
-EvaluatorRuleLTL::EvaluatorRuleLTL(spot::formula ltl_formula, float weight, RewardPriority type, float init_belief,
+EvaluatorRuleLTL::EvaluatorRuleLTL(spot::formula ltl_formula, float weight, RulePriority type, float init_belief,
                                    float final_reward) : weight_(weight),
                                                          final_reward_(final_reward),
                                                          ltl_formula_(ltl_formula),
@@ -32,7 +32,7 @@ EvaluatorRuleLTL::EvaluatorRuleLTL(spot::formula ltl_formula, float weight, Rewa
   observation_prob_ << 0.9, 0.1, 0.5, 0.5;
 }
 
-EvaluatorRuleLTL::EvaluatorRuleLTL(std::string ltl_formula_str, float weight, RewardPriority type, float init_belief,
+EvaluatorRuleLTL::EvaluatorRuleLTL(std::string ltl_formula_str, float weight, RulePriority type, float init_belief,
                                    float final_reward) :
         EvaluatorRuleLTL(parse_formula(ltl_formula_str), weight, type, init_belief, final_reward) {}
 
@@ -123,10 +123,10 @@ void EvaluatorRuleLTL::set_weight(float weight) {
 void EvaluatorRuleLTL::set_final_reward(float final_reward) {
   final_reward_ = final_reward;
 }
-void EvaluatorRuleLTL::set_type(RewardPriority type) {
+void EvaluatorRuleLTL::set_type(RulePriority type) {
   type_ = type;
 }
-RewardPriority EvaluatorRuleLTL::get_type() const {
+RulePriority EvaluatorRuleLTL::get_type() const {
   return type_;
 }
 }

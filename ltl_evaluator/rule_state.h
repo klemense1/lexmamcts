@@ -20,7 +20,7 @@ class RuleState {
  public:
   friend class EvaluatorRuleLTL;
   uint32_t get_current_state() const;
-  RewardPriority get_type() const;
+  RulePriority get_type() const;
   double get_rule_belief() const;
   size_t get_violation_count() const;
   void reset_violations();
