@@ -72,7 +72,7 @@ std::shared_ptr<CrossingState> CrossingState::execute(const JointAction &joint_a
 
     // Automata transit
     for (auto &aut : (next_automata[agent_idx])) {
-      rewards[agent_idx](aut.second.get_type()) += aut.second.get_automaton()->evaluate(labels, aut.second);
+      rewards[agent_idx](aut.second.get_priority()) += aut.second.get_automaton()->evaluate(labels, aut.second);
     }
 
     rewards[agent_idx] += get_action_cost(joint_action[agent_idx], agent_idx);
@@ -125,7 +125,7 @@ std::vector<Reward> CrossingState::get_final_reward() const {
   for (size_t agent_idx = 0; agent_idx < rewards.size(); ++agent_idx) {
     // Automata transit
     for (const auto &aut : (rule_state_map_[agent_idx])) {
-      rewards[agent_idx](aut.second.get_type()) += aut.second.get_automaton()->get_final_reward(aut.second);
+      rewards[agent_idx](aut.second.get_priority()) += aut.second.get_automaton()->get_final_reward(aut.second);
     }
   }
   return rewards;

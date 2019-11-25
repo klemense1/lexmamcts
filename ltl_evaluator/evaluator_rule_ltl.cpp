@@ -11,11 +11,11 @@
 namespace modules {
 namespace models {
 namespace behavior {
-EvaluatorRuleLTL::EvaluatorRuleLTL(spot::formula ltl_formula, float weight, RulePriority type, float init_belief,
+EvaluatorRuleLTL::EvaluatorRuleLTL(spot::formula ltl_formula, float weight, RulePriority priority, float init_belief,
                                    float final_reward) : weight_(weight),
                                                          final_reward_(final_reward),
                                                          ltl_formula_(ltl_formula),
-                                                         type_(type),
+      priority_(priority),
                                                          init_belief_(init_belief) {
 
   assert(init_belief <= 1.0 && init_belief >= 0.0);
@@ -32,9 +32,9 @@ EvaluatorRuleLTL::EvaluatorRuleLTL(spot::formula ltl_formula, float weight, Rule
   observation_prob_ << 0.9, 0.1, 0.5, 0.5;
 }
 
-EvaluatorRuleLTL::EvaluatorRuleLTL(std::string ltl_formula_str, float weight, RulePriority type, float init_belief,
+EvaluatorRuleLTL::EvaluatorRuleLTL(std::string ltl_formula_str, float weight, RulePriority priority, float init_belief,
                                    float final_reward) :
-        EvaluatorRuleLTL(parse_formula(ltl_formula_str), weight, type, init_belief, final_reward) {}
+        EvaluatorRuleLTL(parse_formula(ltl_formula_str), weight, priority, init_belief, final_reward) {}
 
 RuleState EvaluatorRuleLTL::make_rule_state() const {
   return RuleState(aut_->get_init_state_number(), init_belief_, 0, shared_from_this());
@@ -123,11 +123,10 @@ void EvaluatorRuleLTL::set_weight(float weight) {
 void EvaluatorRuleLTL::set_final_reward(float final_reward) {
   final_reward_ = final_reward;
 }
-void EvaluatorRuleLTL::set_type(RulePriority type) {
-  type_ = type;
+void EvaluatorRuleLTL::set_priority(RulePriority priority) { priority_ = priority;
 }
-RulePriority EvaluatorRuleLTL::get_type() const {
-  return type_;
+RulePriority EvaluatorRuleLTL::get_priority() const {
+  return priority_;
 }
 }
 }
