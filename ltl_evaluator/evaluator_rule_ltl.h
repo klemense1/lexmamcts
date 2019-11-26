@@ -25,9 +25,10 @@ class EvaluatorRuleLTL : public std::enable_shared_from_this<EvaluatorRuleLTL> {
  public:
   typedef std::shared_ptr<EvaluatorRuleLTL> EvaluatorRuleLTLSPtr;
 
-  template <typename... T>
-  static EvaluatorRuleLTLSPtr make_rule(T &&... t) {
-    return EvaluatorRuleLTLSPtr(new EvaluatorRuleLTL(std::forward<T>(t)...));
+  static EvaluatorRuleLTLSPtr make_rule(std::string ltl_formula_str, float weight,
+                                        RulePriority priority, float init_belief = 1.0,
+                                        float final_reward = 0.0f) {
+    return EvaluatorRuleLTLSPtr(new EvaluatorRuleLTL(ltl_formula_str, weight, priority, init_belief, final_reward));
   }
 
   RuleState make_rule_state() const;
