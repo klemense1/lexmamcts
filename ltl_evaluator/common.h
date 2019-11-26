@@ -3,19 +3,19 @@
 // Copyright (c) 2019 Luis Gressenbuch. All rights reserved.
 //
 
-#ifndef MAMCTS_TEST_CROSSING_TEST_RULE_EVALUATOR_COMMON_H_
-#define MAMCTS_TEST_CROSSING_TEST_RULE_EVALUATOR_COMMON_H_
+#ifndef LTL_EVALUATOR_COMMON_H_
+#define LTL_EVALUATOR_COMMON_H_
 
-namespace modules {
-namespace models {
-namespace behavior {
+namespace ltl {
 
 typedef unsigned int RulePriority;
 enum RewardPriority {
-  SAFETY = 0, LEGAL_RULE, LEGAL_RULE_B, LEGAL_RULE_C, GOAL,
+  SAFETY = 0,
+  LEGAL_RULE,
+  LEGAL_RULE_B,
+  LEGAL_RULE_C,
+  GOAL,
 };
-}
-}
-}
+}  // namespace ltl
 
-#endif //MAMCTS_TEST_CROSSING_TEST_RULE_EVALUATOR_COMMON_H_
+#endif  // LTL_EVALUATOR_COMMON_H_

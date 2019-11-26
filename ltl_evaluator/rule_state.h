@@ -7,12 +7,11 @@
 #define MAMCTS_TEST_CROSSING_TEST_TESTS_RULE_STATE_H_
 
 #include <ostream>
+#include <memory>
 #include "common.h"
 #include "evaluator_rule_ltl.h"
 
-namespace modules {
-namespace models {
-namespace behavior {
+namespace ltl {
 
 class EvaluatorRuleLTL;
 
@@ -37,8 +36,6 @@ class RuleState {
   std::shared_ptr<const EvaluatorRuleLTL> automaton_;
 };
 
-}
-}
 }
 
 #endif //MAMCTS_TEST_CROSSING_TEST_TESTS_RULE_STATE_H_

@@ -6,7 +6,7 @@
 #include "gtest/gtest.h"
 #include "ltl_evaluator/evaluator_rule_ltl.h"
 
-using namespace modules::models::behavior;
+using namespace ltl;
 using EvaluatorRuleLTLSPtr = EvaluatorRuleLTL::EvaluatorRuleLTLSPtr;
 
 TEST(AutomatonTest, simple) {

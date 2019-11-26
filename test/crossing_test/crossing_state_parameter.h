@@ -8,7 +8,7 @@
 
 #include "ltl_evaluator/evaluator_rule_ltl.h"
 
-using modules::models::behavior::RewardPriority;
+using ltl::RewardPriority;
 
 struct CrossingStateParameter {
   unsigned int num_other_agents;

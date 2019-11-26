@@ -5,9 +5,7 @@
 
 #include "ltl_evaluator/rule_state.h"
 
-namespace modules {
-namespace models {
-namespace behavior {
+namespace ltl {
 uint32_t RuleState::get_current_state() const {
   return current_state_;
 }
@@ -36,6 +34,4 @@ RuleState::RuleState(uint32_t current_state,
                      size_t violated,
                      std::shared_ptr<const EvaluatorRuleLTL> automaton)
     : current_state_(current_state), rule_belief_(rule_belief), violated_(violated), automaton_(automaton) {}
-}
-}
 }

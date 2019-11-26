@@ -3,22 +3,19 @@
 // Copyright (c) 2019 Luis Gressenbuch. All rights reserved.
 //
 
+#ifndef LTL_EVALUATOR_EVALUATOR_RULE_LTL_H_
+#define LTL_EVALUATOR_EVALUATOR_RULE_LTL_H_
 
-#ifndef BARK_MODULES_MODELS_BEHAVIOR_PLANNER_MCTS_EVALUATOR_RULE_LTL_HPP_
-#define BARK_MODULES_MODELS_BEHAVIOR_PLANNER_MCTS_EVALUATOR_RULE_LTL_HPP_
-
-#include <string>
 #include <set>
+#include <string>
 
-#include "common.h"
 #include "Eigen/Core"
+#include "common.h"
+#include "ltl_evaluator/rule_state.h"
 #include "spot/tl/parse.hh"
 #include "spot/twaalgos/translate.hh"
-#include "ltl_evaluator/rule_state.h"
 
-namespace modules {
-namespace models {
-namespace behavior {
+namespace ltl {
 
 typedef std::map<std::string, bool> EvaluationMap;
 
@@ -28,7 +25,7 @@ class EvaluatorRuleLTL : public std::enable_shared_from_this<EvaluatorRuleLTL> {
  public:
   typedef std::shared_ptr<EvaluatorRuleLTL> EvaluatorRuleLTLSPtr;
 
-  template<typename... T>
+  template <typename... T>
   static EvaluatorRuleLTLSPtr make_rule(T &&... t) {
     return EvaluatorRuleLTLSPtr(new EvaluatorRuleLTL(std::forward<T>(t)...));
   }
@@ -50,17 +47,14 @@ class EvaluatorRuleLTL : public std::enable_shared_from_this<EvaluatorRuleLTL> {
   void set_priority(RulePriority priority);
 
   friend std::ostream &operator<<(std::ostream &os, EvaluatorRuleLTL const &d);
+
  private:
-  EvaluatorRuleLTL(spot::formula ltl_formula,
-                   float weight,
-                   RulePriority priority,
-                   float init_belief = 1.0,
+  EvaluatorRuleLTL(spot::formula ltl_formula, float weight,
+                   RulePriority priority, float init_belief = 1.0,
                    float final_reward = 0.0f);
 
-  EvaluatorRuleLTL(std::string ltl_formula_str,
-                   float weight,
-                   RulePriority priority,
-                   float init_belief = 1.0,
+  EvaluatorRuleLTL(std::string ltl_formula_str, float weight,
+                   RulePriority priority, float init_belief = 1.0,
                    float final_reward = 0.0f);
   static spot::formula parse_formula(std::string ltl_formula_str);
   static bool bdd_eval(bdd cond, const std::set<int> &vars);
@@ -74,7 +68,5 @@ class EvaluatorRuleLTL : public std::enable_shared_from_this<EvaluatorRuleLTL> {
   Eigen::Matrix2d observation_prob_;
   const float init_belief_;
 };
-}
-}
-}
-#endif //BARK_MODULES_MODELS_BEHAVIOR_PLANNER_MCTS_EVALUATOR_RULE_LTL_HPP_
+}  // namespace ltl
+#endif  // LTL_EVALUATOR_EVALUATOR_RULE_LTL_H_

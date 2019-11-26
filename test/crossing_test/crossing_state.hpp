@@ -17,7 +17,7 @@
 #include "test/crossing_test/crossing_state_parameter.h"
 
 using namespace mcts;
-using namespace modules::models::behavior;
+using namespace ltl;
 
 namespace mcts {
 class Viewer;
