@@ -24,16 +24,17 @@ cc_binary(
     ],
 )
 
-cc_binary(
-    name = "ltl.so",
+cc_library(
+    name = "python_ltl",
     srcs = [
         "common.hpp",
         "define_evaluator_rule_ltl.cpp",
         "define_evaluator_rule_ltl.hpp",
-        "ltl_module.cpp",
     ],
-    linkshared = 1,
-    linkstatic = 1,
+    hdrs = [
+        "common.hpp",
+        "define_evaluator_rule_ltl.hpp",
+    ],
     deps = [
         "//ltl_evaluator:rule_evaluator",
         "@pybind11",
