@@ -56,7 +56,7 @@ std::shared_ptr<BaseTestEnv> MinimumViolationTestEnvFactory::make_test_env() {
   auto automata = BaseTestEnv::make_default_automata(crossing_params.num_other_agents + 1);
   for (auto &aut : automata) {
     aut.at(Rule::NO_SPEEDING)->set_weight(-1.0f);
-    aut.at(Rule::NO_SPEEDING)->set_type(RewardPriority::LEGAL_RULE_C);
+    aut.at(Rule::NO_SPEEDING)->set_priority(RewardPriority::LEGAL_RULE_C);
     aut.at(Rule::REACH_GOAL)->set_weight(-100.0f);
     aut.at(Rule::REACH_GOAL)->set_final_reward(100.0f);
     aut.at(Rule::GIVE_WAY)->set_weight(0.0f);
@@ -123,7 +123,7 @@ std::shared_ptr<BaseTestEnv> ScalarizedTestEnvFactory::make_test_env() {
     aut.at(Rule::LEAVE_INTERSECTION)->set_weight(-300.0f);
   }
   automata[0].at(Rule::GIVE_WAY)->set_weight(-500.0f);
-  automata[0].at(Rule::GIVE_WAY)->set_type(RewardPriority::SAFETY);
+  automata[0].at(Rule::GIVE_WAY)->set_priority(RewardPriority::SAFETY);
 
   return std::make_shared<CrossingTestEnv<UctStatistic<>>>(mcts_params, crossing_params, automata);
 }

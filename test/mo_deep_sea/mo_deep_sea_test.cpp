@@ -9,6 +9,33 @@
 #include "gtest/gtest.h"
 #include "test/mo_deep_sea/mo_deep_sea_state.hpp"
 
+MctsParameters make_default_mcts_parameters() {
+  MctsParameters param;
+
+  param.REWARD_VEC_SIZE = 4;
+
+  param.random_heuristic.MAX_SEARCH_TIME_RANDOM_HEURISTIC = 1;
+  param.random_heuristic.MAX_NUMBER_OF_ITERATIONS = 1000;
+  param.COOP_FACTOR = 0.0;
+  param.DISCOUNT_FACTOR = 0.9;
+
+  param.uct_statistic.PROGRESSIVE_WIDENING_ENABLED = false;
+  param.uct_statistic.PROGRESSIVE_WIDENING_ALPHA = 0.5;
+
+  param.uct_statistic.EXPLORATION_CONSTANT = 0.7;
+  param.uct_statistic.LOWER_BOUND = ObjectiveVec::Zero(param.REWARD_VEC_SIZE);
+  param.uct_statistic.UPPER_BOUND = ObjectiveVec::Zero(param.REWARD_VEC_SIZE);
+
+  //  param.e_greedy_uct_statistic_.EPSILON = 0.1;
+  //
+  //  param.slack_uct_statistic_.ALPHA = 0.05;
+  //
+  //  param.thres_uct_statistic_.THRESHOLD = ObjectiveVec::Zero(param.REWARD_VEC_SIZE);
+  //  param.thres_uct_statistic_.THRESHOLD << -0.44, -0.541, -0.99, 0.0f, std::numeric_limits<ObjectiveVec::Scalar>::max();
+
+  return param;
+}
+
 class DeepSeaTest : public ::testing::Test {
  protected:
   void SetUp() override {
@@ -23,9 +50,12 @@ class DeepSeaTest : public ::testing::Test {
     sea_map_.emplace_back(MODSMapElement{8, 74.0f});
     sea_map_.emplace_back(MODSMapElement{10, 124.0f});
     init_pos << 0, 0;
-    mcts_parameters_ = make_std_mcts_parameters();
-    mcts_parameters_.uct_statistic.LOWER_BOUND << 0.0f, -100.0f, 0.0f, 0.0f;
-    mcts_parameters_.uct_statistic.UPPER_BOUND << 124.0f, 0.0f, 0.0f, 0.0f;
+    mcts_parameters_ = make_default_mcts_parameters();
+    mcts_parameters_.REWARD_VEC_SIZE = 2;
+    mcts_parameters_.uct_statistic.LOWER_BOUND = ObjectiveVec::Zero(2);
+    mcts_parameters_.uct_statistic.UPPER_BOUND = ObjectiveVec::Zero(2);
+    mcts_parameters_.uct_statistic.LOWER_BOUND << 0.0f, -100.0f;
+    mcts_parameters_.uct_statistic.UPPER_BOUND << 124.0f, 0.0f;
   }
 
   // void TearDown() override {}

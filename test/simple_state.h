@@ -26,7 +26,7 @@ public:
     std::shared_ptr<SimpleState> execute(const JointAction& joint_action, std::vector<Reward>& rewards ) const {
         // normally we map each single action value in joint action with a map to the floating point action. Here, not required
         rewards.resize(2);
-        rewards[0] = 0; rewards[1] = 0;
+        rewards[0](0) = 0; rewards[1](0) = 0;
         if(joint_action == JointAction{0,0} || joint_action == JointAction{1,1})
         {
             return std::make_shared<SimpleState>(*this);
@@ -37,10 +37,11 @@ public:
             //rewards[0] = -1.0f; rewards[1] = -1.0f;
             auto new_state_length = state_length_ + 1;
 
-            rewards = std::vector<Reward>{1, 1};
+            rewards = std::vector<Reward>(2, Reward::Constant(1, 1));
 
             if(new_state_length >= winning_state_length_) {
-                rewards = std::vector<Reward>{5, 10};
+                rewards[0] << 5;
+                rewards[1] << 10;
                 new_state_length = winning_state_length_;
             }
             return std::make_shared<SimpleState>(new_state_length);

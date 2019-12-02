@@ -14,7 +14,34 @@
 
 using namespace mcts;
 using namespace std;
+MctsParameters make_default_mcts_parameters() {
+  MctsParameters param;
 
+  param.REWARD_VEC_SIZE = 1;
+
+  param.random_heuristic.MAX_SEARCH_TIME_RANDOM_HEURISTIC = 1;
+  param.random_heuristic.MAX_NUMBER_OF_ITERATIONS = 1000;
+  param.COOP_FACTOR = 0.0;
+  param.DISCOUNT_FACTOR = 0.9;
+
+  param.uct_statistic.PROGRESSIVE_WIDENING_ENABLED = false;
+  param.uct_statistic.PROGRESSIVE_WIDENING_ALPHA = 0.5;
+
+  param.uct_statistic.EXPLORATION_CONSTANT = 0.7;
+  param.uct_statistic.LOWER_BOUND = ObjectiveVec::Zero(param.REWARD_VEC_SIZE);
+  param.uct_statistic.LOWER_BOUND << -1010.0f;
+  param.uct_statistic.UPPER_BOUND = ObjectiveVec::Zero(param.REWARD_VEC_SIZE);
+  param.uct_statistic.UPPER_BOUND << 95.0f;
+
+  //  param.e_greedy_uct_statistic_.EPSILON = 0.1;
+  //
+  //  param.slack_uct_statistic_.ALPHA = 0.05;
+  //
+  //  param.thres_uct_statistic_.THRESHOLD = ObjectiveVec::Zero(param.REWARD_VEC_SIZE);
+  //  param.thres_uct_statistic_.THRESHOLD << -0.44, -0.541, -0.99, 0.0f, std::numeric_limits<ObjectiveVec::Scalar>::max();
+
+  return param;
+}
 
 class mcts::MctsTest
 {
@@ -22,26 +49,26 @@ class mcts::MctsTest
 public:
     template< class S, class SE, class SO, class H>
     void verify_uct(const Mcts<S, SE, SO, H>& mcts, unsigned int depth) {
-        std::vector<UctStatistic> expected_root_statistics = verify_uct(mcts.root_, depth);
+        std::vector<UctStatistic<>> expected_root_statistics = verify_uct(mcts.root_, depth);
     }
 
     template< class S, class H>
-    std::vector<UctStatistic> verify_uct(const StageNodeSPtr<S,UctStatistic,UctStatistic,H>& start_node, unsigned int depth)
+    std::vector<UctStatistic<>> verify_uct(const StageNodeSPtr<S,UctStatistic<>,UctStatistic<>,H>& start_node, unsigned int depth)
     {
             if(start_node->children_.empty())
             {
-               return std::vector<UctStatistic>();
+               return std::vector<UctStatistic<>>();
             }
 
 
             const AgentIdx num_agents = start_node->state_->get_agent_idx().size();
 
 
-            std::vector<UctStatistic> expected_statistics(num_agents, UctStatistic(start_node->get_state()->get_num_actions(0)));
+            std::vector<UctStatistic<>> expected_statistics(num_agents, UctStatistic<>(start_node->get_state()->get_num_actions(0), make_default_mcts_parameters()));
 
             // ----- RECURSIVE ESTIMATION OF QVALUES AND COUNTS downwards tree -----------------------
             for(auto it = start_node->children_.begin(); it != start_node->children_.end(); ++it) {
-                std::vector<UctStatistic> expected_child_statistics = verify_uct(it->second,depth);
+                std::vector<UctStatistic<>> expected_child_statistics = verify_uct(it->second,depth);
 
                 // check joint actions are different
                 auto it_other_child = it;
@@ -89,7 +116,7 @@ public:
     }
 private:
     template< class S, class H>
-    int action_occurence(const StageNodeSPtr<S,UctStatistic,UctStatistic,H>& node, const ActionIdx& action_idx, const AgentIdx & agent_idx) {
+    int action_occurence(const StageNodeSPtr<S,UctStatistic<>,UctStatistic<>,H>& node, const ActionIdx& action_idx, const AgentIdx & agent_idx) {
         // Counts how an agent selected an action in a state
         int count = -1;
         for(auto it = node->children_.begin(); it != node->children_.end(); ++it) {
@@ -107,8 +134,8 @@ private:
     }
 
     // update expected ucb_stat, this functions gets called once for each agent for each child (= number agents x number childs)
-    std::vector<UctStatistic> expected_total_node_visits(const UctStatistic& child_stat,
-             const AgentIdx& agent_idx, bool is_first_child_and_not_parent_root, std::vector<UctStatistic> expected_statistics) {
+    std::vector<UctStatistic<>> expected_total_node_visits(const UctStatistic<>& child_stat,
+             const AgentIdx& agent_idx, bool is_first_child_and_not_parent_root, std::vector<UctStatistic<>> expected_statistics) {
         expected_statistics[agent_idx].total_node_visits_ += child_stat.total_node_visits_; // total count for childs + 1 (first expansion of child_stat)
         if(is_first_child_and_not_parent_root) {
             expected_statistics[agent_idx].total_node_visits_ += 1;
@@ -117,17 +144,17 @@ private:
         return expected_statistics;
     }
 
-    std::vector<UctStatistic> expected_action_count(const UctStatistic& child_stat, const AgentIdx& agent_idx,
+    std::vector<UctStatistic<>> expected_action_count(const UctStatistic<>& child_stat, const AgentIdx& agent_idx,
          const JointAction& joint_action, bool is_first_child_and_not_parent_root,
-         std::vector<UctStatistic> expected_statistics) {
-        expected_statistics[agent_idx].ucb_statistics_[joint_action[agent_idx]].action_count_ +=  child_stat.total_node_visits_;
+         std::vector<UctStatistic<>> expected_statistics) {
+        expected_statistics[agent_idx].ucb_statistics_.find(joint_action[agent_idx])->second.action_count_ +=  child_stat.total_node_visits_;
 
         return expected_statistics;
     }
 
-    std::vector<UctStatistic> expected_action_value(const UctStatistic& child_stat,
-             const UctStatistic& parent_stat, const AgentIdx& agent_idx, const JointAction& joint_action, std::vector<Reward> rewards,
-             std::vector<UctStatistic> expected_statistics, int action_occurence) {
+    std::vector<UctStatistic<>> expected_action_value(const UctStatistic<>& child_stat,
+             const UctStatistic<>& parent_stat, const AgentIdx& agent_idx, const JointAction& joint_action, std::vector<Reward> rewards,
+             std::vector<UctStatistic<>> expected_statistics, int action_occurence) {
         auto action_ucb_parent = parent_stat.ucb_statistics_.find(joint_action[agent_idx]);
         if(action_ucb_parent ==  parent_stat.ucb_statistics_.end()) {
             throw;
@@ -137,14 +164,14 @@ private:
         // REMARK: This tests also correctness of the value estimates
         const auto& total_action_count = action_ucb_parent->second.action_count_;
         const auto& child_action_count = child_stat.total_node_visits_;
-        expected_statistics[agent_idx].ucb_statistics_[joint_action[agent_idx]].action_value_ +=
-                         1/float(total_action_count) * child_action_count * (rewards[agent_idx] + parent_stat.k_discount_factor*child_stat.value_);
+        expected_statistics[agent_idx].ucb_statistics_.find(joint_action[agent_idx])->second.action_value_ +=
+                         1/float(total_action_count) * child_action_count * (rewards[agent_idx] + parent_stat.mcts_parameters_.DISCOUNT_FACTOR*child_stat.value_);
 
         return expected_statistics;
     }
 
     template<class S, class Stats>
-    void compare_expected_existing(const std::vector<UctStatistic>& expected_statistics,  const IntermediateNode<S,Stats>& inter_node,
+    void compare_expected_existing(const std::vector<UctStatistic<>>& expected_statistics,  const IntermediateNode<S,Stats>& inter_node,
                                    unsigned id, unsigned depth) {
         // Compare node visits
         const AgentIdx agent_idx = inter_node.get_agent_idx();
@@ -163,8 +190,8 @@ private:
                         // Only the expanded actions are recursively estimated 
             }    
 
-            auto recursively_expected_qvalue = expected_statistics[agent_idx].ucb_statistics_.at(action_idx).action_value_;
-            double existing_qvalue = inter_node.ucb_statistics_.at(action_idx).action_value_;
+            auto recursively_expected_qvalue = expected_statistics[agent_idx].ucb_statistics_.at(action_idx).action_value_(0);
+            double existing_qvalue = inter_node.ucb_statistics_.at(action_idx).action_value_(0);
             EXPECT_NEAR(existing_qvalue, recursively_expected_qvalue, 0.001) << "Unexpected recursive q-value for node "
                      << id << " at depth " << depth << " for agent " << (int)agent_idx <<  " and action " << (int)action_idx; 
 
