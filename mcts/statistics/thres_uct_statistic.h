@@ -28,7 +28,7 @@ class ThresUCTStatistic : public UctStatistic<ThresUCTStatistic> {
     bool operator()(Eigen::VectorXf const &a, Eigen::VectorXf const &b) const {
       assert(a.rows() == b.rows() && a.rows() == thr_.rows());
       for (auto ai = a.begin(), bi = b.begin(), thri = thr_.begin(); ai != a.end(); ++ai, ++bi, ++thri) {
-        if ((*ai >= *thri && *bi >= *thri) || (*ai == *bi)) {
+        if ((*ai > *thri && *bi > *thri) || (*ai == *bi)) {
           continue;
         } else {
           return *ai < *bi;
