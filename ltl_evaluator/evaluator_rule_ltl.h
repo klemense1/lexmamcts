@@ -8,6 +8,7 @@
 
 #include <set>
 #include <string>
+#include <unordered_map>
 
 #include "Eigen/Core"
 #include "common.h"
@@ -17,7 +18,7 @@
 
 namespace ltl {
 
-typedef std::map<std::string, bool> EvaluationMap;
+typedef std::unordered_map<std::string, bool> EvaluationMap;
 
 class RuleState;
 

@@ -49,8 +49,10 @@ float EvaluatorRuleLTL::evaluate(EvaluationMap const &labels,
   // Self looping behavior
   uint32_t next_state = state.current_state_;
   for (const auto ap : alphabet_) {
-    // Ensure the the label is decided
-    assert(labels.find(ap.ap_name()) != labels.end());
+    if(labels.find(ap.ap_name()) == labels.end()) {
+      // Rule is indecided
+      return 0.0f;
+    }
     if (labels.at(ap.ap_name())) {
       int bdd_var = bddDictPtr->has_registered_proposition(ap, aut_);
       // Label is in the alphabet_ so it should be assigned
@@ -97,7 +99,7 @@ float EvaluatorRuleLTL::get_final_reward(const RuleState &state) const {
 std::ostream &operator<<(std::ostream &os, EvaluatorRuleLTL const &d) {
   os << "\"";
   spot::print_psl(os, d.ltl_formula_);
-  os << "\", weight: " << d.weight_;
+  os << "\", weight: " << d.weight_ << ", priority: " << d.priority_;
   return os;
 }
 
