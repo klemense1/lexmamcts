@@ -83,7 +83,7 @@ TEST(ZipperMergeTest, mcts) {
     state(i) = agent_states[i].x_pos;
   }
 
-  states.push_back(state.transpose());
+  states.emplace_back(state.transpose());
   while (!env->state->is_terminal()) {
     env->search(10000);
     env->state = env->state->execute(env->get_jt(), env->rewards);
@@ -93,18 +93,17 @@ TEST(ZipperMergeTest, mcts) {
     others.erase(others.begin());
     World w(agent_states[0], others);
     for (const auto &label : env->label_evaluators_) {
-      LOG(INFO) << label->get_label_str() << ": " << label->evaluate(w);
+      VLOG(1) << label->get_label_str() << ": " << label->evaluate(w);
     }
-    Eigen::Vector3i state;
     auto rule_states = env->state->get_rule_state_map();
     for (size_t i = 0; i < agent_states.size(); ++i) {
       state(i) = agent_states[i].x_pos;
       ASSERT_EQ(rule_states.at(i).at(Rule::ZIP).get_violation_count(), 0);
     }
-    LOG(INFO) << state.transpose();
-    states.push_back(state.transpose());
+    VLOG(1) << state.transpose();
+    states.emplace_back(state.transpose());
   }
-  LOG(INFO) << states;
+  VLOG(1) << states;
   auto rule_states = env->state->get_rule_state_map();
   for(size_t ai = 0; ai < env->state->get_agent_idx().size(); ++ai) {
     EXPECT_EQ(rule_states.at(ai).at(Rule::NO_COLLISION).get_violation_count(), 0);
