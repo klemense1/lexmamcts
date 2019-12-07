@@ -4,6 +4,7 @@ cc_library(
         "test_env_factory.cpp",
         "test_runner.cpp",
         "util.cpp",
+        "zipper_tes_env_factory.cpp",
     ],
     hdrs = [
         "crossing_state_episode_runner.h",
@@ -11,6 +12,7 @@ cc_library(
         "test_env_factory.h",
         "test_runner.h",
         "util.h",
+        "zipper_tes_env_factory.h",
     ],
     visibility = ["//visibility:public"],
     deps = [
@@ -87,6 +89,21 @@ cc_binary(
         "//mcts",
         "//test/crossing_test:crossing_state",
         "@com_github_google_glog//:glog",
+    ],
+)
+
+cc_binary(
+    name = "zipper_merge",
+    srcs = [
+        "zipper_merge_test.cpp",
+    ],
+    copts = ["-Iexternal/gtest/include"],
+    deps = [
+        ":util",
+        "//mcts",
+        "//test/crossing_test:crossing_state",
+        "@com_github_google_glog//:glog",
+        "@gtest//:main",
     ],
 )
 

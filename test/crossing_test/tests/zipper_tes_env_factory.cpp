@@ -1,0 +1,71 @@
+//
+// Created by Luis Gressenbuch on 07.12.19.
+// Copyright (c) 2019 Luis Gressenbuch. All rights reserved.
+//
+
+#include "zipper_tes_env_factory.h"
+#include "mcts/mcts_parameters.h"
+#include "mcts/statistics/thres_uct_statistic.h"
+#include "test/crossing_test/crossing_state_parameter.h"
+#include "test/crossing_test/label_evaluator/evaluator_label_range.h"
+#include "test/crossing_test/label_evaluator/evaluator_label_at_from.h"
+#include "test/crossing_test/tests/crossing_test_env.h"
+
+const std::string zip_formula = "G((mp_1 & (X !mp_1) & w_0) -> X(!mp_1 W mp_0)) & G((mp_0 & (X !mp_0) & w_1) -> X(!mp_0 W mp_1)) & G!(mp_1 & mp_0) & G(w_1 & !w_0 & !mp_1 & !mp_0-> X(!mp_0 W mp_1)) & G(w_0 & !w_1 & !mp_1 & !mp_0 -> X(!mp_1 W mp_0))";
+
+
+std::shared_ptr<BaseTestEnv> ZipperTesEnvFactory::make_test_env() {
+  MctsParameters mcts_params = make_default_mcts_parameters();
+  mcts_params.uct_statistic.LOWER_BOUND << -30.0f, -30.0f, -30.0f, -30.0f,
+      -5000.0f;
+  mcts_params.uct_statistic.UPPER_BOUND << 0.0f, 0.0f, 0.0f, 0.0f, 5000.0f;
+  mcts_params.thres_uct_statistic_.THRESHOLD << -1.0, -1.0, -1.0, -1.0,
+      std::numeric_limits<ObjectiveVec::Scalar>::max();
+
+  CrossingStateParameter crossing_params =
+      make_default_crossing_state_parameters();
+  crossing_params.depth_prio = static_cast<int>(RewardPriority::GOAL);
+  crossing_params.speed_deviation_prio = static_cast<int>(RewardPriority::GOAL);
+  crossing_params.acceleration_prio = static_cast<int>(RewardPriority::GOAL);
+  crossing_params.potential_prio = static_cast<int>(RewardPriority::GOAL);
+  crossing_params.depth_weight = 0;
+  crossing_params.speed_deviation_weight = 0;
+  crossing_params.acceleration_weight = 0;
+  crossing_params.potential_weight = 1;
+  crossing_params.num_other_agents = 2;
+  crossing_params.ego_goal_reached_position = 20;
+  crossing_params.state_x_length = 20;
+  crossing_params.crossing_point = 10;
+
+  auto automata =
+      BaseTestEnv::make_default_automata(crossing_params.num_other_agents + 1);
+  for (auto &aut : automata) {
+    aut.insert({Rule::ZIP, EvaluatorRuleLTL::make_rule(zip_formula, -1, 1)});
+    aut.erase(Rule::NO_SPEEDING);
+    aut.at(Rule::REACH_GOAL)->set_weight(-1.0f);
+    aut.at(Rule::REACH_GOAL)->set_final_reward(0);
+    aut.at(Rule::NO_COLLISION)->set_weight(-1.0f);
+    aut.erase(Rule::GIVE_WAY);
+    aut.erase(Rule::LEAVE_INTERSECTION);
+  }
+  auto env = std::make_shared<CrossingTestEnv<ThresUCTStatistic>>(mcts_params, crossing_params, automata,
+                                         BaseTestEnv::make_default_labels(crossing_params));
+  auto agent_states = env->state->get_agent_states();
+  agent_states[0].x_pos = crossing_params.crossing_point - 10;
+  agent_states[1].x_pos = crossing_params.crossing_point - 1;
+  agent_states[2].x_pos = crossing_params.crossing_point - 6;
+  agent_states[2].lane = agent_states[1].lane;
+  env->label_evaluators_.emplace_back(std::make_shared<EvaluatorLabelRange>(
+      "w_0", agent_states[0].lane, -5, crossing_params.crossing_point - 1));
+  env->label_evaluators_.emplace_back(std::make_shared<EvaluatorLabelRange>(
+      "w_1", agent_states[1].lane, -5, crossing_params.crossing_point - 1));
+  env->label_evaluators_.emplace_back(std::make_shared<EvaluatorLabelAtFrom>(
+      "mp_0", agent_states[0].lane, crossing_params.crossing_point));
+  env->label_evaluators_.emplace_back(std::make_shared<EvaluatorLabelAtFrom>(
+      "mp_1", agent_states[1].lane, crossing_params.crossing_point));
+
+  env->state = std::make_shared<CrossingState>(
+      agent_states, false, env->state->get_rule_state_map(),
+      env->label_evaluators_, env->crossing_state_parameter_, 0);
+  return env;
+}
