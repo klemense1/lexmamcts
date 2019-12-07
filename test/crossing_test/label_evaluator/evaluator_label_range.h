@@ -12,11 +12,9 @@
 
 class EvaluatorLabelRange : public EvaluatorLabelBase<World>{
  public:
-  EvaluatorLabelRange(const std::string& label_str, int lane, int start, int end)
-      : EvaluatorLabelBase(label_str), lane_(lane), start_(start), end_(end) {}
+  EvaluatorLabelRange(const std::string& label_str, int start, int end);
   bool evaluate(const World& state) const override;
  private:
-  int lane_;
   int start_;
   int end_;
 };

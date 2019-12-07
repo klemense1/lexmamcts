@@ -9,11 +9,13 @@
 bool EvaluatorLabelAtFrom::evaluate(const World& state) const {
   EvaluatorLabelAtPosition at_point("DUMMYF", point_);
   auto agents = state.second;
-  agents.emplace_back(state.first);
   for(const auto &agent : agents) {
-    if(agent.lane == origin_lane_ && at_point.evaluate(World(agent,std::vector<AgentState>()))) {
+    if(agent.lane != state.first.lane && at_point.evaluate(World(agent,std::vector<AgentState>()))) {
       return true;
     }
   }
   return false;
 }
+EvaluatorLabelAtFrom::EvaluatorLabelAtFrom(const std::string& label_str,
+                                           int point)
+    : EvaluatorLabelBase(label_str), point_(point) {}

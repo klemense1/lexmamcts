@@ -11,12 +11,9 @@
 
 class EvaluatorLabelAtFrom : public EvaluatorLabelBase<World>{
  public:
-  EvaluatorLabelAtFrom(const std::string& label_str, int origin_lane, int point)
-      : EvaluatorLabelBase(label_str), origin_lane_(origin_lane), point_(point) {}
+  EvaluatorLabelAtFrom(const std::string& label_str, int point);
   bool evaluate(const World& state) const override;
-
  private:
-  int origin_lane_;
   int point_;
 };
 

@@ -33,6 +33,8 @@ TEST(ZipperMergeTest, violated) {
 
   }
   auto rule_states = env->state->get_rule_state_map();
+  EXPECT_EQ(rule_states.at(0).at(Rule::ZIP).get_violation_count(), 0);
+  EXPECT_EQ(rule_states.at(1).at(Rule::ZIP).get_violation_count(), 0);
   EXPECT_GT(rule_states.at(2).at(Rule::ZIP).get_violation_count(), 0);
 }
 
@@ -69,6 +71,8 @@ TEST(ZipperMergeTest, not_violated) {
   }
 //  LOG(INFO) << states;
   auto rule_states = env->state->get_rule_state_map();
+  EXPECT_EQ(rule_states.at(0).at(Rule::ZIP).get_violation_count(), 0);
+  EXPECT_EQ(rule_states.at(1).at(Rule::ZIP).get_violation_count(), 0);
   EXPECT_EQ(rule_states.at(2).at(Rule::ZIP).get_violation_count(), 0);
 }
 

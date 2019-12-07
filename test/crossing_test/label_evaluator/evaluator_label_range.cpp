@@ -4,11 +4,13 @@
 //
 
 #include "evaluator_label_range.h"
+EvaluatorLabelRange::EvaluatorLabelRange(const std::string& label_str,
+                                         int start, int end)
+    : EvaluatorLabelBase(label_str), start_(start), end_(end) {}
 bool EvaluatorLabelRange::evaluate(const World& state) const {
   auto agents = state.second;
-  agents.emplace_back(state.first);
   for(const auto &agent : agents) {
-    if(agent.lane == lane_ && agent.x_pos >= start_ && agent.x_pos <= end_) {
+    if(agent.x_pos >= start_ && agent.x_pos <= end_) {
       return true;
     }
   }
