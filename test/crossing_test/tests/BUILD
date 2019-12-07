@@ -4,7 +4,7 @@ cc_library(
         "test_env_factory.cpp",
         "test_runner.cpp",
         "util.cpp",
-        "zipper_tes_env_factory.cpp",
+        "zipper_test_env_factory.cpp",
     ],
     hdrs = [
         "crossing_state_episode_runner.h",
@@ -12,7 +12,7 @@ cc_library(
         "test_env_factory.h",
         "test_runner.h",
         "util.h",
-        "zipper_tes_env_factory.h",
+        "zipper_test_env_factory.h",
     ],
     visibility = ["//visibility:public"],
     deps = [
@@ -102,6 +102,7 @@ cc_binary(
         ":util",
         "//mcts",
         "//test/crossing_test:crossing_state",
+        "@com_github_gflags_gflags//:gflags",
         "@com_github_google_glog//:glog",
         "@gtest//:main",
     ],

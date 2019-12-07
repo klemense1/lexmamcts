@@ -38,12 +38,13 @@ cc_test(
     ],
 )
 
-cc_binary(
+cc_test(
     name = "zipper_merge_formula_test",
     srcs = ["test/zipper_merge_formula_test.cpp"],
     copts = ["-Iexternal/gtest/include"],
     deps = [
         ":rule_evaluator",
+        "@com_github_gflags_gflags//:gflags",
         "@com_github_google_glog//:glog",
         "@gtest//:main",
     ],

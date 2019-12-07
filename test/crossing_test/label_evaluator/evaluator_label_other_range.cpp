@@ -3,13 +3,12 @@
 // Copyright (c) 2019 Luis Gressenbuch. All rights reserved.
 //
 
-#include "evaluator_label_range.h"
-EvaluatorLabelRange::EvaluatorLabelRange(const std::string& label_str,
+#include "evaluator_label_other_range.h"
+EvaluatorLabelOtherRange::EvaluatorLabelOtherRange(const std::string& label_str,
                                          int start, int end)
     : EvaluatorLabelBase(label_str), start_(start), end_(end) {}
-bool EvaluatorLabelRange::evaluate(const World& state) const {
-  auto agents = state.second;
-  for(const auto &agent : agents) {
+bool EvaluatorLabelOtherRange::evaluate(const World& state) const {
+  for(const auto &agent : state.second) {
     if(agent.x_pos >= start_ && agent.x_pos <= end_) {
       return true;
     }

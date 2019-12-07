@@ -5,6 +5,7 @@
 
 #include "gtest/gtest.h"
 #include "glog/logging.h"
+#include "gflags/gflags.h"
 #include "ltl_evaluator/evaluator_rule_ltl.h"
 
 using namespace ltl;
@@ -299,10 +300,9 @@ INSTANTIATE_TEST_CASE_P(ZipperMergeFormulaTest, ZipperMergeFormula,
     testing::ValuesIn(formulas));
 
 int main(int argc, char **argv) {
+  google::AllowCommandLineReparsing();
+  google::ParseCommandLineFlags(&argc, &argv, false);
+  google::InitGoogleLogging(argv[0]);
   ::testing::InitGoogleTest(&argc, argv);
-  FLAGS_v = 2;
-
-
-
   return RUN_ALL_TESTS();
 }

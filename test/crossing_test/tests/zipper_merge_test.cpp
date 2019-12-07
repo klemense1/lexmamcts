@@ -5,12 +5,13 @@
 
 #include "glog/logging.h"
 #include "gtest/gtest.h"
+#include "gflags/gflags.h"
 
 #include "test/crossing_test/common.hpp"
-#include "zipper_tes_env_factory.h"
+#include "zipper_test_env_factory.h"
 
 TEST(ZipperMergeTest, violated) {
-  auto env = ZipperTesEnvFactory().make_test_env();
+  auto env = ZipperTestEnvFactory().make_test_env();
   auto agent_states = env->state->get_agent_states();
   agent_states[0].x_pos = env->crossing_state_parameter_.crossing_point - 5;
   agent_states[1].x_pos = env->crossing_state_parameter_.crossing_point - 1;
@@ -23,13 +24,13 @@ TEST(ZipperMergeTest, violated) {
   for(size_t i = 0; i < 4; ++i) {
     env->state = env->state->execute(env->get_jt(), env->rewards);
 
-//    agent_states = env->state->get_agent_states();
-//    auto others = agent_states;
-//    others.erase(others.begin());
-//    World w(agent_states[0], others);
-//    for (const auto &label : env->label_evaluators_) {
-//      LOG(INFO) << label->get_label_str() << ": " << label->evaluate(w);
-//    }
+    agent_states = env->state->get_agent_states();
+    auto others = agent_states;
+    others.erase(others.begin());
+    World w(agent_states[0], others);
+    for (const auto &label : env->label_evaluators_) {
+      VLOG(1) << label->get_label_str() << ": " << label->evaluate(w);
+    }
 
   }
   auto rule_states = env->state->get_rule_state_map();
@@ -39,7 +40,7 @@ TEST(ZipperMergeTest, violated) {
 }
 
 TEST(ZipperMergeTest, not_violated) {
-  auto env = ZipperTesEnvFactory().make_test_env();
+  auto env = ZipperTestEnvFactory().make_test_env();
   auto agent_states = env->state->get_agent_states();
   agent_states[0].x_pos = env->crossing_state_parameter_.crossing_point - 3;
   agent_states[1].x_pos = env->crossing_state_parameter_.crossing_point - 1;
@@ -49,27 +50,27 @@ TEST(ZipperMergeTest, not_violated) {
       agent_states, false, env->state->get_rule_state_map(),
       env->label_evaluators_, env->crossing_state_parameter_, 0);
   env->set_jt({0,0,0});
-//  std::vector<Eigen::MatrixXi> states;
+  std::vector<Eigen::MatrixXi> states;
   for(size_t i = 0; i < 6; ++i) {
     env->state = env->state->execute(env->get_jt(), env->rewards);
 
-//    agent_states = env->state->get_agent_states();
-//    auto others = agent_states;
-//    others.erase(others.begin());
-//    World w(agent_states[0], others);
-//    for (const auto &label : env->label_evaluators_) {
-//      LOG(INFO) << label->get_label_str() << ": " << label->evaluate(w);
-//    }
-//
-//    Eigen::Vector3i state;
-//    for (size_t i = 0; i < agent_states.size(); ++i) {
-//      state(i) = agent_states[i].x_pos;
-//    }
-//    LOG(INFO) << state.transpose();
-//    states.push_back(state.transpose());
+    agent_states = env->state->get_agent_states();
+    auto others = agent_states;
+    others.erase(others.begin());
+    World w(agent_states[0], others);
+    for (const auto &label : env->label_evaluators_) {
+      VLOG(1) << label->get_label_str() << ": " << label->evaluate(w);
+    }
+
+    Eigen::Vector3i state;
+    for (size_t i = 0; i < agent_states.size(); ++i) {
+      state(i) = agent_states[i].x_pos;
+    }
+    VLOG(1) << state.transpose();
+    states.emplace_back(state.transpose());
 
   }
-//  LOG(INFO) << states;
+  VLOG(1) << states;
   auto rule_states = env->state->get_rule_state_map();
   EXPECT_EQ(rule_states.at(0).at(Rule::ZIP).get_violation_count(), 0);
   EXPECT_EQ(rule_states.at(1).at(Rule::ZIP).get_violation_count(), 0);
@@ -78,7 +79,7 @@ TEST(ZipperMergeTest, not_violated) {
 
 
 TEST(ZipperMergeTest, mcts) {
-  auto env = ZipperTesEnvFactory().make_test_env();
+  auto env = ZipperTestEnvFactory().make_test_env();
 
   auto agent_states = env->state->get_agent_states();
   std::vector<Eigen::MatrixXi> states;
@@ -117,10 +118,9 @@ TEST(ZipperMergeTest, mcts) {
 }
 
 int main(int argc, char **argv) {
-  ::testing::InitGoogleTest(&argc, argv);
+  google::AllowCommandLineReparsing();
+  google::ParseCommandLineFlags(&argc, &argv, false);
   google::InitGoogleLogging(argv[0]);
-  FLAGS_v = 2;
-  FLAGS_logtostderr = true;
-
+  ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }

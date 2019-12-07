@@ -3,21 +3,21 @@
 // Copyright (c) 2019 Luis Gressenbuch. All rights reserved.
 //
 
-#include "zipper_tes_env_factory.h"
 #include "mcts/mcts_parameters.h"
 #include "mcts/statistics/thres_uct_statistic.h"
 #include "test/crossing_test/crossing_state_parameter.h"
-#include "test/crossing_test/label_evaluator/evaluator_label_at_from.h"
 #include "test/crossing_test/label_evaluator/evaluator_label_ego_range.h"
-#include "test/crossing_test/label_evaluator/evaluator_label_range.h"
 #include "test/crossing_test/label_evaluator/evaluator_label_other_at_ego_lane_at_pos.h"
+#include "test/crossing_test/label_evaluator/evaluator_label_other_lane_at.h"
+#include "test/crossing_test/label_evaluator/evaluator_label_other_range.h"
 #include "test/crossing_test/tests/crossing_test_env.h"
+#include "zipper_tes_env_factory.h"
 
 const std::string zip_formula =
     "G((mp_oe & X !mp_oe & (w_o | X w_o) & w_e) -> (!mp_e W mp_o)) & G!((mp_oe & "
     "mp_e)|(mp_e & mp_o)|(mp_oe & mp_o)|(w_e & mp_e))";
 
-std::shared_ptr<BaseTestEnv> ZipperTesEnvFactory::make_test_env() {
+std::shared_ptr<BaseTestEnv> ZipperTestEnvFactory::make_test_env() {
   MctsParameters mcts_params = make_default_mcts_parameters();
   mcts_params.uct_statistic.LOWER_BOUND << -30.0f, -30.0f, -30.0f, -30.0f,
       -5000.0f;
@@ -61,14 +61,14 @@ std::shared_ptr<BaseTestEnv> ZipperTesEnvFactory::make_test_env() {
   agent_states[2].lane = agent_states[1].lane;
   env->label_evaluators_.emplace_back(std::make_shared<EvaluatorLabelEgoRange>(
       "w_e", -5, crossing_params.crossing_point - 1));
-  env->label_evaluators_.emplace_back(std::make_shared<EvaluatorLabelRange>(
+  env->label_evaluators_.emplace_back(std::make_shared<EvaluatorLabelOtherRange>(
       "w_o", -5, crossing_params.crossing_point - 1));
   env->label_evaluators_.emplace_back(
       std::make_shared<EvaluatorLabelAtPosition>(
           "mp_e", crossing_params.crossing_point));
   env->label_evaluators_.emplace_back(std::make_shared<EvaluatorLabelOtherAtEgoLaneAtPos>(
       "mp_oe", crossing_params.crossing_point));
-  env->label_evaluators_.emplace_back(std::make_shared<EvaluatorLabelAtFrom>(
+  env->label_evaluators_.emplace_back(std::make_shared<EvaluatorLabelOtherLaneAt>(
       "mp_o", crossing_params.crossing_point));
 
   env->state = std::make_shared<CrossingState>(
