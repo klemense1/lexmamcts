@@ -23,9 +23,9 @@ public:
     //catch case where newly expanded state is terminal
     if (node->get_state()->is_terminal()) {
       const AgentIdx num_agents = node->get_state()->get_agent_idx().size();
-      const ActionIdx num_actions = node->get_state()->get_num_actions(S::ego_agent_idx);
-      std::vector<SE> statistics(num_agents, SE(num_actions, mcts_parameters_));
+      std::vector<SE> statistics;
       for (AgentIdx ai = 0; ai < num_agents; ++ai) {
+        statistics.emplace_back(node->get_state()->get_num_actions(ai), mcts_parameters_);
         statistics.at(ai).set_heuristic_estimate(Reward::Zero(mcts_parameters_.REWARD_VEC_SIZE));
       }
       return statistics;
@@ -35,7 +35,6 @@ public:
     auto start = std::chrono::high_resolution_clock::now();
     std::shared_ptr<S> state = node->get_state()->clone();
     const AgentIdx num_agents = node->get_state()->get_agent_idx().size();
-    const ActionIdx num_actions = node->get_state()->get_num_actions(S::ego_agent_idx);
 
     std::vector<Reward> accum_rewards(num_agents, Reward::Zero(mcts_parameters_.REWARD_VEC_SIZE));
     std::vector<Reward> step_rewards(num_agents, Reward::Zero(mcts_parameters_.REWARD_VEC_SIZE));
@@ -45,7 +44,7 @@ public:
     while ((!state->is_terminal()) && (num_iterations < mcts_parameters_.random_heuristic.MAX_NUMBER_OF_ITERATIONS)
            && (std::chrono::duration_cast<std::chrono::milliseconds>(
             std::chrono::high_resolution_clock::now() - start).count() < mcts_parameters_.random_heuristic.MAX_SEARCH_TIME_RANDOM_HEURISTIC)) {
-      auto new_state = state->execute(random_joint_action(num_actions, num_agents), step_rewards);
+      auto new_state = state->execute(random_joint_action(state, num_agents), step_rewards);
       state = new_state->clone();
       num_iterations += 1;
       // discount the rewards of the current step
@@ -63,8 +62,9 @@ public:
     coop_sum = std::accumulate(accum_rewards.begin(), accum_rewards.end(), coop_sum);
     coop_sum = coop_sum * mcts_parameters_.COOP_FACTOR;
     // generate an extra node statistic for each agent
-    std::vector<SE> statistics(num_agents, SE(num_actions, mcts_parameters_));
+    std::vector<SE> statistics;
     for (AgentIdx ai = 0; ai < num_agents; ++ai) {
+      statistics.emplace_back(node->get_state()->get_num_actions(ai), mcts_parameters_);
       statistics.at(ai).set_heuristic_estimate((coop_sum + (1.0f - mcts_parameters_.COOP_FACTOR) * accum_rewards.at(ai))
                                                    / (1.0 + mcts_parameters_.COOP_FACTOR * (num_agents - 1)));
     }
@@ -72,15 +72,13 @@ public:
     return statistics;
   }
 
-  JointAction random_joint_action(ActionIdx num_actions, AgentIdx num_agents) {
-    std::uniform_int_distribution<ActionIdx> random_action_selection(0, num_actions - 1);
-
-    auto gen = [&]() {
-        return random_action_selection(random_generator_);
-    };
-
+  template<class S>
+  JointAction random_joint_action(const std::shared_ptr<S> &state, AgentIdx num_agents) {
     JointAction ja(num_agents);
-    std::generate(std::begin(ja), std::end(ja), gen);
+    for(size_t i = 0; i < num_agents; ++i) {
+      std::uniform_int_distribution<ActionIdx> random_action_selection(0,state->get_num_actions(i)-1);
+      ja[i] = random_action_selection(random_generator_);
+    }
     return ja;
   }
 
