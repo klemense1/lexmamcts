@@ -66,7 +66,7 @@ class ThresUCTStatistic : public UctStatistic<ThresUCTStatistic> {
     }
 
     Reward thr = mcts_parameters_.thres_uct_statistic_.THRESHOLD;
-    DVLOG(1) << "Thresholds:" << thr.transpose();
+    DVLOG(2) << "Thresholds:" << thr.transpose();
     auto max = std::max_element(ucb_statistics_.begin(),
                                 ucb_statistics_.end(),
                                 [thr](ActionUCBMap::value_type const &a, ActionUCBMap::value_type const &b) {
