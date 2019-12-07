@@ -49,7 +49,7 @@ std::shared_ptr<CrossingState> CrossingState::execute(const JointAction &joint_a
   for (size_t i = 0; i < agent_states_.size(); ++i) {
     const auto &old_state = agent_states_[i];
     int new_x = old_state.x_pos + static_cast<int>(aconv(joint_action[i]));
-    next_agent_states[i] = AgentState(new_x, aconv(joint_action[i]));
+    next_agent_states[i] = AgentState(new_x, aconv(joint_action[i]), old_state.lane);
   }
   labels["ego_out_of_map"] = false;
   if (next_agent_states[ego_agent_idx].x_pos < 0) {

@@ -1,6 +1,6 @@
 cc_library(
     name = "common",
-    srcs = [],
+    srcs = ["common.cpp"],
     hdrs = ["common.hpp"],
     visibility = ["//visibility:public"],
     deps = [
@@ -22,9 +22,9 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":common",
+        "//ltl_evaluator:rule_evaluator",
         "//mcts",
         "//test/crossing_test/label_evaluator:label_evaluators",
-        "//ltl_evaluator:rule_evaluator",
         "@com_github_google_glog//:glog",
     ],
 )
