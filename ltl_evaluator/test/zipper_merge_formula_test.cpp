@@ -159,7 +159,7 @@ TEST_P(ZipperMergeFormula, trivial_merge_r) {
 // On tie, w.l.g other should go first
 // We are first before the merge, but have not seen any other agent passing the merge
 // Should be violated if we go first
-TEST_P(ZipperMergeFormula, tie_violated) {
+TEST_P(ZipperMergeFormula, DISABLED_tie_violated) {
   EvaluatorRuleLTLSPtr rule = EvaluatorRuleLTL::make_rule(GetParam(), -1.0, 0);
   auto rs = rule->make_rule_state();
   EvaluationMap labels;
@@ -181,7 +181,7 @@ TEST_P(ZipperMergeFormula, tie_violated) {
 // On tie, w.l.g other should go first
 // We are first before the merge, but have not seen any other agent passing the merge
 // Should be ok if other goes first
-TEST_P(ZipperMergeFormula, tie) {
+TEST_P(ZipperMergeFormula, DISABLED_tie) {
   EvaluatorRuleLTLSPtr rule = EvaluatorRuleLTL::make_rule(GetParam(), -1.0, 0);
   auto rs = rule->make_rule_state();
   EvaluationMap labels;
