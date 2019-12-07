@@ -10,7 +10,7 @@
 
 class EvaluatorLabelCollision : public EvaluatorLabelBase<World> {
  public:
-  EvaluatorLabelCollision(const std::string &label_str, const int crossing_point);;
+  EvaluatorLabelCollision(const std::string &label_str, const int crossing_point);
   bool evaluate(const World &state) const override;
  private:
   int crossing_point_;
