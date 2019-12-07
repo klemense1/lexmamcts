@@ -19,12 +19,12 @@ EvaluatorRuleLTL::EvaluatorRuleLTL(spot::formula ltl_formula, float weight,
       init_belief_(init_belief) {
   assert(init_belief <= 1.0 && init_belief >= 0.0);
   spot::translator trans;
+  trans.set_pref(spot::postprocessor::Deterministic);
+  // TODO: Can be probably omitted. Every monitor is a (partial) BA
   if (ltl_formula.is_syntactic_safety()) {
     trans.set_type(spot::postprocessor::Monitor);
-    trans.set_pref(spot::postprocessor::Deterministic);
   } else {
     trans.set_type(spot::postprocessor::BA);
-    trans.set_pref(spot::postprocessor::Complete);
   }
   aut_ = trans.run(ltl_formula);
   spot::atomic_prop_collect(ltl_formula_, &alphabet_);
@@ -50,7 +50,8 @@ float EvaluatorRuleLTL::evaluate(EvaluationMap const &labels,
   uint32_t next_state = state.current_state_;
   for (const auto ap : alphabet_) {
     if(labels.find(ap.ap_name()) == labels.end()) {
-      // Rule is indecided
+      // Rule is undecided
+      VLOG(2) << "Rule undecided! Missing label: " << ap.ap_name();
       return 0.0f;
     }
     if (labels.at(ap.ap_name())) {
