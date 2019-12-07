@@ -37,3 +37,14 @@ cc_test(
         "@gtest//:main",
     ],
 )
+
+cc_binary(
+    name = "zipper_merge_formula_test",
+    srcs = ["test/zipper_merge_formula_test.cpp"],
+    copts = ["-Iexternal/gtest/include"],
+    deps = [
+        ":rule_evaluator",
+        "@com_github_google_glog//:glog",
+        "@gtest//:main",
+    ],
+)
