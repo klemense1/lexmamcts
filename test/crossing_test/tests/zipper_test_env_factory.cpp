@@ -3,6 +3,8 @@
 // Copyright (c) 2019 Luis Gressenbuch. All rights reserved.
 //
 
+#include "zipper_test_env_factory.h"
+
 #include "mcts/mcts_parameters.h"
 #include "mcts/statistics/thres_uct_statistic.h"
 #include "test/crossing_test/crossing_state_parameter.h"
@@ -11,7 +13,6 @@
 #include "test/crossing_test/label_evaluator/evaluator_label_other_lane_at.h"
 #include "test/crossing_test/label_evaluator/evaluator_label_other_range.h"
 #include "test/crossing_test/tests/crossing_test_env.h"
-#include "zipper_tes_env_factory.h"
 
 const std::string zip_formula =
     "G((mp_oe & X !mp_oe & (w_o | X w_o) & w_e) -> (!mp_e W mp_o)) & G!((mp_oe & "
