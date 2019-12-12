@@ -2,12 +2,14 @@ cc_library(
     name = "rule_evaluator",
     srcs = [
         "evaluator_rule_ltl.cpp",
+        "label.cpp",
         "rule_state.cpp",
     ],
     hdrs = [
         "common.h",
         "evaluator_label_base.h",
         "evaluator_rule_ltl.h",
+        "label.h",
         "rule_state.h",
     ],
     visibility = ["//visibility:public"],
@@ -34,6 +36,7 @@ cc_test(
     copts = ["-Iexternal/gtest/include"],
     deps = [
         ":rule_evaluator",
+        "@com_github_gflags_gflags//:gflags",
         "@gtest//:main",
     ],
 )

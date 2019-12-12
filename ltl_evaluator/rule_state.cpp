@@ -29,9 +29,11 @@ std::ostream &operator<<(std::ostream &os, const RuleState &state) {
      << state.violated_ << " automaton_: " << state.automaton_;
   return os;
 }
+bool RuleState::is_agent_specific() const { return agent_ids_.size() > 0; }
 RuleState::RuleState(uint32_t current_state,
                      double rule_belief,
                      size_t violated,
-                     std::shared_ptr<const EvaluatorRuleLTL> automaton)
-    : current_state_(current_state), rule_belief_(rule_belief), violated_(violated), automaton_(automaton) {}
+                     std::shared_ptr<const EvaluatorRuleLTL> automaton, std::vector<int> agent_id)
+    : current_state_(current_state), rule_belief_(rule_belief), violated_(violated), automaton_(automaton), agent_ids_(agent_id) {}
+const std::vector<int> &RuleState::get_agent_ids() const { return agent_ids_; }
 }

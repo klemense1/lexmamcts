@@ -29,14 +29,14 @@ TEST(ZipperMergeTest, violated) {
     others.erase(others.begin());
     World w(agent_states[0], others);
     for (const auto &label : env->label_evaluators_) {
-      VLOG(1) << label->get_label_str() << ": " << label->evaluate(w);
+      VLOG(1) << label->get_label() << ": " << label->evaluate(w);
     }
 
   }
   auto rule_states = env->state->get_rule_state_map();
-  EXPECT_EQ(rule_states.at(0).at(Rule::ZIP).get_violation_count(), 0);
-  EXPECT_EQ(rule_states.at(1).at(Rule::ZIP).get_violation_count(), 0);
-  EXPECT_GT(rule_states.at(2).at(Rule::ZIP).get_violation_count(), 0);
+  EXPECT_EQ(rule_states.at(0).find(Rule::ZIP)->second.get_violation_count(), 0);
+  EXPECT_EQ(rule_states.at(1).find(Rule::ZIP)->second.get_violation_count(), 0);
+  EXPECT_GT(rule_states.at(2).find(Rule::ZIP)->second.get_violation_count(), 0);
 }
 
 TEST(ZipperMergeTest, not_violated) {
@@ -59,7 +59,7 @@ TEST(ZipperMergeTest, not_violated) {
     others.erase(others.begin());
     World w(agent_states[0], others);
     for (const auto &label : env->label_evaluators_) {
-      VLOG(1) << label->get_label_str() << ": " << label->evaluate(w);
+      VLOG(1) << label->get_label() << ": " << label->evaluate(w);
     }
 
     Eigen::Vector3i state;
@@ -72,9 +72,9 @@ TEST(ZipperMergeTest, not_violated) {
   }
   VLOG(1) << states;
   auto rule_states = env->state->get_rule_state_map();
-  EXPECT_EQ(rule_states.at(0).at(Rule::ZIP).get_violation_count(), 0);
-  EXPECT_EQ(rule_states.at(1).at(Rule::ZIP).get_violation_count(), 0);
-  EXPECT_EQ(rule_states.at(2).at(Rule::ZIP).get_violation_count(), 0);
+  EXPECT_EQ(rule_states.at(0).find(Rule::ZIP)->second.get_violation_count(), 0);
+  EXPECT_EQ(rule_states.at(1).find(Rule::ZIP)->second.get_violation_count(), 0);
+  EXPECT_EQ(rule_states.at(2).find(Rule::ZIP)->second.get_violation_count(), 0);
 }
 
 
@@ -98,12 +98,12 @@ TEST(ZipperMergeTest, mcts) {
     others.erase(others.begin());
     World w(agent_states[0], others);
     for (const auto &label : env->label_evaluators_) {
-      VLOG(1) << label->get_label_str() << ": " << label->evaluate(w);
+      VLOG(1) << label->get_label() << ": " << label->evaluate(w);
     }
     auto rule_states = env->state->get_rule_state_map();
     for (size_t i = 0; i < agent_states.size(); ++i) {
       state(i) = agent_states[i].x_pos;
-      ASSERT_EQ(rule_states.at(i).at(Rule::ZIP).get_violation_count(), 0);
+      ASSERT_EQ(rule_states.at(i).find(Rule::ZIP)->second.get_violation_count(), 0);
     }
     VLOG(1) << state.transpose();
     states.emplace_back(state.transpose());
@@ -111,8 +111,8 @@ TEST(ZipperMergeTest, mcts) {
   VLOG(1) << states;
   auto rule_states = env->state->get_rule_state_map();
   for(size_t ai = 0; ai < env->state->get_agent_idx().size(); ++ai) {
-    EXPECT_EQ(rule_states.at(ai).at(Rule::NO_COLLISION).get_violation_count(), 0);
-    EXPECT_EQ(rule_states.at(ai).at(Rule::ZIP).get_violation_count(), 0);
+    EXPECT_EQ(rule_states.at(ai).find(Rule::NO_COLLISION)->second.get_violation_count(), 0);
+    EXPECT_EQ(rule_states.at(ai).find(Rule::ZIP)->second.get_violation_count(), 0);
     EXPECT_GT(agent_states.at(ai).x_pos, env->crossing_state_parameter_.crossing_point);
   }
 }

@@ -6,15 +6,17 @@
 #define MAMCTS_TEST_CROSSING_TEST_EVALUATOR_LABEL_BASE_HPP_
 
 #include <string>
+#include <utility>
+#include "label.h"
 template<class S>
 class EvaluatorLabelBase {
  public:
-  EvaluatorLabelBase(std::string label_str) : label_str_(label_str) {}
-  const std::string &get_label_str() const { return label_str_; }
+  explicit EvaluatorLabelBase(const std::string& label_str) : label_(label_str) {}
+  explicit EvaluatorLabelBase(ltl::Label label) : label_(std::move(label)) {}
+  const ltl::Label &get_label() const { return label_; }
   virtual bool evaluate(const S &state) const = 0;
  private:
-  std::string label_str_;
-
+  ltl::Label label_;
 };
 
 #endif //MAMCTS_TEST_CROSSING_TEST_EVALUATOR_LABEL_BASE_HPP_

@@ -13,12 +13,13 @@
 #include "Eigen/Core"
 #include "common.h"
 #include "ltl_evaluator/rule_state.h"
+#include "ltl_evaluator/label.h"
 #include "spot/tl/parse.hh"
 #include "spot/twaalgos/translate.hh"
 
 namespace ltl {
 
-typedef std::unordered_map<std::string, bool> EvaluationMap;
+typedef std::unordered_map<Label, bool, LabelHash> EvaluationMap;
 
 class RuleState;
 
@@ -32,7 +33,7 @@ class EvaluatorRuleLTL : public std::enable_shared_from_this<EvaluatorRuleLTL> {
     return EvaluatorRuleLTLSPtr(new EvaluatorRuleLTL(ltl_formula_str, weight, priority, init_belief, final_reward));
   }
 
-  RuleState make_rule_state() const;
+  std::vector<RuleState> make_rule_state(std::vector<int> agent_ids = {}) const;
 
   float evaluate(EvaluationMap const &labels, RuleState &state) const;
 
@@ -59,7 +60,16 @@ class EvaluatorRuleLTL : public std::enable_shared_from_this<EvaluatorRuleLTL> {
                    RulePriority priority, float init_belief = 1.0,
                    float final_reward = 0.0f);
   static spot::formula parse_formula(std::string ltl_formula_str);
-  static bool bdd_eval(bdd cond, const std::set<int> &vars);
+  static bool evaluate_bdd(bdd cond, const std::set<int> &vars);
+
+  std::string parse_agents(const std::string &ltl_formula_str);
+
+  struct APContainer {
+    std::string ap_str_;
+    spot::formula ap_;
+    int id_idx_;
+    bool is_agent_specific;
+  };
 
   float weight_;
   float final_reward_;
@@ -69,6 +79,8 @@ class EvaluatorRuleLTL : public std::enable_shared_from_this<EvaluatorRuleLTL> {
   RulePriority priority_;
   Eigen::Matrix2d observation_prob_;
   const float init_belief_;
+  std::vector<APContainer> ap_alphabet_;
+  bool is_agent_specific;
 };
 }  // namespace ltl
 #endif  // LTL_EVALUATOR_EVALUATOR_RULE_LTL_H_

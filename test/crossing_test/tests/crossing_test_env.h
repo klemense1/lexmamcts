@@ -108,7 +108,10 @@ class BaseTestEnv {
       LOG(INFO) << "Rules for agent " << i << ":";
       for (const auto &it : automata_[i]) {
         LOG(INFO) << *(it.second);
-        aut_v[i].insert({it.first, it.second->make_rule_state()});
+        auto rule_states = it.second->make_rule_state();
+        for(const auto &rs : rule_states) {
+          aut_v[i].insert({it.first, rs});
+        }
       }
     }
     return aut_v;

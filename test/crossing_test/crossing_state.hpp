@@ -23,7 +23,7 @@ namespace mcts {
 class Viewer;
 }
 
-typedef std::vector<std::map<Rule, RuleState>> RuleStateMap;
+typedef std::vector<std::multimap<Rule, RuleState>> RuleStateMap;
 
 // A simple environment with a 1D state, only if both agents select different actions, they get nearer to the terminal state
 class CrossingState : public mcts::StateInterface<CrossingState> {

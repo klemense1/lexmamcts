@@ -51,9 +51,9 @@ std::shared_ptr<CrossingState> CrossingState::execute(const JointAction &joint_a
     int new_x = old_state.x_pos + static_cast<int>(aconv(joint_action[i]));
     next_agent_states[i] = AgentState(new_x, aconv(joint_action[i]), old_state.lane);
   }
-  labels["ego_out_of_map"] = false;
+  labels[Label("ego_out_of_map")] = false;
   if (next_agent_states[ego_agent_idx].x_pos < 0) {
-    labels["ego_out_of_map"] = true;
+    labels[Label("ego_out_of_map")] = true;
   }
 
   // REWARD GENERATION
@@ -66,7 +66,7 @@ std::shared_ptr<CrossingState> CrossingState::execute(const JointAction &joint_a
     next_world = World(next_agent_states[agent_idx], next_other_agents);
 
     for (auto le : label_evaluator_) {
-      labels[le->get_label_str()] = le->evaluate(next_world);
+      labels[le->get_label()] = le->evaluate(next_world);
     }
     rewards[agent_idx] = Reward::Zero(parameters_.reward_vec_size);
 
@@ -76,8 +76,8 @@ std::shared_ptr<CrossingState> CrossingState::execute(const JointAction &joint_a
     }
 
     rewards[agent_idx] += get_action_cost(joint_action[agent_idx], agent_idx);
-    terminal |= labels["goal_reached"] || labels["collision"] || (depth_ + 1 >= parameters_.terminal_depth_);
-    if(!labels["goal_reached"]) {
+    terminal |= labels[Label("goal_reached")] || labels[Label("collision")] || (depth_ + 1 >= parameters_.terminal_depth_);
+    if(!labels[Label("goal_reached")]) {
       rewards[agent_idx] +=
           get_shaping_reward(next_agent_states[agent_idx]) - get_shaping_reward(agent_states_[agent_idx]);
     }

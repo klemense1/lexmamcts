@@ -8,6 +8,7 @@
 
 #include <ostream>
 #include <memory>
+#include <vector>
 #include "common.h"
 #include "evaluator_rule_ltl.h"
 
@@ -24,16 +25,19 @@ class RuleState {
   size_t get_violation_count() const;
   void reset_violations();
   const std::shared_ptr<const EvaluatorRuleLTL> &get_automaton() const;
+  bool is_agent_specific() const;
+  const std::vector<int> &get_agent_ids() const;
   friend std::ostream &operator<<(std::ostream &os, const RuleState &state);
  private:
   RuleState(uint32_t current_state,
             double rule_belief,
             size_t violated,
-            std::shared_ptr<const EvaluatorRuleLTL> automaton);
+            std::shared_ptr<const EvaluatorRuleLTL> automaton, std::vector<int> agent_ids = {});
   uint32_t current_state_;
   double rule_belief_;
   size_t violated_;
   std::shared_ptr<const EvaluatorRuleLTL> automaton_;
+  std::vector<int> agent_ids_;
 };
 
 }
