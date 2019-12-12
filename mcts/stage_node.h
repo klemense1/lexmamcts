@@ -93,9 +93,6 @@ class StageNode : public std::enable_shared_from_this<StageNode<S, SE, SO, H>> {
   std::string sprintf() const;
   void printTree(std::string filename, const unsigned int &max_depth = 5);
   void printLayer(std::string filename, const unsigned int &max_depth);
-  double getEgoAgentValue();
-  int getEgoNodeVisits();
-  double getActionValue(int action);
   const StageChildMap &get_children() const;
   JointReward get_q_func(JointAction const &joint_action);
   JointReward get_value();
