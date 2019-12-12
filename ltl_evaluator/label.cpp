@@ -12,8 +12,12 @@ const std::string& ltl::Label::get_label_str() const { return label_str_; }
 int ltl::Label::get_agent_id() const { return agent_id_; }
 bool ltl::Label::is_agent_specific() const { return is_agent_specific_; }
 bool ltl::Label::operator==(const ltl::Label& rhs) const {
-  return label_str_ == rhs.label_str_ && agent_id_ == rhs.agent_id_ &&
-         is_agent_specific_ == rhs.is_agent_specific_;
+  bool equal = label_str_ == rhs.label_str_;
+  equal &= is_agent_specific_ == rhs.is_agent_specific_;
+  if(is_agent_specific_) {
+    equal &= agent_id_ == rhs.agent_id_;
+  }
+  return equal;
 }
 bool ltl::Label::operator!=(const ltl::Label& rhs) const {
   return !(rhs == *this);
