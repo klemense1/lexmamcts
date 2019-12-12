@@ -49,14 +49,12 @@ class EvaluatorRuleLTL : public std::enable_shared_from_this<EvaluatorRuleLTL> {
 
   void set_priority(RulePriority priority);
 
+  bool is_agent_specific() const;
+
   friend std::ostream &operator<<(std::ostream &os, EvaluatorRuleLTL const &d);
 
  private:
-  EvaluatorRuleLTL(spot::formula ltl_formula, float weight,
-                   RulePriority priority, float init_belief = 1.0,
-                   float final_reward = 0.0f);
-
-  EvaluatorRuleLTL(std::string ltl_formula_str, float weight,
+  EvaluatorRuleLTL(const std::string& ltl_formula_str, float weight,
                    RulePriority priority, float init_belief = 1.0,
                    float final_reward = 0.0f);
   static spot::formula parse_formula(std::string ltl_formula_str);
@@ -80,7 +78,9 @@ class EvaluatorRuleLTL : public std::enable_shared_from_this<EvaluatorRuleLTL> {
   Eigen::Matrix2d observation_prob_;
   const float init_belief_;
   std::vector<APContainer> ap_alphabet_;
-  bool is_agent_specific;
+  bool is_agent_specific_;
+  std::vector<std::vector<int>> all_k_permutations(const std::vector<int> &values,
+                                      int k) const;
 };
 }  // namespace ltl
 #endif  // LTL_EVALUATOR_EVALUATOR_RULE_LTL_H_

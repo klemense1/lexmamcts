@@ -12,14 +12,14 @@
 #include "spot/twa/bddprint.hh"
 
 namespace ltl {
-EvaluatorRuleLTL::EvaluatorRuleLTL(std::string ltl_formula_str, float weight,
+EvaluatorRuleLTL::EvaluatorRuleLTL(const std::string& ltl_formula_str, float weight,
                                    RulePriority priority, float init_belief,
                                    float final_reward)
     : weight_(weight),
       final_reward_(final_reward),
       priority_(priority),
       init_belief_(init_belief),
-      is_agent_specific(false) {
+      is_agent_specific_(false) {
   assert(init_belief <= 1.0 && init_belief >= 0.0);
 
   const std::string agent_free_formula = parse_agents(ltl_formula_str);
@@ -32,7 +32,7 @@ EvaluatorRuleLTL::EvaluatorRuleLTL(std::string ltl_formula_str, float weight,
 }
 std::string EvaluatorRuleLTL::parse_agents(const std::string &ltl_formula_str) {
   std::string remaining = ltl_formula_str;
-  std::string agent_free_formula = "";
+  std::string agent_free_formula;
   std::regex r("([[:lower:][:digit:]_]+)(#([[:digit:]])+)?");
   std::smatch sm;
   while(std::regex_search(remaining, sm, r)) {
@@ -43,11 +43,11 @@ std::string EvaluatorRuleLTL::parse_agents(const std::string &ltl_formula_str) {
     int agent_id_placeholder = -1;
     if(sm[3] != "") {
       agent_id_placeholder = std::stoi(sm[3]);
-      is_agent_specific = true;
+      is_agent_specific_ = true;
     }
     agent_free_formula += sm.prefix();
     agent_free_formula += ap_name;
-    ap_alphabet_.push_back({ap_name, spot::formula::ap(ap_name), agent_id_placeholder, is_agent_specific});
+    ap_alphabet_.push_back({ap_name, spot::formula::ap(ap_name), agent_id_placeholder, is_agent_specific_});
     remaining = sm.suffix();
   }
   agent_free_formula += remaining;
@@ -56,28 +56,38 @@ std::string EvaluatorRuleLTL::parse_agents(const std::string &ltl_formula_str) {
 }
 
 std::vector<RuleState> EvaluatorRuleLTL::make_rule_state(std::vector<int> agent_ids) const {
-  assert(is_agent_specific == !agent_ids.empty());
+  assert(is_agent_specific_ == !agent_ids.empty());
   int num_other_agents = std::max_element(ap_alphabet_.begin(), ap_alphabet_.end(), [](const APContainer &a, const APContainer &b) {
     return (a.id_idx_ < b.id_idx_);
   })->id_idx_ + 1;
   num_other_agents = std::max(num_other_agents, 0);
   assert(agent_ids.size() >= num_other_agents);
   std::vector<RuleState> l;
-  std::vector<int> agent_idx(num_other_agents, 0);
-  std::vector<int> d(agent_ids.size());
-  std::iota(d.begin(),d.end(),0);
+  std::vector<std::vector<int>> permutations =
+      all_k_permutations(agent_ids, num_other_agents);
+  for(const auto &perm : permutations) {
+    l.push_back(RuleState(aut_->get_init_state_number(), init_belief_, 0,
+                          shared_from_this(), perm));
+  }
+  return l;
+}
+std::vector<std::vector<int>> EvaluatorRuleLTL::all_k_permutations(
+    const std::vector<int> &values, int k) const {
+  std::vector<std::vector<int>> permutations;
+  std::vector<int> value_permutation(k, 0);
+  std::vector<int> idx_permutation(values.size());
+  std::iota(idx_permutation.begin(), idx_permutation.end(),0);
   // Create all k-permutations of the agent ids
   do
   {
-    for (int i = 0; i < num_other_agents; i++)
+    for (int i = 0; i < k; i++)
     {
-      agent_idx[i] = agent_ids[d[i]];
+      value_permutation[i] = values[idx_permutation[i]];
     }
-    l.push_back(RuleState(aut_->get_init_state_number(), init_belief_, 0,
-                   shared_from_this(), agent_idx));
-    std::reverse(d.begin()+num_other_agents,d.end());
-  } while (std::next_permutation(d.begin(),d.end()));
-  return l;
+    permutations.emplace_back(value_permutation);
+    std::reverse(idx_permutation.begin()+k, idx_permutation.end());
+  } while (std::next_permutation(idx_permutation.begin(), idx_permutation.end()));
+  return permutations;
 }
 
 float EvaluatorRuleLTL::evaluate(const EvaluationMap &labels,
@@ -177,4 +187,5 @@ void EvaluatorRuleLTL::set_priority(RulePriority priority) {
   priority_ = priority;
 }
 RulePriority EvaluatorRuleLTL::get_priority() const { return priority_; }
+bool EvaluatorRuleLTL::is_agent_specific() const { return is_agent_specific_; }
 }
