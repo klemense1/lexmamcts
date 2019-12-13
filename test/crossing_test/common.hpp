@@ -15,7 +15,7 @@ enum class Actions {
   FORWARD = 1,
   FASTFORWARD = 2,
   BACKWARD = -1,
-  NUM = 2
+  NUM = 4
 };
 
 enum Rule {
@@ -25,8 +25,8 @@ enum Rule {
 const std::map<ActionIdx, Actions> idx_to_action = {
     {0, Actions::FORWARD},
     {1, Actions::WAIT},
-    //{2, Actions::BACKWARD},
-    //{3, Actions::FASTFORWARD},
+    {2, Actions::BACKWARD},
+    {3, Actions::FASTFORWARD},
 };
 
 const std::map<Actions, ActionIdx> action_to_idx = {

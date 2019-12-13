@@ -103,7 +103,7 @@ TEST(ZipperMergeTest, mcts) {
     auto rule_states = env->state->get_rule_state_map();
     for (size_t i = 0; i < agent_states.size(); ++i) {
       state(i) = agent_states[i].x_pos;
-      ASSERT_EQ(rule_states.at(i).find(Rule::ZIP)->second.get_violation_count(), 0);
+      EXPECT_EQ(0, rule_states.at(i).find(Rule::ZIP)->second.get_violation_count());
     }
     VLOG(1) << state.transpose();
     states.emplace_back(state.transpose());

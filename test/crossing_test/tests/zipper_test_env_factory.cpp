@@ -23,22 +23,22 @@ std::shared_ptr<BaseTestEnv> ZipperTestEnvFactory::make_test_env() {
   mcts_params.uct_statistic.LOWER_BOUND << -30.0f, -30.0f, -30.0f, -30.0f,
       -5000.0f;
   mcts_params.uct_statistic.UPPER_BOUND << 0.0f, 0.0f, 0.0f, 0.0f, 5000.0f;
-  mcts_params.thres_uct_statistic_.THRESHOLD << -1.0, -1.0, -1.0, -1.0,
+  mcts_params.thres_uct_statistic_.THRESHOLD << -0.5, -1.0, -1.0, -1.0,
       std::numeric_limits<ObjectiveVec::Scalar>::max();
 
   CrossingStateParameter crossing_params =
       make_default_crossing_state_parameters();
-  crossing_params.depth_prio = static_cast<int>(RewardPriority::GOAL);
-  crossing_params.speed_deviation_prio = static_cast<int>(RewardPriority::GOAL);
-  crossing_params.acceleration_prio = static_cast<int>(RewardPriority::GOAL);
-  crossing_params.potential_prio = static_cast<int>(RewardPriority::GOAL);
+  crossing_params.depth_prio = 4;
+  crossing_params.speed_deviation_prio = 4;
+  crossing_params.acceleration_prio = 4;
+  crossing_params.potential_prio = 4;
   crossing_params.depth_weight = 0;
-  crossing_params.speed_deviation_weight = 0;
+  crossing_params.speed_deviation_weight = 3;
   crossing_params.acceleration_weight = 0;
   crossing_params.potential_weight = 1;
   crossing_params.num_other_agents = 2;
-  crossing_params.ego_goal_reached_position = 20;
-  crossing_params.state_x_length = 20;
+  crossing_params.ego_goal_reached_position = 25;
+  crossing_params.state_x_length = 25;
   crossing_params.crossing_point = 10;
 
   auto automata =
