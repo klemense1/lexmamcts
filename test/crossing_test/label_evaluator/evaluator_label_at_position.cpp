@@ -8,6 +8,6 @@
 EvaluatorLabelAtPosition::EvaluatorLabelAtPosition(const std::string &label_str, const int position)
     : EvaluatorLabelBase(label_str), position_(position) {}
 bool EvaluatorLabelAtPosition::evaluate(const World &state) const {
-  return ((state.first.x_pos - static_cast<int>(aconv(state.first.last_action))) < position_
+  return ((state.first.x_pos - static_cast<int>(state.first.last_action)) < position_
       && state.first.x_pos >= position_) || state.first.x_pos == position_;
 }
