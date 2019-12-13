@@ -81,18 +81,21 @@ TEST_F(CrossingTestF, belief) {
   auto succ_state = state->execute(jt, rewards);
   succ_state->update_rule_belief();
   succ_state->reset_violations();
-  ASSERT_LT(succ_state->get_rule_state_map()[1].at(Rule::NO_SPEEDING).get_rule_belief(), 0.9);
+  ASSERT_LT(succ_state->get_rule_state_map()[1].find(Rule::NO_SPEEDING)->second.get_rule_belief(), 0.9);
 }
 
 TEST_F(CrossingTestF, giveWay) {
   std::vector<AgentState> agent_states(2);
-  agent_states[0].x_pos = 7;
+  agent_states[0].x_pos = crossing_state_parameter_.crossing_point - 1;
   agent_states[0].last_action = Actions::FORWARD;
-  agent_states[1].x_pos = 8;
+  agent_states[1].x_pos = crossing_state_parameter_.crossing_point - 2;
   agent_states[1].last_action = Actions::FORWARD;
-  automata_[0].insert({Rule::GIVE_WAY, EvaluatorRuleLTL::make_rule("G((at_xing & other_near) -> (X at_xing))",
+  label_evaluators_.emplace_back(std::make_shared<EvaluatorLabelAtPosition>("hp_xing", crossing_state_parameter_.crossing_point - 1));
+  automata_.clear();
+  automata_.resize(2);
+  automata_[0].insert({Rule::GIVE_WAY, EvaluatorRuleLTL::make_rule("G((hp_xing & other_near) -> (X hp_xing))",
                                                                    -500.0f,
-                                                                   RewardPriority::SAFETY)});
+                                                                   0)});
   state = std::make_shared<CrossingState>(agent_states,
                                           false,
                                           get_automata_vec(),
@@ -101,10 +104,10 @@ TEST_F(CrossingTestF, giveWay) {
                                           0);
   state = state->execute(get_jt(), rewards);
   state = state->execute(get_jt(), rewards);
-  state = state->execute(get_jt(), rewards);
-  state = state->execute(get_jt(), rewards);
-  ASSERT_EQ(rewards[0](0), -500);
-  state->execute(get_jt(), rewards);
+//  state = state->execute(get_jt(), rewards);
+//  state = state->execute(get_jt(), rewards);
+  ASSERT_EQ(-500, rewards[0](0));
+//  state->execute(get_jt(), rewards);
 }
 
 TEST(CrossingTest, LexicographicOrder) {

@@ -67,7 +67,7 @@ TEST(ComperatorTest, threshold_comperator) {
   ObjectiveVec thr = ObjectiveVec::Zero(vec_size);
   a << 20, 10, 20, 10, 10;
   b << 10, 20, 10, 20, 20;
-  thr << 10, 100, 100, 100, 100;
+  thr << 9, 100, 100, 100, 100;
   ThresUCTStatistic::ThresholdComparator threshold_compare(thr);
   ASSERT_FALSE(std::lexicographical_compare(a.begin(), a.end(), b.begin(), b.end()));
   ASSERT_TRUE(threshold_compare(a, b));
