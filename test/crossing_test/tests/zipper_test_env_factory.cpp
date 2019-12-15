@@ -23,7 +23,8 @@ std::shared_ptr<BaseTestEnv> ZipperTestEnvFactory::make_test_env() {
   mcts_params.uct_statistic.LOWER_BOUND << -30.0f, -30.0f, -30.0f, -30.0f,
       -5000.0f;
   mcts_params.uct_statistic.UPPER_BOUND << 0.0f, 0.0f, 0.0f, 0.0f, 5000.0f;
-  mcts_params.thres_uct_statistic_.THRESHOLD << -0.66, -1.0, -1.0, -1.0,
+//  mcts_params.thres_uct_statistic_.THRESHOLD << -0.20, -1.0, -1.0, -1.0,
+  mcts_params.thres_uct_statistic_.THRESHOLD << -0.66, -0.43, -1.0, -1.0,
       std::numeric_limits<ObjectiveVec::Scalar>::max();
   mcts_params.COOP_FACTOR = 0;
   mcts_params.DISCOUNT_FACTOR = 0.9;

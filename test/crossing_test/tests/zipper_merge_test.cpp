@@ -102,7 +102,7 @@ TEST(ZipperMergeTest, mcts) {
     others.erase(others.begin());
     World w(agent_states[0], others);
     for (const auto &label : env->label_evaluators_) {
-      VLOG(1) << label->get_label() << ": " << label->evaluate(w);
+      VLOG(2) << label->get_label() << ": " << label->evaluate(w);
     }
     auto rule_states = env->state->get_rule_state_map();
     for (size_t i = 0; i < agent_states.size(); ++i) {
