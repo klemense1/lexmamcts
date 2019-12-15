@@ -16,7 +16,7 @@ bool EvaluatorLabelOtherAtEgoLaneAtPos::evaluate(const World& state) const {
   EvaluatorLabelAtPosition at_point("DUMMYF", point_);
   auto agents = state.second;
   for (const auto& agent : agents) {
-    if (agent.lane == state.first.lane &&
+    if (agent.lane == state.first.lane && state.first.x_pos <= point_ &&
         at_point.evaluate(World(agent, std::vector<AgentState>()))) {
       return true;
     }
