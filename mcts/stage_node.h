@@ -330,7 +330,7 @@ void StageNode<S, SE, SO, H>::printLayer(std::string filename, const unsigned in
             << other_agent_it->print_node_information() << " \n Ag." << int(other_agent_it->get_agent_idx()) << "\"]"
             << ";" << std::endl;
   }
-  logging << "label= \"ID " << this->id_ << "\";" << std::endl;
+  logging << "label= \"ID " << this->id_ << ", " << "terminal: " << state_->is_terminal() << "\";" << std::endl;
   logging << "graph[style=dotted]; }" << std::endl;
 
   // DRAW ARROWS FOR EACH CHILD

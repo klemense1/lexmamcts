@@ -7,6 +7,7 @@
 #include "gtest/gtest.h"
 #include "gflags/gflags.h"
 
+#include "mcts/statistics/thres_uct_statistic.h"
 #include "test/crossing_test/common.hpp"
 #include "zipper_test_env_factory.h"
 
@@ -87,10 +88,13 @@ TEST(ZipperMergeTest, mcts) {
   for (size_t i = 0; i < agent_states.size(); ++i) {
     state(i) = agent_states[i].x_pos;
   }
-
+  char filename[50];
   states.emplace_back(state.transpose());
+  int i = 0;
   while (!env->state->is_terminal()) {
     env->search(10000);
+    sprintf(filename,"/tmp/zip%d",i);
+    std::dynamic_pointer_cast<CrossingTestEnv<mcts::ThresUCTStatistic>>(env)->mcts.printTreeToDotFile(filename);
     env->state = env->state->execute(env->get_jt(), env->rewards);
 
     agent_states = env->state->get_agent_states();
@@ -105,8 +109,9 @@ TEST(ZipperMergeTest, mcts) {
       state(i) = agent_states[i].x_pos;
       EXPECT_EQ(0, rule_states.at(i).find(Rule::ZIP)->second.get_violation_count());
     }
-    VLOG(1) << state.transpose();
+    VLOG(1) << "Iteration: " << i << ", State: [" << state.transpose() << "]";
     states.emplace_back(state.transpose());
+    ++i;
   }
   VLOG(1) << states;
   auto rule_states = env->state->get_rule_state_map();

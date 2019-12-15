@@ -85,7 +85,7 @@ void Mcts<S, SE, SO, H>::search(const S &current_state, unsigned int max_search_
     iterate(root_);
     num_iterations += 1;
   }
-  VLOG(1) << "Search time: " << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count() << " ms";
+  VLOG(1) << "Search time: " << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count() << " ms" << ", Samples: " << this->numIterations();
 }
 
 template<class S, class SE, class SO, class H>
@@ -145,7 +145,7 @@ JointAction Mcts<S, SE, SO, H>::returnBestAction() {
 
 template<class S, class SE, class SO, class H>
 void Mcts<S, SE, SO, H>::printTreeToDotFile(std::string filename) {
-  root_->printTree(filename);
+  root_->printTree(filename, 100);
 }
 template<class S, class SE, class SO, class H>
 const std::shared_ptr<StageNode<S, SE, SO, H>> &Mcts<S, SE, SO, H>::get_root() const {
