@@ -76,11 +76,12 @@ std::shared_ptr<CrossingState> CrossingState::execute(const JointAction &joint_a
     }
 
     rewards[agent_idx] += get_action_cost(joint_action[agent_idx], agent_idx);
-    terminal |= labels[Label("goal_reached")] || labels[Label("collision")] || (depth_ + 1 >= parameters_.terminal_depth_);
-    if(!labels[Label("goal_reached")]) {
-      rewards[agent_idx] +=
-          get_shaping_reward(next_agent_states[agent_idx]) - get_shaping_reward(agent_states_[agent_idx]);
-    }
+//    LOG_IF(FATAL, next_automata[1].find(Rule::ZIP)->second.get_violation_count() > 0 && agent_states_[1].x_pos > parameters_.crossing_point) << "Should not be";
+    terminal |= labels[Label("collision")] || (depth_ + 1 >= parameters_.terminal_depth_);
+//    if(!labels[Label("goal_reached")]) {
+//      rewards[agent_idx] +=
+//          get_shaping_reward(next_agent_states[agent_idx]) - get_shaping_reward(agent_states_[agent_idx]);
+//    }
     labels.clear();
   } // End for each agent
 
