@@ -33,7 +33,7 @@ class EvaluatorRuleLTL : public std::enable_shared_from_this<EvaluatorRuleLTL> {
     return EvaluatorRuleLTLSPtr(new EvaluatorRuleLTL(ltl_formula_str, weight, priority, init_belief, final_reward));
   }
 
-  std::vector<RuleState> make_rule_state(std::vector<int> agent_ids = {}) const;
+  std::vector<RuleState> make_rule_state(const std::vector<int>& agent_ids = {}) const;
 
   float evaluate(EvaluationMap const &labels, RuleState &state) const;
 
@@ -57,7 +57,7 @@ class EvaluatorRuleLTL : public std::enable_shared_from_this<EvaluatorRuleLTL> {
   EvaluatorRuleLTL(const std::string& ltl_formula_str, float weight,
                    RulePriority priority, float init_belief = 1.0,
                    float final_reward = 0.0f);
-  static spot::formula parse_formula(std::string ltl_formula_str);
+  static spot::formula parse_formula(const std::string& ltl_formula_str);
   static bool evaluate_bdd(bdd cond, const std::set<int> &vars);
 
   std::string parse_agents(const std::string &ltl_formula_str);

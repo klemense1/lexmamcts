@@ -55,7 +55,7 @@ std::string EvaluatorRuleLTL::parse_agents(const std::string &ltl_formula_str) {
   return agent_free_formula;
 }
 
-std::vector<RuleState> EvaluatorRuleLTL::make_rule_state(std::vector<int> agent_ids) const {
+std::vector<RuleState> EvaluatorRuleLTL::make_rule_state(const std::vector<int>& agent_ids) const {
   assert(is_agent_specific_ == !agent_ids.empty());
   int num_other_agents = std::max_element(ap_alphabet_.begin(), ap_alphabet_.end(), [](const APContainer &a, const APContainer &b) {
     return (a.id_idx_ < b.id_idx_);
@@ -94,8 +94,6 @@ float EvaluatorRuleLTL::evaluate(const EvaluationMap &labels,
                                  RuleState &state) const {
   std::set<int> bddvars = std::set<int>();
   spot::bdd_dict_ptr bddDictPtr = aut_->get_dict();
-  // Self looping behavior
-  uint32_t next_state = state.current_state_;
   for (const auto &ap : ap_alphabet_) {
     Label label;
     if(ap.is_agent_specific) {
@@ -106,7 +104,8 @@ float EvaluatorRuleLTL::evaluate(const EvaluationMap &labels,
     auto it = labels.find(label);
     if(it == labels.end()) {
       // Rule is undecided
-      VLOG(2) << "Rule undecided! Missing label: " << ap.ap_str_ << "_" << state.get_agent_ids()[ap.id_idx_];
+      VLOG_IF(2, label.is_agent_specific()) << "Rule undecided! Missing label: " << ap.ap_str_ << "_" << state.get_agent_ids()[ap.id_idx_];
+      VLOG_IF(2, !label.is_agent_specific()) << "Rule undecided! Missing label: " << ap.ap_str_;
       return 0.0f;
     }
     if (it->second) {
@@ -117,15 +116,18 @@ float EvaluatorRuleLTL::evaluate(const EvaluationMap &labels,
   bool transition_found = false;
   for (const auto &transition : aut_->out(state.current_state_)) {
     if (EvaluatorRuleLTL::evaluate_bdd(transition.cond, bddvars)) {
-      next_state = transition.dst;
+      state.current_state_ = transition.dst;
       transition_found = true;
       break;
     }
   }
-  state.current_state_ = next_state;
-  state.violated_ = transition_found ? state.violated_ : state.violated_ + 1;
 
-  return !transition_found ? state.rule_belief_ * weight_ : 0.0f;
+  if(!transition_found) {
+    ++state.violated_;
+    // Reset automaton if rule has been violated
+    state.current_state_ = aut_->get_init_state_number();
+  }
+  return !transition_found ? static_cast<float>(state.rule_belief_) * weight_ : 0.0f;
 }
 
 bool EvaluatorRuleLTL::evaluate_bdd(bdd cond, const std::set<int> &vars) {
@@ -143,11 +145,10 @@ bool EvaluatorRuleLTL::evaluate_bdd(bdd cond, const std::set<int> &vars) {
 float EvaluatorRuleLTL::get_final_reward(const RuleState &state) const {
   float penalty = final_reward_;
   // Check if formula has liveness property and is in accepting state
-  if (!ltl_formula_.is_syntactic_safety() &&
-      !aut_->state_is_accepting(state.current_state_)) {
+  if (!aut_->state_is_accepting(state.current_state_)) {
     penalty = weight_;
   }
-  return state.rule_belief_ * penalty;
+  return static_cast<float>(state.rule_belief_) * penalty;
 }
 
 std::ostream &operator<<(std::ostream &os, EvaluatorRuleLTL const &d) {
@@ -172,9 +173,9 @@ void EvaluatorRuleLTL::update_belief(RuleState &state) const {
   }
 }
 
-spot::formula EvaluatorRuleLTL::parse_formula(std::string ltl_formula_str) {
+spot::formula EvaluatorRuleLTL::parse_formula(const std::string& ltl_formula_str) {
   spot::parsed_formula pf = spot::parse_infix_psl(ltl_formula_str);
-  if (pf.errors.size()) {
+  if (!pf.errors.empty()) {
     pf.format_errors(LOG(FATAL));
   }
   return pf.f;
