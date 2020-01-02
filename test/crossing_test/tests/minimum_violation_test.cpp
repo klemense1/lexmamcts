@@ -6,8 +6,8 @@
 #include "glog/logging.h"
 #include "gtest/gtest.h"
 
-#include "test_env_factory.h"
-#include "test_runner.h"
+#include "test/crossing_test/factories/minimum_violation_test_env_factory.h"
+#include "test/crossing_test/tests/test_runner.h"
 
 TEST(MinimumViolation, main) {
   TestRunner test_runner(new MinimumViolationTestEnvFactory());

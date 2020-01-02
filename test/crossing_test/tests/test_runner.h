@@ -8,9 +8,10 @@
 
 #include "glog/logging.h"
 
+#include "test/crossing_test/factories/default_test_env_factory.h"
+#include "test/crossing_test/factories/test_env_factory.h"
 #include "test/crossing_test/tests/crossing_test_env.h"
 #include "test/crossing_test/tests/util.h"
-#include "test_env_factory.h"
 
 using std::vector;
 using std::ostream;

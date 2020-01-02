@@ -1,18 +1,11 @@
 cc_library(
     name = "util",
     srcs = [
-        "test_env_factory.cpp",
-        "test_runner.cpp",
         "util.cpp",
-        "zipper_test_env_factory.cpp",
     ],
     hdrs = [
         "crossing_state_episode_runner.h",
-        "crossing_test_env.h",
-        "test_env_factory.h",
-        "test_runner.h",
         "util.h",
-        "zipper_test_env_factory.h",
     ],
     visibility = ["//visibility:public"],
     deps = [
@@ -21,6 +14,43 @@ cc_library(
         "@com_github_eigen_eigen//:eigen",
         "@com_github_google_glog//:glog",
     ],
+)
+
+cc_library(
+    name = "test_runner",
+    srcs = ["test_runner.cpp"],
+    hdrs = ["test_runner.h"],
+    deps = [
+        "//mcts",
+        "//test/crossing_test:crossing_state",
+        "//test/crossing_test/factories",
+        "@com_github_google_glog//:glog",
+    ],
+)
+
+cc_library(
+    name = "crossing_test_env",
+    srcs = [
+        "base_test_env.cpp",
+    ],
+    hdrs = [
+        "base_test_env.h",
+        "crossing_test_env.h",
+    ],
+    visibility = ["//visibility:public"],
+    deps = [
+        ":util",
+        "//mcts",
+        "//test/crossing_test:crossing_state",
+        "@com_github_eigen_eigen//:eigen",
+        "@com_github_google_glog//:glog",
+    ],
+)
+
+cc_library(
+    name = "crossing_state_episode_runner",
+    hdrs = ["crossing_state_episode_runner.h"],
+    deps = [":crossing_test_env"],
 )
 
 py_test(
@@ -40,26 +70,12 @@ cc_test(
     ],
     copts = ["-Iexternal/gtest/include"],
     deps = [
+        ":crossing_test_env",
         ":util",
         "//mcts",
         "//test/crossing_test:crossing_state",
+        "//test/crossing_test/factories",
         "@com_github_gflags_gflags//:gflags",
-        "@com_github_google_glog//:glog",
-        "@gtest//:main",
-        "@spot",
-    ],
-)
-
-cc_binary(
-    name = "crossing_state_binary",
-    srcs = [
-        "crossing_state_test.cpp",
-    ],
-    copts = ["-Iexternal/gtest/include"],
-    deps = [
-        ":util",
-        "//mcts",
-        "//test/crossing_test:crossing_state",
         "@com_github_google_glog//:glog",
         "@gtest//:main",
         "@spot",
@@ -72,6 +88,7 @@ cc_binary(
         "full_expand.cpp",
     ],
     deps = [
+        ":crossing_test_env",
         ":util",
         "//mcts",
         "//test/crossing_test:crossing_state",
@@ -85,9 +102,11 @@ cc_binary(
         "trajectory_compare.cpp",
     ],
     deps = [
+        ":test_runner",
         ":util",
         "//mcts",
         "//test/crossing_test:crossing_state",
+        "//test/crossing_test/factories",
         "@com_github_google_glog//:glog",
     ],
 )
@@ -99,9 +118,11 @@ cc_binary(
     ],
     copts = ["-Iexternal/gtest/include"],
     deps = [
+        ":crossing_test_env",
         ":util",
         "//mcts",
         "//test/crossing_test:crossing_state",
+        "//test/crossing_test/factories",
         "@com_github_gflags_gflags//:gflags",
         "@com_github_google_glog//:glog",
         "@gtest//:main",
@@ -115,6 +136,7 @@ cc_binary(
     ],
     copts = ["-Iexternal/gtest/include"],
     deps = [
+        ":crossing_test_env",
         ":util",
         "//mcts",
         "//test/crossing_test:crossing_state",
@@ -129,9 +151,12 @@ cc_test(
     srcs = ["minimum_violation_test.cpp"],
     copts = ["-Iexternal/gtest/include"],
     deps = [
+        ":crossing_test_env",
+        ":test_runner",
         ":util",
         "//mcts",
         "//test/crossing_test:crossing_state",
+        "//test/crossing_test/factories",
         "@com_github_google_glog//:glog",
         "@gtest//:main",
     ],

@@ -9,7 +9,7 @@
 
 #include "mcts/statistics/thres_uct_statistic.h"
 #include "test/crossing_test/common.hpp"
-#include "zipper_test_env_factory.h"
+#include "test/crossing_test/factories/zipper_test_env_factory.h"
 
 TEST(ZipperMergeTest, violated) {
   auto env = ZipperTestEnvFactory().make_test_env();

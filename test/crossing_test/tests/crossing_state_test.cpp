@@ -12,11 +12,12 @@
 #include "test/crossing_test/common.hpp"
 #include "mcts/mcts.h"
 
+#include "mcts/statistics/thres_uct_statistic.h"
 #include "test/crossing_test/crossing_state.hpp"
+#include "test/crossing_test/factories/test_env_factory.h"
+#include "test/crossing_test/factories/threshold_test_env_factory.h"
 #include "test/crossing_test/tests/crossing_test_env.h"
 #include "test/crossing_test/tests/util.h"
-#include "mcts/statistics/thres_uct_statistic.h"
-#include "test_env_factory.h"
 
 typedef ThresUCTStatistic Stat;
 typedef RandomHeuristic HeuristicType;

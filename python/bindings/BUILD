@@ -16,6 +16,7 @@ cc_binary(
     deps = [
         "//mcts",
         "//test/crossing_test:crossing_state",
+        "//test/crossing_test/tests:crossing_test_env",
         "//test/crossing_test/tests:util",
         "@com_github_eigen_eigen//:eigen",
         "@pybind11",

@@ -9,11 +9,12 @@
 #include <vector>
 #include <iostream>
 
+#include "test/crossing_test/factories/test_env_factory.h"
+#include "test/crossing_test/factories/threshold_test_env_factory.h"
+#include "test/crossing_test/tests/test_runner.h"
 #include "test/crossing_test/tests/util.h"
-#include "test_env_factory.h"
-#include "test_runner.h"
 
-using std::vector;
+using Eigen::ArrayXi;
 using std::ostream;
 using std::ofstream;
 using std::stringstream;

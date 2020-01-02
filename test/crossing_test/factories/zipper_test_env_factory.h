@@ -6,7 +6,7 @@
 #ifndef TEST_CROSSING_TEST_TESTS_ZIPPER_TEST_ENV_FACTORY_H_
 #define TEST_CROSSING_TEST_TESTS_ZIPPER_TEST_ENV_FACTORY_H_
 
-#include "test/crossing_test/tests/test_env_factory.h"
+#include "test/crossing_test/factories/test_env_factory.h"
 
 class ZipperTestEnvFactory : public ITestEnvFactory{
  public:
