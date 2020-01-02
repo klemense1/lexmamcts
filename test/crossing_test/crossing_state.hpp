@@ -1,19 +1,21 @@
-// Copyright (c) 2019 Julian Bernhard
+// Copyright (c) 2019 fortiss GmbH
 //
 // This work is licensed under the terms of the MIT license.
 // For a copy, see <https://opensource.org/licenses/MIT>.
-// ========================================================
 
-#ifndef CROSSINGSTATE_HPP
-#define CROSSINGSTATE_HPP
+#ifndef TEST_CROSSING_TEST_CROSSING_STATE_HPP_
+#define TEST_CROSSING_TEST_CROSSING_STATE_HPP_
 
-#include <map>
 #include <iostream>
+#include <map>
+#include <memory>
 #include <random>
+#include <string>
+#include <vector>
 
+#include "ltl_evaluator/evaluator_label_base.h"
 #include "ltl_evaluator/evaluator_rule_ltl.h"
 #include "test/crossing_test/common.hpp"
-#include "ltl_evaluator/evaluator_label_base.h"
 #include "test/crossing_test/crossing_state_parameter.h"
 
 using namespace mcts;
@@ -25,28 +27,30 @@ class Viewer;
 
 typedef std::vector<std::multimap<Rule, RuleState>> RuleStateMap;
 
-// A simple environment with a 1D state, only if both agents select different actions, they get nearer to the terminal state
+// A simple environment with a 1D state, only if both agents select different
+// actions, they get nearer to the terminal state
 class CrossingState : public mcts::StateInterface<CrossingState> {
-
  public:
-  CrossingState(RuleStateMap rule_state_map, std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> label_evaluator,
-                const CrossingStateParameter &parameters);
+  CrossingState(
+      RuleStateMap rule_state_map,
+      std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> label_evaluator,
+      const CrossingStateParameter &parameters);
 
-  CrossingState(std::vector<AgentState> agent_states,
-                const bool terminal,
-                RuleStateMap rule_state_map,
-                std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> label_evaluator,
-                const CrossingStateParameter &parameters,
-                int depth = 0);
-  ~CrossingState() {};
+  CrossingState(
+      std::vector<AgentState> agent_states, const bool terminal,
+      RuleStateMap rule_state_map,
+      std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> label_evaluator,
+      const CrossingStateParameter &parameters, int depth = 0);
+  ~CrossingState() {}
 
   std::shared_ptr<CrossingState> clone() const;
 
-  std::shared_ptr<CrossingState> execute(const JointAction &joint_action, std::vector<Reward> &rewards) const;
+  std::shared_ptr<CrossingState> execute(const JointAction &joint_action,
+                                         std::vector<Reward> &rewards) const;
 
   std::vector<Reward> get_final_reward() const;
 
-  template<typename ActionType = Actions>
+  template <typename ActionType = Actions>
   ActionType get_last_action(const AgentIdx &agent_idx) const;
 
   ActionIdx get_num_actions(AgentIdx agent_idx) const;
@@ -74,7 +78,8 @@ class CrossingState : public mcts::StateInterface<CrossingState> {
   void reset_violations();
 
   inline int distance_to_ego(const AgentIdx &other_agent_idx) const {
-    return agent_states_[ego_agent_idx].x_pos - agent_states_[other_agent_idx + 1].x_pos;
+    return agent_states_[ego_agent_idx].x_pos -
+           agent_states_[other_agent_idx + 1].x_pos;
   }
 
   std::string sprintf() const;
@@ -92,4 +97,4 @@ class CrossingState : public mcts::StateInterface<CrossingState> {
   CrossingStateParameter parameters_;
 };
 
-#endif
+#endif  // TEST_CROSSING_TEST_CROSSING_STATE_HPP_

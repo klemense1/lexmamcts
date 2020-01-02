@@ -17,7 +17,7 @@ CrossingState::CrossingState(RuleStateMap rule_state_map,
     : agent_states_(parameters.num_other_agents + 1),
       terminal_(false), rule_state_map_(std::move(rule_state_map)), label_evaluator_(std::move(label_evaluator)),
       depth_(0),
-      parameters_(parameters){
+      parameters_(parameters) {
   for (auto &state : agent_states_) {
     state = AgentState();
   }
@@ -37,7 +37,6 @@ CrossingState::CrossingState(std::vector<AgentState> agent_states,
                                           parameters_(parameters) {}
 
 std::shared_ptr<CrossingState> CrossingState::execute(const JointAction &joint_action, std::vector<Reward> &rewards) const {
-
   EvaluationMap labels;
   RuleStateMap next_automata(rule_state_map_);
   World next_world;
@@ -83,8 +82,7 @@ std::shared_ptr<CrossingState> CrossingState::execute(const JointAction &joint_a
 //          get_shaping_reward(next_agent_states[agent_idx]) - get_shaping_reward(agent_states_[agent_idx]);
 //    }
     labels.clear();
-  } // End for each agent
-
+  }  // End for each agent
   return std::make_shared<CrossingState>(next_agent_states, terminal, next_automata, label_evaluator_, parameters_, depth_ + 1);
 }
 Reward CrossingState::get_action_cost(ActionIdx action, AgentIdx agent_idx) const {
@@ -140,7 +138,7 @@ ActionIdx CrossingState::get_num_actions(AgentIdx agent_idx) const {
 const std::vector<AgentIdx> CrossingState::get_agent_idx() const {
   std::vector<AgentIdx> agent_idx(parameters_.num_other_agents + 1);
   std::iota(agent_idx.begin(), agent_idx.end(), 0);
-  return agent_idx; // adapt to number of agents
+  return agent_idx;  // adapt to number of agents
 }
 std::string CrossingState::sprintf() const {
   std::stringstream ss;
@@ -217,7 +215,6 @@ void CrossingState::draw(mcts::Viewer *viewer) const {
       viewer->drawPoint(px, py, pointsize_temp, current_color);
     }
   }
-
 }
 const CrossingStateParameter &CrossingState::get_parameters() const {
   return parameters_;

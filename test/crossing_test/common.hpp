@@ -1,11 +1,15 @@
+// Copyright (c) 2019 fortiss GmbH
 //
-// Created by luis on 14.10.19.
-//
+// This work is licensed under the terms of the MIT license.
+// For a copy, see <https://opensource.org/licenses/MIT>.
 
-#ifndef MAMCTS_TEST_CROSSING_TEST_COMMON_HPP_
-#define MAMCTS_TEST_CROSSING_TEST_COMMON_HPP_
+#ifndef TEST_CROSSING_TEST_COMMON_HPP_
+#define TEST_CROSSING_TEST_COMMON_HPP_
 
 #include <map>
+#include <utility>
+#include <vector>
+
 #include "mcts/state.h"
 
 using namespace mcts;
@@ -19,7 +23,14 @@ enum class Actions {
 };
 
 enum Rule {
-  NO_COLLISION = 0, REACH_GOAL, NO_SPEEDING, GIVE_WAY, LEAVE_INTERSECTION, REACH_GOAL_FIRST, ZIP, NUM,
+  NO_COLLISION = 0,
+  REACH_GOAL,
+  NO_SPEEDING,
+  GIVE_WAY,
+  LEAVE_INTERSECTION,
+  REACH_GOAL_FIRST,
+  ZIP,
+  NUM,
 };
 
 const std::map<ActionIdx, Actions> idx_to_action = {
@@ -46,8 +57,8 @@ static inline ActionIdx aconv(const Actions &action) {
 
 typedef struct AgentState {
   AgentState() : x_pos(0), last_action(Actions::WAIT), lane(lane_counter++) {}
-  AgentState(const int &x, const Actions &last_action, int lane) :
-      x_pos(x), last_action(last_action), lane(lane) {}
+  AgentState(const int &x, const Actions &last_action, int lane)
+      : x_pos(x), last_action(last_action), lane(lane) {}
   int x_pos;
   Actions last_action;
   int lane;
@@ -56,4 +67,4 @@ typedef struct AgentState {
 
 typedef std::pair<AgentState, std::vector<AgentState>> World;
 
-#endif //MAMCTS_TEST_CROSSING_TEST_COMMON_HPP_
+#endif  // TEST_CROSSING_TEST_COMMON_HPP_

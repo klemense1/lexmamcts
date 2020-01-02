@@ -1,7 +1,7 @@
+// Copyright (c) 2019 fortiss GmbH
 //
-// Created by Luis Gressenbuch on 06.12.19.
-// Copyright (c) 2019 Luis Gressenbuch. All rights reserved.
-//
+// This work is licensed under the terms of the MIT license.
+// For a copy, see <https://opensource.org/licenses/MIT>.
 
 #include "common.hpp"
 

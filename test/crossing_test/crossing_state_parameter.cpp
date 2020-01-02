@@ -1,9 +1,9 @@
+// Copyright (c) 2019 fortiss GmbH
 //
-// Created by Luis Gressenbuch on 09.11.19.
-// Copyright (c) 2019 Luis Gressenbuch. All rights reserved.
-//
+// This work is licensed under the terms of the MIT license.
+// For a copy, see <https://opensource.org/licenses/MIT>.
 
-#include "crossing_state_parameter.h"
+#include "test/crossing_test/crossing_state_parameter.h"
 
 CrossingStateParameter make_default_crossing_state_parameters() {
   CrossingStateParameter p;
@@ -27,4 +27,4 @@ CrossingStateParameter make_default_crossing_state_parameters() {
   p.reward_vec_size = 5;
 
   return p;
-};
+}

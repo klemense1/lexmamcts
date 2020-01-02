@@ -1,10 +1,10 @@
+// Copyright (c) 2019 fortiss GmbH
 //
-// Created by Luis Gressenbuch on 09.11.19.
-// Copyright (c) 2019 Luis Gressenbuch. All rights reserved.
-//
+// This work is licensed under the terms of the MIT license.
+// For a copy, see <https://opensource.org/licenses/MIT>.
 
-#ifndef MAMCTS_TEST_CROSSING_TEST_CROSSING_STATE_PARAMETER_H_
-#define MAMCTS_TEST_CROSSING_TEST_CROSSING_STATE_PARAMETER_H_
+#ifndef TEST_CROSSING_TEST_CROSSING_STATE_PARAMETER_H_
+#define TEST_CROSSING_TEST_CROSSING_STATE_PARAMETER_H_
 
 #include "ltl_evaluator/evaluator_rule_ltl.h"
 
@@ -33,4 +33,4 @@ struct CrossingStateParameter {
 
 CrossingStateParameter make_default_crossing_state_parameters();
 
-#endif //MAMCTS_TEST_CROSSING_TEST_CROSSING_STATE_PARAMETER_H_
+#endif  // TEST_CROSSING_TEST_CROSSING_STATE_PARAMETER_H_
