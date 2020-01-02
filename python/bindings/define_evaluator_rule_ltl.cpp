@@ -7,6 +7,7 @@
 
 #include "ltl_evaluator/evaluator_rule_ltl.h"
 #include "ltl_evaluator/evaluator_label_base.h"
+#include "ltl_evaluator/label.h"
 
 namespace py = pybind11;
 using namespace ltl;
@@ -18,4 +19,13 @@ void define_evaluator_rule_ltl(py::module m) {
       .def("__repr__", [](const EvaluatorRuleLTL &m) {
         return "ltl.EvaluatorRuleLTL";
       });
+
+  py::class_<Label, std::shared_ptr<Label>>(m, "Label")
+  .def(py::init<const std::string&, int>())
+  .def(py::init<const std::string&>())
+  .def("__repr__", [](const Label &l) {
+    std::stringstream os;
+    os << l;
+    return os.str();
+  });
 }
