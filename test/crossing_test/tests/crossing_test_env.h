@@ -57,7 +57,7 @@ class BaseTestEnv {
     automata[0].insert({Rule::NO_COLLISION,
                         EvaluatorRuleLTL::make_rule("G !collision", -1.0f, RewardPriority::SAFETY)});
     automata[0].insert({Rule::LEAVE_INTERSECTION,
-                        EvaluatorRuleLTL::make_rule("G(at_xing -> X !at_xing)", -300.f, RewardPriority::SAFETY)});
+                        EvaluatorRuleLTL::make_rule("G(at_xing -> X !at_xing)", -1.0f, RewardPriority::SAFETY)});
     automata[0].insert({Rule::GIVE_WAY, EvaluatorRuleLTL::make_rule("G(other_near -> !at_xing)",
                                                                     -1.0f,
                                                                     RewardPriority::LEGAL_RULE)});
