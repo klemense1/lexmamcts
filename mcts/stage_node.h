@@ -96,6 +96,7 @@ class StageNode : public std::enable_shared_from_this<StageNode<S, SE, SO, H>> {
   const StageChildMap &get_children() const;
   JointReward get_q_func(JointAction const &joint_action);
   JointReward get_value();
+  const StageRewardMap &get_joint_rewards() const;
 
   static void reset_counter();
 
@@ -379,6 +380,10 @@ JointReward StageNode<S, SE, SO, H>::get_value() {
     v.at(i) = dynamic_cast<SO &>(other_int_nodes_.at(i)).get_value();
   }
   return v;
+}
+template <class S, class SE, class SO, class H>
+const StageRewardMap &StageNode<S, SE, SO, H>::get_joint_rewards() const {
+  return joint_rewards_;
 }
 
 } // namespace mcts
