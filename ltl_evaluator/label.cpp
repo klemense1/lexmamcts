@@ -28,3 +28,6 @@ std::ostream& ltl::operator<<(std::ostream& os, const ltl::Label& label) {
      << " is_agent_specific_: " << label.is_agent_specific_;
   return os;
 }
+ltl::Label ltl::Label::make_alive() {
+  return ltl::Label("alive");
+}

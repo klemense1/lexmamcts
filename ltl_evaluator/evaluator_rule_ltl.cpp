@@ -10,6 +10,7 @@
 #include "spot/tl/apcollect.hh"
 #include "spot/tl/print.hh"
 #include "spot/twa/bddprint.hh"
+#include "spot/tl/ltlf.hh"
 
 namespace ltl {
 EvaluatorRuleLTL::EvaluatorRuleLTL(const std::string& ltl_formula_str, float weight,
@@ -27,7 +28,24 @@ EvaluatorRuleLTL::EvaluatorRuleLTL(const std::string& ltl_formula_str, float wei
   spot::translator trans;
   trans.set_pref(spot::postprocessor::Deterministic);
   trans.set_type(spot::postprocessor::BA);
-  aut_ = trans.run(ltl_formula_);
+  aut_ = trans.run(spot::from_ltlf(ltl_formula_));
+
+  // If formula has the safety property, also accept empty words.
+  //
+  if(ltl_formula_.is_syntactic_safety()) {
+    // Find unique accepting state
+    size_t final_state;
+    for (final_state = 0; final_state < aut_->num_states(); ++final_state) {
+      if (aut_->state_is_accepting(final_state)) {
+        break;
+      }
+    }
+    // Create transition from init state to final state, accepting empty words
+    bdd alive_bdd = bdd_ithvar(aut_->get_dict()->has_registered_proposition(
+        spot::formula::ap("alive"), aut_));
+    aut_->new_edge(aut_->get_init_state_number(), final_state, !alive_bdd);
+  }
+
   observation_prob_ << 0.9, 0.1, 0.5, 0.5;
 }
 std::string EvaluatorRuleLTL::parse_agents(const std::string &ltl_formula_str) {
@@ -50,6 +68,7 @@ std::string EvaluatorRuleLTL::parse_agents(const std::string &ltl_formula_str) {
     ap_alphabet_.push_back({ap_name, spot::formula::ap(ap_name), agent_id_placeholder, is_agent_specific_});
     remaining = sm.suffix();
   }
+  ap_alphabet_.push_back({"alive", spot::formula::ap("alive"), -1, false});
   agent_free_formula += remaining;
   VLOG(1) << "Cleaned formula: " << agent_free_formula;
   return agent_free_formula;
@@ -61,7 +80,7 @@ std::vector<RuleState> EvaluatorRuleLTL::make_rule_state(const std::vector<int>&
     return (a.id_idx_ < b.id_idx_);
   })->id_idx_ + 1;
   num_other_agents = std::max(num_other_agents, 0);
-  assert(agent_ids.size() >= num_other_agents);
+  assert(agent_ids.size() >= static_cast<size_t>(num_other_agents));
   std::vector<RuleState> l;
   std::vector<std::vector<int>> permutations =
       all_k_permutations(agent_ids, num_other_agents);
@@ -92,7 +111,13 @@ std::vector<std::vector<int>> EvaluatorRuleLTL::all_k_permutations(
 
 float EvaluatorRuleLTL::evaluate(const EvaluationMap &labels,
                                  RuleState &state) const {
-  std::set<int> bddvars = std::set<int>();
+  EvaluationMap alive_labels = labels;
+  alive_labels.insert({Label::make_alive(), true});
+  return transit(alive_labels, state);
+}
+float EvaluatorRuleLTL::transit(const EvaluationMap &labels,
+                                RuleState &state) const {
+  std::map<int, bool> bddvars;
   spot::bdd_dict_ptr bddDictPtr = aut_->get_dict();
   for (const auto &ap : ap_alphabet_) {
     Label label;
@@ -102,20 +127,15 @@ float EvaluatorRuleLTL::evaluate(const EvaluationMap &labels,
       label = Label(ap.ap_str_);
     }
     auto it = labels.find(label);
-    if(it == labels.end()) {
-      // Rule is undecided
-      VLOG_IF(2, label.is_agent_specific()) << "Rule undecided! Missing label: " << ap.ap_str_ << "_" << state.get_agent_ids()[ap.id_idx_];
-      VLOG_IF(2, !label.is_agent_specific()) << "Rule undecided! Missing label: " << ap.ap_str_;
-      return 0.0f;
-    }
-    if (it->second) {
+    if(it != labels.end()) {
       int bdd_var = bddDictPtr->has_registered_proposition(ap.ap_, aut_);
-      bddvars.insert(bdd_var);
+      bddvars.insert({bdd_var, it->second});
     }
   }
+
   bool transition_found = false;
   for (const auto &transition : aut_->out(state.current_state_)) {
-    if (EvaluatorRuleLTL::evaluate_bdd(transition.cond, bddvars)) {
+    if (evaluate_bdd(transition.cond, bddvars) == BddResult::TRUE) {
       state.current_state_ = transition.dst;
       transition_found = true;
       break;
@@ -127,25 +147,31 @@ float EvaluatorRuleLTL::evaluate(const EvaluationMap &labels,
     // Reset automaton if rule has been violated
     state.current_state_ = aut_->get_init_state_number();
   }
-  return !transition_found ? static_cast<float>(state.rule_belief_) * weight_ : 0.0f;
+  return !transition_found ? static_cast<float>(state.rule_belief_) * weight_
+                           : 0.0f;
 }
 
-bool EvaluatorRuleLTL::evaluate_bdd(bdd cond, const std::set<int> &vars) {
+EvaluatorRuleLTL::BddResult EvaluatorRuleLTL::evaluate_bdd(bdd cond, const std::map<int, bool> &vars) {
   bdd bdd_node = cond;
   while (bdd_node != bddtrue && bdd_node != bddfalse) {
-    if (vars.find(bdd_var(bdd_node)) != vars.end()) {
-      bdd_node = bdd_high(bdd_node);
+    auto it = vars.find(bdd_var(bdd_node));
+    if (it != vars.end()) {
+      bdd_node = it->second ? bdd_high(bdd_node) : bdd_low(bdd_node);
     } else {
-      bdd_node = bdd_low(bdd_node);
+      // Undefined AP
+      return BddResult::UNDEF;
     }
   }
-  return bdd_node == bddtrue;
+  return bdd_node == bddtrue ? BddResult::TRUE : BddResult::FALSE;
 }
 
 float EvaluatorRuleLTL::get_final_reward(const RuleState &state) const {
   float penalty = final_reward_;
-  // Check if formula has liveness property and is in accepting state
-  if (!aut_->state_is_accepting(state.current_state_)) {
+  EvaluationMap not_alive;
+  not_alive.insert({Label::make_alive(), false});
+  RuleState final_state = state;
+  transit(not_alive, final_state);
+  if (!aut_->state_is_accepting(final_state.current_state_)) {
     penalty = weight_;
   }
   return static_cast<float>(state.rule_belief_) * penalty;

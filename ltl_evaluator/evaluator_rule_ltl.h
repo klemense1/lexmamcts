@@ -54,11 +54,18 @@ class EvaluatorRuleLTL : public std::enable_shared_from_this<EvaluatorRuleLTL> {
   friend std::ostream &operator<<(std::ostream &os, EvaluatorRuleLTL const &d);
 
  private:
+
+  enum BddResult {
+    TRUE,
+    FALSE,
+    UNDEF
+  };
+
   EvaluatorRuleLTL(const std::string& ltl_formula_str, float weight,
                    RulePriority priority, float init_belief = 1.0,
                    float final_reward = 0.0f);
   static spot::formula parse_formula(const std::string& ltl_formula_str);
-  static bool evaluate_bdd(bdd cond, const std::set<int> &vars);
+  static BddResult evaluate_bdd(bdd cond, const std::map<int, bool> &vars);
 
   std::string parse_agents(const std::string &ltl_formula_str);
 
@@ -81,6 +88,7 @@ class EvaluatorRuleLTL : public std::enable_shared_from_this<EvaluatorRuleLTL> {
   bool is_agent_specific_;
   std::vector<std::vector<int>> all_k_permutations(const std::vector<int> &values,
                                       int k) const;
+  float transit(const EvaluationMap &labels, RuleState &state) const;
 };
 }  // namespace ltl
 #endif  // LTL_EVALUATOR_EVALUATOR_RULE_LTL_H_
