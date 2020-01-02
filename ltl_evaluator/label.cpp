@@ -1,9 +1,9 @@
+// Copyright (c) 2020 fortiss GmbH
 //
-// Created by Luis Gressenbuch on 09.12.19.
-// Copyright (c) 2019 Luis Gressenbuch. All rights reserved.
-//
+// This work is licensed under the terms of the MIT license.
+// For a copy, see <https://opensource.org/licenses/MIT>.
 
-#include "label.h"
+#include "ltl_evaluator/label.h"
 ltl::Label::Label(const std::string& label_str, int agent_id)
     : label_str_(label_str), agent_id_(agent_id), is_agent_specific_(true) {}
 ltl::Label::Label(const std::string& label_str)
@@ -14,7 +14,7 @@ bool ltl::Label::is_agent_specific() const { return is_agent_specific_; }
 bool ltl::Label::operator==(const ltl::Label& rhs) const {
   bool equal = label_str_ == rhs.label_str_;
   equal &= is_agent_specific_ == rhs.is_agent_specific_;
-  if(is_agent_specific_) {
+  if (is_agent_specific_) {
     equal &= agent_id_ == rhs.agent_id_;
   }
   return equal;
@@ -28,6 +28,4 @@ std::ostream& ltl::operator<<(std::ostream& os, const ltl::Label& label) {
      << " is_agent_specific_: " << label.is_agent_specific_;
   return os;
 }
-ltl::Label ltl::Label::make_alive() {
-  return ltl::Label("alive");
-}
+ltl::Label ltl::Label::make_alive() { return ltl::Label("alive"); }

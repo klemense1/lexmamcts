@@ -1,7 +1,7 @@
+// Copyright (c) 2020 fortiss GmbH
 //
-// Created by Luis Gressenbuch on 09.12.19.
-// Copyright (c) 2019 Luis Gressenbuch. All rights reserved.
-//
+// This work is licensed under the terms of the MIT license.
+// For a copy, see <https://opensource.org/licenses/MIT>.
 
 #ifndef LTL_EVALUATOR_LABEL_H_
 #define LTL_EVALUATOR_LABEL_H_
@@ -14,7 +14,7 @@ namespace ltl {
 class Label {
  public:
   Label(const std::string& label_str, int agent_id);
-  Label(const std::string& label_str);
+  explicit Label(const std::string& label_str);
   Label();
   static Label make_alive();
   const std::string& get_label_str() const;

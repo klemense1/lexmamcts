@@ -1,22 +1,25 @@
+// Copyright (c) 2020 fortiss GmbH
 //
-// Created by luis on 14.10.19.
-//
+// This work is licensed under the terms of the MIT license.
+// For a copy, see <https://opensource.org/licenses/MIT>.
 
-#ifndef MAMCTS_TEST_CROSSING_TEST_EVALUATOR_LABEL_BASE_HPP_
-#define MAMCTS_TEST_CROSSING_TEST_EVALUATOR_LABEL_BASE_HPP_
+#ifndef LTL_EVALUATOR_EVALUATOR_LABEL_BASE_H_
+#define LTL_EVALUATOR_EVALUATOR_LABEL_BASE_H_
 
 #include <string>
 #include <utility>
-#include "label.h"
-template<class S>
+#include "ltl_evaluator/label.h"
+template <class S>
 class EvaluatorLabelBase {
  public:
-  explicit EvaluatorLabelBase(const std::string& label_str) : label_(label_str) {}
+  explicit EvaluatorLabelBase(const std::string &label_str)
+      : label_(label_str) {}
   explicit EvaluatorLabelBase(ltl::Label label) : label_(std::move(label)) {}
   const ltl::Label &get_label() const { return label_; }
   virtual bool evaluate(const S &state) const = 0;
+
  private:
   ltl::Label label_;
 };
 
-#endif //MAMCTS_TEST_CROSSING_TEST_EVALUATOR_LABEL_BASE_HPP_
+#endif  // LTL_EVALUATOR_EVALUATOR_LABEL_BASE_H_

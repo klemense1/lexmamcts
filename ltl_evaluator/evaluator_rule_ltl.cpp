@@ -1,21 +1,27 @@
+// Copyright (c) 2020 fortiss GmbH
 //
-// Created by luis on 07.10.19.
-//
+// This work is licensed under the terms of the MIT license.
+// For a copy, see <https://opensource.org/licenses/MIT>.
 
-#include "evaluator_rule_ltl.h"
+#include "ltl_evaluator/evaluator_rule_ltl.h"
+
+#include <algorithm>
+#include <map>
 #include <numeric>
 #include <regex>
+#include <vector>
+
 #include "glog/logging.h"
 #include "ltl_evaluator/label.h"
 #include "spot/tl/apcollect.hh"
+#include "spot/tl/ltlf.hh"
 #include "spot/tl/print.hh"
 #include "spot/twa/bddprint.hh"
-#include "spot/tl/ltlf.hh"
 
 namespace ltl {
-EvaluatorRuleLTL::EvaluatorRuleLTL(const std::string& ltl_formula_str, float weight,
-                                   RulePriority priority, float init_belief,
-                                   float final_reward)
+EvaluatorRuleLTL::EvaluatorRuleLTL(const std::string &ltl_formula_str,
+                                   float weight, RulePriority priority,
+                                   float init_belief, float final_reward)
     : weight_(weight),
       final_reward_(final_reward),
       priority_(priority),
@@ -32,7 +38,7 @@ EvaluatorRuleLTL::EvaluatorRuleLTL(const std::string& ltl_formula_str, float wei
 
   // If formula has the safety property, also accept empty words.
   //
-  if(ltl_formula_.is_syntactic_safety()) {
+  if (ltl_formula_.is_syntactic_safety()) {
     // Find unique accepting state
     size_t final_state;
     for (final_state = 0; final_state < aut_->num_states(); ++final_state) {
@@ -53,19 +59,20 @@ std::string EvaluatorRuleLTL::parse_agents(const std::string &ltl_formula_str) {
   std::string agent_free_formula;
   std::regex r("([[:lower:][:digit:]_]+)(#([[:digit:]])+)?");
   std::smatch sm;
-  while(std::regex_search(remaining, sm, r)) {
+  while (std::regex_search(remaining, sm, r)) {
     std::string ap_name = sm[1];
-    for(const auto &a : sm) {
+    for (const auto &a : sm) {
       DVLOG(2) << a;
     }
     int agent_id_placeholder = -1;
-    if(sm[3] != "") {
+    if (sm[3] != "") {
       agent_id_placeholder = std::stoi(sm[3]);
       is_agent_specific_ = true;
     }
     agent_free_formula += sm.prefix();
     agent_free_formula += ap_name;
-    ap_alphabet_.push_back({ap_name, spot::formula::ap(ap_name), agent_id_placeholder, is_agent_specific_});
+    ap_alphabet_.push_back({ap_name, spot::formula::ap(ap_name),
+                            agent_id_placeholder, is_agent_specific_});
     remaining = sm.suffix();
   }
   ap_alphabet_.push_back({"alive", spot::formula::ap("alive"), -1, false});
@@ -74,17 +81,22 @@ std::string EvaluatorRuleLTL::parse_agents(const std::string &ltl_formula_str) {
   return agent_free_formula;
 }
 
-std::vector<RuleState> EvaluatorRuleLTL::make_rule_state(const std::vector<int>& agent_ids) const {
+std::vector<RuleState> EvaluatorRuleLTL::make_rule_state(
+    const std::vector<int> &agent_ids) const {
   assert(is_agent_specific_ == !agent_ids.empty());
-  int num_other_agents = std::max_element(ap_alphabet_.begin(), ap_alphabet_.end(), [](const APContainer &a, const APContainer &b) {
-    return (a.id_idx_ < b.id_idx_);
-  })->id_idx_ + 1;
+  int num_other_agents =
+      std::max_element(ap_alphabet_.begin(), ap_alphabet_.end(),
+                       [](const APContainer &a, const APContainer &b) {
+                         return (a.id_idx_ < b.id_idx_);
+                       })
+          ->id_idx_ +
+      1;
   num_other_agents = std::max(num_other_agents, 0);
   assert(agent_ids.size() >= static_cast<size_t>(num_other_agents));
   std::vector<RuleState> l;
   std::vector<std::vector<int>> permutations =
       all_k_permutations(agent_ids, num_other_agents);
-  for(const auto &perm : permutations) {
+  for (const auto &perm : permutations) {
     l.push_back(RuleState(aut_->get_init_state_number(), init_belief_, 0,
                           shared_from_this(), perm));
   }
@@ -95,17 +107,16 @@ std::vector<std::vector<int>> EvaluatorRuleLTL::all_k_permutations(
   std::vector<std::vector<int>> permutations;
   std::vector<int> value_permutation(k, 0);
   std::vector<int> idx_permutation(values.size());
-  std::iota(idx_permutation.begin(), idx_permutation.end(),0);
+  std::iota(idx_permutation.begin(), idx_permutation.end(), 0);
   // Create all k-permutations of the agent ids
-  do
-  {
-    for (int i = 0; i < k; i++)
-    {
+  do {
+    for (int i = 0; i < k; i++) {
       value_permutation[i] = values[idx_permutation[i]];
     }
     permutations.emplace_back(value_permutation);
-    std::reverse(idx_permutation.begin()+k, idx_permutation.end());
-  } while (std::next_permutation(idx_permutation.begin(), idx_permutation.end()));
+    std::reverse(idx_permutation.begin() + k, idx_permutation.end());
+  } while (
+      std::next_permutation(idx_permutation.begin(), idx_permutation.end()));
   return permutations;
 }
 
@@ -121,13 +132,13 @@ float EvaluatorRuleLTL::transit(const EvaluationMap &labels,
   spot::bdd_dict_ptr bddDictPtr = aut_->get_dict();
   for (const auto &ap : ap_alphabet_) {
     Label label;
-    if(ap.is_agent_specific) {
+    if (ap.is_agent_specific) {
       label = Label(ap.ap_str_, state.get_agent_ids()[ap.id_idx_]);
     } else {
       label = Label(ap.ap_str_);
     }
     auto it = labels.find(label);
-    if(it != labels.end()) {
+    if (it != labels.end()) {
       int bdd_var = bddDictPtr->has_registered_proposition(ap.ap_, aut_);
       bddvars.insert({bdd_var, it->second});
     }
@@ -142,7 +153,7 @@ float EvaluatorRuleLTL::transit(const EvaluationMap &labels,
     }
   }
 
-  if(!transition_found) {
+  if (!transition_found) {
     ++state.violated_;
     // Reset automaton if rule has been violated
     state.current_state_ = aut_->get_init_state_number();
@@ -151,7 +162,8 @@ float EvaluatorRuleLTL::transit(const EvaluationMap &labels,
                            : 0.0f;
 }
 
-EvaluatorRuleLTL::BddResult EvaluatorRuleLTL::evaluate_bdd(bdd cond, const std::map<int, bool> &vars) {
+EvaluatorRuleLTL::BddResult EvaluatorRuleLTL::evaluate_bdd(
+    bdd cond, const std::map<int, bool> &vars) {
   bdd bdd_node = cond;
   while (bdd_node != bddtrue && bdd_node != bddfalse) {
     auto it = vars.find(bdd_var(bdd_node));
@@ -199,7 +211,8 @@ void EvaluatorRuleLTL::update_belief(RuleState &state) const {
   }
 }
 
-spot::formula EvaluatorRuleLTL::parse_formula(const std::string& ltl_formula_str) {
+spot::formula EvaluatorRuleLTL::parse_formula(
+    const std::string &ltl_formula_str) {
   spot::parsed_formula pf = spot::parse_infix_psl(ltl_formula_str);
   if (!pf.errors.empty()) {
     pf.format_errors(LOG(FATAL));
@@ -215,4 +228,4 @@ void EvaluatorRuleLTL::set_priority(RulePriority priority) {
 }
 RulePriority EvaluatorRuleLTL::get_priority() const { return priority_; }
 bool EvaluatorRuleLTL::is_agent_specific() const { return is_agent_specific_; }
-}
+}  // namespace ltl
