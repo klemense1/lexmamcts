@@ -72,7 +72,8 @@ TEST_F(CrossingTestF, belief) {
 
   automata_[1].erase(Rule::NO_SPEEDING);
   automata_[1].insert({Rule::NO_SPEEDING,
-                       EvaluatorRuleLTL::make_rule("G !speeding", -1.0f, RewardPriority::LEGAL_RULE_B, 0.9)});
+       RuleMonitor::make_rule("G !speeding", -1.0f,
+                              RewardPriority::LEGAL_RULE_B, 0.9)});
   state = std::make_shared<CrossingState>(get_automata_vec(), label_evaluators_, crossing_state_parameter_);
 
   JointAction jt = get_jt();
@@ -94,8 +95,10 @@ TEST_F(CrossingTestF, giveWay) {
   label_evaluators_.emplace_back(std::make_shared<EvaluatorLabelAtPosition>("hp_xing", crossing_state_parameter_.crossing_point - 1));
   automata_.clear();
   automata_.resize(2);
-  automata_[0].insert({Rule::GIVE_WAY, EvaluatorRuleLTL::make_rule("G((hp_xing & other_near) -> (X hp_xing))",
-                                                                   -500.0f,
+  automata_[0].insert(
+      {Rule::GIVE_WAY,
+       RuleMonitor::make_rule("G((hp_xing & other_near) -> (X hp_xing))",
+                              -500.0f,
                                                                    0)});
   state = std::make_shared<CrossingState>(agent_states,
                                           false,

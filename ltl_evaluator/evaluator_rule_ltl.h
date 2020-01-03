@@ -26,16 +26,14 @@ typedef std::unordered_map<Label, bool, LabelHash> EvaluationMap;
 
 class RuleState;
 
-class EvaluatorRuleLTL : public std::enable_shared_from_this<EvaluatorRuleLTL> {
+class RuleMonitor : public std::enable_shared_from_this<RuleMonitor> {
  public:
-  typedef std::shared_ptr<EvaluatorRuleLTL> EvaluatorRuleLTLSPtr;
+  typedef std::shared_ptr<RuleMonitor> RuleMonitorSPtr;
 
-  static EvaluatorRuleLTLSPtr make_rule(std::string ltl_formula_str,
-                                        float weight, RulePriority priority,
+  static RuleMonitorSPtr make_rule(std::string ltl_formula_str, float weight, RulePriority priority,
                                         float init_belief = 1.0,
                                         float final_reward = 0.0f) {
-    return EvaluatorRuleLTLSPtr(new EvaluatorRuleLTL(
-        ltl_formula_str, weight, priority, init_belief, final_reward));
+    return RuleMonitorSPtr(new RuleMonitor(ltl_formula_str, weight, priority, init_belief, final_reward));
   }
 
   std::vector<RuleState> make_rule_state(
@@ -57,13 +55,13 @@ class EvaluatorRuleLTL : public std::enable_shared_from_this<EvaluatorRuleLTL> {
 
   bool is_agent_specific() const;
 
-  friend std::ostream &operator<<(std::ostream &os, EvaluatorRuleLTL const &d);
+  friend std::ostream &operator<<(std::ostream &os, RuleMonitor const &d);
 
  private:
   enum BddResult { TRUE, FALSE, UNDEF };
 
-  EvaluatorRuleLTL(const std::string &ltl_formula_str, float weight,
-                   RulePriority priority, float init_belief = 1.0,
+  RuleMonitor(const std::string &ltl_formula_str, float weight,
+              RulePriority priority, float init_belief = 1.0,
                    float final_reward = 0.0f);
   static spot::formula parse_formula(const std::string &ltl_formula_str);
   static BddResult evaluate_bdd(bdd cond, const std::map<int, bool> &vars);

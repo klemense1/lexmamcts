@@ -19,8 +19,7 @@
 #include "spot/twa/bddprint.hh"
 
 namespace ltl {
-EvaluatorRuleLTL::EvaluatorRuleLTL(const std::string &ltl_formula_str,
-                                   float weight, RulePriority priority,
+RuleMonitor::RuleMonitor(const std::string &ltl_formula_str, float weight, RulePriority priority,
                                    float init_belief, float final_reward)
     : weight_(weight),
       final_reward_(final_reward),
@@ -54,7 +53,7 @@ EvaluatorRuleLTL::EvaluatorRuleLTL(const std::string &ltl_formula_str,
 
   observation_prob_ << 0.9, 0.1, 0.5, 0.5;
 }
-std::string EvaluatorRuleLTL::parse_agents(const std::string &ltl_formula_str) {
+std::string RuleMonitor::parse_agents(const std::string &ltl_formula_str) {
   std::string remaining = ltl_formula_str;
   std::string agent_free_formula;
   std::regex r("([[:lower:][:digit:]_]+)(#([[:digit:]])+)?");
@@ -81,7 +80,7 @@ std::string EvaluatorRuleLTL::parse_agents(const std::string &ltl_formula_str) {
   return agent_free_formula;
 }
 
-std::vector<RuleState> EvaluatorRuleLTL::make_rule_state(
+std::vector<RuleState> RuleMonitor::make_rule_state(
     const std::vector<int> &agent_ids) const {
   assert(is_agent_specific_ == !agent_ids.empty());
   int num_other_agents =
@@ -102,7 +101,7 @@ std::vector<RuleState> EvaluatorRuleLTL::make_rule_state(
   }
   return l;
 }
-std::vector<std::vector<int>> EvaluatorRuleLTL::all_k_permutations(
+std::vector<std::vector<int>> RuleMonitor::all_k_permutations(
     const std::vector<int> &values, int k) const {
   std::vector<std::vector<int>> permutations;
   std::vector<int> value_permutation(k, 0);
@@ -120,14 +119,14 @@ std::vector<std::vector<int>> EvaluatorRuleLTL::all_k_permutations(
   return permutations;
 }
 
-float EvaluatorRuleLTL::evaluate(const EvaluationMap &labels,
-                                 RuleState &state) const {
+float RuleMonitor::evaluate(const EvaluationMap &labels,
+                            RuleState &state) const {
   EvaluationMap alive_labels = labels;
   alive_labels.insert({Label::make_alive(), true});
   return transit(alive_labels, state);
 }
-float EvaluatorRuleLTL::transit(const EvaluationMap &labels,
-                                RuleState &state) const {
+float RuleMonitor::transit(const EvaluationMap &labels,
+                           RuleState &state) const {
   std::map<int, bool> bddvars;
   spot::bdd_dict_ptr bddDictPtr = aut_->get_dict();
   for (const auto &ap : ap_alphabet_) {
@@ -162,7 +161,7 @@ float EvaluatorRuleLTL::transit(const EvaluationMap &labels,
                            : 0.0f;
 }
 
-EvaluatorRuleLTL::BddResult EvaluatorRuleLTL::evaluate_bdd(
+RuleMonitor::BddResult RuleMonitor::evaluate_bdd(
     bdd cond, const std::map<int, bool> &vars) {
   bdd bdd_node = cond;
   while (bdd_node != bddtrue && bdd_node != bddfalse) {
@@ -177,7 +176,7 @@ EvaluatorRuleLTL::BddResult EvaluatorRuleLTL::evaluate_bdd(
   return bdd_node == bddtrue ? BddResult::TRUE : BddResult::FALSE;
 }
 
-float EvaluatorRuleLTL::get_final_reward(const RuleState &state) const {
+float RuleMonitor::get_final_reward(const RuleState &state) const {
   float penalty = final_reward_;
   EvaluationMap not_alive;
   not_alive.insert({Label::make_alive(), false});
@@ -189,14 +188,14 @@ float EvaluatorRuleLTL::get_final_reward(const RuleState &state) const {
   return static_cast<float>(state.rule_belief_) * penalty;
 }
 
-std::ostream &operator<<(std::ostream &os, EvaluatorRuleLTL const &d) {
+std::ostream &operator<<(std::ostream &os, RuleMonitor const &d) {
   os << "\"";
   spot::print_psl(os, d.ltl_formula_);
   os << "\", weight: " << d.weight_ << ", priority: " << d.priority_;
   return os;
 }
 
-void EvaluatorRuleLTL::update_belief(RuleState &state) const {
+void RuleMonitor::update_belief(RuleState &state) const {
   Eigen::Vector2d belief_v(state.rule_belief_, 1.0 - state.rule_belief_);
   if (!ltl_formula_.is_syntactic_safety() &&
       !aut_->state_is_accepting(state.current_state_)) {
@@ -211,21 +210,19 @@ void EvaluatorRuleLTL::update_belief(RuleState &state) const {
   }
 }
 
-spot::formula EvaluatorRuleLTL::parse_formula(
-    const std::string &ltl_formula_str) {
+spot::formula RuleMonitor::parse_formula(const std::string &ltl_formula_str) {
   spot::parsed_formula pf = spot::parse_infix_psl(ltl_formula_str);
   if (!pf.errors.empty()) {
     pf.format_errors(LOG(FATAL));
   }
   return pf.f;
 }
-void EvaluatorRuleLTL::set_weight(float weight) { weight_ = weight; }
-void EvaluatorRuleLTL::set_final_reward(float final_reward) {
+void RuleMonitor::set_weight(float weight) { weight_ = weight; }
+void RuleMonitor::set_final_reward(float final_reward) {
   final_reward_ = final_reward;
 }
-void EvaluatorRuleLTL::set_priority(RulePriority priority) {
-  priority_ = priority;
+void RuleMonitor::set_priority(RulePriority priority) { priority_ = priority;
 }
-RulePriority EvaluatorRuleLTL::get_priority() const { return priority_; }
-bool EvaluatorRuleLTL::is_agent_specific() const { return is_agent_specific_; }
+RulePriority RuleMonitor::get_priority() const { return priority_; }
+bool RuleMonitor::is_agent_specific() const { return is_agent_specific_; }
 }  // namespace ltl

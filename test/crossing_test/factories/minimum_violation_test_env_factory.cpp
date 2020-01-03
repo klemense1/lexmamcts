@@ -40,8 +40,8 @@ std::shared_ptr<BaseTestEnv> MinimumViolationTestEnvFactory::make_test_env() {
   automata[0].at(Rule::GIVE_WAY)->set_weight(-1.0f);
   automata[0].insert(
       {Rule::REACH_GOAL_FIRST,
-       EvaluatorRuleLTL::make_rule("!other_goal_reached U goal_reached", -1.f,
-                                   RewardPriority::LEGAL_RULE_B)});
+       RuleMonitor::make_rule("!other_goal_reached U goal_reached", -1.f,
+                              RewardPriority::LEGAL_RULE_B)});
 
   auto test_env_ptr =
       std::make_shared<CrossingTestEnv<mcts::ThresUCTStatistic>>(

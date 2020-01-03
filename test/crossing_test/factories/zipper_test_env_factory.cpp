@@ -51,7 +51,7 @@ std::shared_ptr<BaseTestEnv> ZipperTestEnvFactory::make_test_env() {
   auto automata =
       BaseTestEnv::make_default_automata(crossing_params.num_other_agents + 1);
   for (auto &aut : automata) {
-    aut.insert({Rule::ZIP, EvaluatorRuleLTL::make_rule(zip_formula, -1, 1)});
+    aut.insert({Rule::ZIP, RuleMonitor::make_rule(zip_formula, -1, 1)});
     aut.erase(Rule::NO_SPEEDING);
     aut.erase(Rule::REACH_GOAL);
 //    aut.at(Rule::REACH_GOAL)->set_weight(-1.0f);

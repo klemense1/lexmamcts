@@ -13,8 +13,7 @@ RulePriority RuleState::get_priority() const {
 double RuleState::get_rule_belief() const { return rule_belief_; }
 size_t RuleState::get_violation_count() const { return violated_; }
 void RuleState::reset_violations() { violated_ = 0; }
-const std::shared_ptr<const EvaluatorRuleLTL> &RuleState::get_automaton()
-    const {
+const std::shared_ptr<const RuleMonitor> &RuleState::get_automaton() const {
   return automaton_;
 }
 std::ostream &operator<<(std::ostream &os, const RuleState &state) {
@@ -27,7 +26,7 @@ std::ostream &operator<<(std::ostream &os, const RuleState &state) {
 bool RuleState::is_agent_specific() const { return agent_ids_.size() > 0; }
 RuleState::RuleState(uint32_t current_state, double rule_belief,
                      size_t violated,
-                     std::shared_ptr<const EvaluatorRuleLTL> automaton,
+                     std::shared_ptr<const RuleMonitor> automaton,
                      std::vector<int> agent_id)
     : current_state_(current_state),
       rule_belief_(rule_belief),

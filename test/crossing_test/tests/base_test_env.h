@@ -27,7 +27,7 @@
 #include "test/crossing_test/viewer.h"
 
 using namespace mcts;
-using EvaluatorRuleLTLSPtr = EvaluatorRuleLTL::EvaluatorRuleLTLSPtr;
+using RuleMonitorSPtr = RuleMonitor::RuleMonitorSPtr;
 
 class BaseTestEnv {
  public:
@@ -35,15 +35,14 @@ class BaseTestEnv {
       MctsParameters mcts_parameters = make_default_mcts_parameters(),
       CrossingStateParameter crossing_state_parameter =
           make_default_crossing_state_parameters(),
-      std::vector<std::map<Rule, EvaluatorRuleLTLSPtr>> automata =
+      std::vector<std::map<Rule, RuleMonitorSPtr>> automata =
           make_default_automata(
               make_default_crossing_state_parameters().num_other_agents + 1),
       std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> label_evaluators =
           make_default_labels(make_default_crossing_state_parameters()));
   ~BaseTestEnv();
 
-  static std::vector<std::map<Rule, EvaluatorRuleLTLSPtr>>
-  make_default_automata(size_t num_agents);
+  static std::vector<std::map<Rule, RuleMonitorSPtr>> make_default_automata(size_t num_agents);
 
   static std::vector<std::shared_ptr<EvaluatorLabelBase<World>>>
   make_default_labels(CrossingStateParameter params);
@@ -63,7 +62,7 @@ class BaseTestEnv {
   std::shared_ptr<CrossingState> state;
 
  protected:
-  std::vector<std::map<Rule, EvaluatorRuleLTLSPtr>> automata_;
+  std::vector<std::map<Rule, RuleMonitorSPtr>> automata_;
 
   RuleStateMap get_automata_vec() const;
 

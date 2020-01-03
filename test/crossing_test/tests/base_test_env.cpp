@@ -10,7 +10,7 @@
 BaseTestEnv::BaseTestEnv(
     MctsParameters mcts_parameters,
     CrossingStateParameter crossing_state_parameter,
-    std::vector<std::map<Rule, EvaluatorRuleLTLSPtr>> automata,
+    std::vector<std::map<Rule, RuleMonitorSPtr>> automata,
     std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> label_evaluators)
     : mcts_parameters_(std::move(mcts_parameters)),
       crossing_state_parameter_(std::move(crossing_state_parameter)),
@@ -21,24 +21,22 @@ BaseTestEnv::BaseTestEnv(
       jt(2, static_cast<int>(Actions::FORWARD)) {
   create_state();
 }
-std::vector<std::map<Rule, EvaluatorRuleLTLSPtr>>
-BaseTestEnv::make_default_automata(size_t num_agents) {
-  std::vector<std::map<Rule, EvaluatorRuleLTLSPtr>> automata(num_agents);
+std::vector<std::map<Rule, RuleMonitorSPtr>> BaseTestEnv::make_default_automata(size_t num_agents) {
+  std::vector<std::map<Rule, RuleMonitorSPtr>> automata(num_agents);
   automata[0].insert({Rule::NO_SPEEDING,
-                      EvaluatorRuleLTL::make_rule(
-                          "G !speeding", -1.0f, RewardPriority::LEGAL_RULE_B)});
+                      RuleMonitor::make_rule("G !speeding", -1.0f, RewardPriority::LEGAL_RULE_B)});
   automata[0].insert(
-      {Rule::REACH_GOAL, EvaluatorRuleLTL::make_rule("F goal_reached", -100.f,
-                                                     RewardPriority::GOAL)});
+      {Rule::REACH_GOAL,
+       RuleMonitor::make_rule("F goal_reached", -100.f, RewardPriority::GOAL)});
   automata[0].insert(
-      {Rule::NO_COLLISION, EvaluatorRuleLTL::make_rule(
-                               "G !collision", -1.0f, RewardPriority::SAFETY)});
+      {Rule::NO_COLLISION,
+       RuleMonitor::make_rule("G !collision", -1.0f, RewardPriority::SAFETY)});
   automata[0].insert(
       {Rule::LEAVE_INTERSECTION,
-       EvaluatorRuleLTL::make_rule("G(at_xing -> X !at_xing)", -1.0f,
-                                   RewardPriority::SAFETY)});
-  automata[0].insert({Rule::GIVE_WAY, EvaluatorRuleLTL::make_rule(
-                                          "G(other_near -> !at_xing)", -1.0f,
+                      RuleMonitor::make_rule("G(at_xing -> X !at_xing)", -1.0f,
+                                             RewardPriority::SAFETY)});
+  automata[0].insert({Rule::GIVE_WAY,
+                      RuleMonitor::make_rule("G(other_near -> !at_xing)", -1.0f,
                                           RewardPriority::LEGAL_RULE)});
 
   for (size_t i = 1; i < automata.size(); ++i) {

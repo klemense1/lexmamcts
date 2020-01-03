@@ -9,7 +9,7 @@
 #include "ltl_evaluator/evaluator_rule_ltl.h"
 
 using namespace ltl;
-using EvaluatorRuleLTLSPtr = EvaluatorRuleLTL::EvaluatorRuleLTLSPtr;
+using RuleMonitorSPtr = RuleMonitor::RuleMonitorSPtr;
 
 class ZipperMergeFormula : public testing::TestWithParam<std::string> {};
 
@@ -30,7 +30,7 @@ inline bool check_final(const RuleState &rs) {
 
 // Two agents at merging point
 TEST_P(ZipperMergeFormula, collision) {
-  EvaluatorRuleLTLSPtr rule = EvaluatorRuleLTL::make_rule(GetParam(), -1.0, 0);
+  RuleMonitorSPtr rule = RuleMonitor::make_rule(GetParam(), -1.0, 0);
   auto rs = rule->make_rule_state()[0];
   EvaluationMap labels;
   labels[Label("w_e")] = false;
@@ -44,7 +44,7 @@ TEST_P(ZipperMergeFormula, collision) {
 
 // Ego violated
 TEST_P(ZipperMergeFormula, false_alternation_l) {
-  EvaluatorRuleLTLSPtr rule = EvaluatorRuleLTL::make_rule(GetParam(), -1.0, 0);
+  RuleMonitorSPtr rule = RuleMonitor::make_rule(GetParam(), -1.0, 0);
   auto rs = rule->make_rule_state()[0];
   EvaluationMap labels;
   labels[Label("w_e")] = true;
@@ -70,7 +70,7 @@ TEST_P(ZipperMergeFormula, false_alternation_l) {
 
 // Correct alternation, beginning ego lane
 TEST_P(ZipperMergeFormula, true_alternation_l) {
-  EvaluatorRuleLTLSPtr rule = EvaluatorRuleLTL::make_rule(GetParam(), -1.0, 0);
+  RuleMonitorSPtr rule = RuleMonitor::make_rule(GetParam(), -1.0, 0);
   auto rs = rule->make_rule_state()[0];
   EvaluationMap labels;
   labels[Label("w_e")] = true;
@@ -126,7 +126,7 @@ TEST_P(ZipperMergeFormula, true_alternation_l) {
 
 // No waiting agent on other lane
 TEST_P(ZipperMergeFormula, trivial_merge_r) {
-  EvaluatorRuleLTLSPtr rule = EvaluatorRuleLTL::make_rule(GetParam(), -1.0, 0);
+  RuleMonitorSPtr rule = RuleMonitor::make_rule(GetParam(), -1.0, 0);
   auto rs = rule->make_rule_state()[0];
   EvaluationMap labels;
   labels[Label("w_e")] = true;
@@ -160,7 +160,7 @@ TEST_P(ZipperMergeFormula, trivial_merge_r) {
 // We are first before the merge, but have not seen any other agent passing the merge
 // Should be violated if we go first
 TEST_P(ZipperMergeFormula, DISABLED_tie_violated) {
-  EvaluatorRuleLTLSPtr rule = EvaluatorRuleLTL::make_rule(GetParam(), -1.0, 0);
+  RuleMonitorSPtr rule = RuleMonitor::make_rule(GetParam(), -1.0, 0);
   auto rs = rule->make_rule_state()[0];
   EvaluationMap labels;
   labels[Label("w_e")] = true;
@@ -182,7 +182,7 @@ TEST_P(ZipperMergeFormula, DISABLED_tie_violated) {
 // We are first before the merge, but have not seen any other agent passing the merge
 // Should be ok if other goes first
 TEST_P(ZipperMergeFormula, DISABLED_tie) {
-  EvaluatorRuleLTLSPtr rule = EvaluatorRuleLTL::make_rule(GetParam(), -1.0, 0);
+  RuleMonitorSPtr rule = RuleMonitor::make_rule(GetParam(), -1.0, 0);
   auto rs = rule->make_rule_state()[0];
   EvaluationMap labels;
   labels[Label("w_e")] = true;
@@ -220,7 +220,7 @@ TEST_P(ZipperMergeFormula, DISABLED_tie) {
 
 // Agent arriving on the other lane, while other agent on ego lane is at merging point
 TEST_P(ZipperMergeFormula, intermittent_arrive) {
-  EvaluatorRuleLTLSPtr rule = EvaluatorRuleLTL::make_rule(GetParam(), -1.0, 0);
+  RuleMonitorSPtr rule = RuleMonitor::make_rule(GetParam(), -1.0, 0);
   auto rs = rule->make_rule_state()[0];
   EvaluationMap labels;
   labels[Label("w_e")] = true;
@@ -264,7 +264,7 @@ TEST_P(ZipperMergeFormula, intermittent_arrive) {
 
 // Agent arriving on the other lane, while other agent on ego lane is at merging point
 TEST_P(ZipperMergeFormula, intermittent_arrive_violated) {
-  EvaluatorRuleLTLSPtr rule = EvaluatorRuleLTL::make_rule(GetParam(), -1.0, 0);
+  RuleMonitorSPtr rule = RuleMonitor::make_rule(GetParam(), -1.0, 0);
   auto rs = rule->make_rule_state()[0];
   EvaluationMap labels;
   labels[Label("w_e")] = true;

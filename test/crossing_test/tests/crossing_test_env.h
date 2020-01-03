@@ -19,8 +19,9 @@ class CrossingTestEnv : public BaseTestEnv {
   explicit CrossingTestEnv(
       MctsParameters mcts_parameters = make_default_mcts_parameters(),
       CrossingStateParameter crossing_state_parameter = make_default_crossing_state_parameters(),
-                  std::vector<std::map<Rule, EvaluatorRuleLTLSPtr>> automata = BaseTestEnv::make_default_automata(
-                      make_default_crossing_state_parameters().num_other_agents + 1),
+      std::vector<std::map<Rule, RuleMonitorSPtr>> automata =
+          BaseTestEnv::make_default_automata(
+              make_default_crossing_state_parameters().num_other_agents + 1),
                   std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> label_evaluators = BaseTestEnv::make_default_labels(
                       make_default_crossing_state_parameters())) : BaseTestEnv(mcts_parameters,
                                                                                crossing_state_parameter,

@@ -40,7 +40,7 @@ TEST(ScalarVsLex, scalar) {
   auto automata =
       BaseTestEnv::make_default_automata(crossing_params.num_other_agents + 1);
   for (auto &aut : automata) {
-    aut.insert({Rule::ZIP, EvaluatorRuleLTL::make_rule("G !at_xing", -10, 0)});
+    aut.insert({Rule::ZIP, RuleMonitor::make_rule("G !at_xing", -10, 0)});
     aut.at(Rule::REACH_GOAL)->set_weight(-1.0f);
     aut.at(Rule::REACH_GOAL)->set_final_reward(0);
     aut.at(Rule::REACH_GOAL)->set_priority(0);
@@ -116,7 +116,7 @@ TEST(ScalarVsLex, lex) {
   auto automata =
       BaseTestEnv::make_default_automata(crossing_params.num_other_agents + 1);
   for (auto &aut : automata) {
-    aut.insert({Rule::ZIP, EvaluatorRuleLTL::make_rule("G !at_xing", -1.0f, 0)});
+    aut.insert({Rule::ZIP, RuleMonitor::make_rule("G !at_xing", -1.0f, 0)});
     aut.at(Rule::REACH_GOAL)->set_weight(-1.0f);
     aut.at(Rule::REACH_GOAL)->set_final_reward(0.0f);
     aut.at(Rule::REACH_GOAL)->set_priority(1);

@@ -12,12 +12,13 @@
 namespace py = pybind11;
 using namespace ltl;
 void define_evaluator_rule_ltl(py::module m) {
-  py::class_<EvaluatorRuleLTL,
-             std::shared_ptr<EvaluatorRuleLTL>>(m, "EvaluatorRuleLTL")
-      .def(py::init(&EvaluatorRuleLTL::make_rule))
-      .def("make_rule", &EvaluatorRuleLTL::make_rule)
-      .def("__repr__", [](const EvaluatorRuleLTL &m) {
-        return "ltl.EvaluatorRuleLTL";
+  py::class_<RuleMonitor, std::shared_ptr<RuleMonitor>>(m, "RuleMonitor")
+      .def(py::init(&RuleMonitor::make_rule))
+      .def("make_rule", &RuleMonitor::make_rule)
+      .def("__repr__", [](const RuleMonitor &m) {
+        std::stringstream os;
+        os << m;
+        return os.str();
       });
 
   py::class_<Label, std::shared_ptr<Label>>(m, "Label")
