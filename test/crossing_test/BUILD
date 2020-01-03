@@ -9,6 +9,16 @@ cc_library(
 )
 
 cc_library(
+    name = "state_file_writer",
+    srcs = ["state_file_writer.cpp"],
+    hdrs = ["state_file_writer.h"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "@com_github_eigen_eigen//:eigen",
+    ],
+)
+
+cc_library(
     name = "crossing_state",
     srcs = [
         "crossing_state.cpp",

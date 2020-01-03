@@ -120,6 +120,7 @@ cc_binary(
     deps = [
         ":crossing_test_env",
         ":util",
+        "//test/crossing_test:state_file_writer",
         "//mcts",
         "//test/crossing_test:crossing_state",
         "//test/crossing_test/factories",

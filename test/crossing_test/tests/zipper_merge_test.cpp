@@ -10,6 +10,7 @@
 #include "mcts/statistics/thres_uct_statistic.h"
 #include "test/crossing_test/common.hpp"
 #include "test/crossing_test/factories/zipper_test_env_factory.h"
+#include "test/crossing_test/state_file_writer.h"
 
 TEST(ZipperMergeTest, violated) {
   auto env = ZipperTestEnvFactory().make_test_env();
@@ -114,6 +115,8 @@ TEST(ZipperMergeTest, mcts) {
     ++i;
   }
   VLOG(1) << states;
+  StateFileWriter sfw(3, "/tmp/xing_zipper_merge.dat");
+  sfw.write_multi_timestep(states);
   auto rule_states = env->state->get_rule_state_map();
   for(size_t ai = 0; ai < env->state->get_agent_idx().size(); ++ai) {
     EXPECT_EQ(rule_states.at(ai).find(Rule::NO_COLLISION)->second.get_violation_count(), 0);
