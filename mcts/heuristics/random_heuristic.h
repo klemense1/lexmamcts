@@ -65,8 +65,9 @@ public:
     std::vector<SE> statistics;
     for (AgentIdx ai = 0; ai < num_agents; ++ai) {
       statistics.emplace_back(node->get_state()->get_num_actions(ai), mcts_parameters_);
-      statistics.at(ai).set_heuristic_estimate((coop_sum + (1.0f - mcts_parameters_.COOP_FACTOR) * accum_rewards.at(ai))
-                                                   / (1.0 + mcts_parameters_.COOP_FACTOR * (num_agents - 1)));
+      statistics.at(ai).set_heuristic_estimate(
+          (coop_sum +
+           (1.0f - mcts_parameters_.COOP_FACTOR) * accum_rewards.at(ai)));
     }
 
     return statistics;
