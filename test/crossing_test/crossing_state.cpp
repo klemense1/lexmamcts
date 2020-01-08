@@ -17,7 +17,8 @@ CrossingState::CrossingState(RuleStateMap rule_state_map,
     : agent_states_(parameters.num_other_agents + 1),
       terminal_(false), rule_state_map_(std::move(rule_state_map)), label_evaluator_(std::move(label_evaluator)),
       depth_(0),
-      parameters_(parameters) {
+      parameters_(parameters),
+      terminal_agents_(parameters.num_other_agents + 1, false) {
   for (auto &state : agent_states_) {
     state = AgentState();
   }
@@ -28,27 +29,33 @@ CrossingState::CrossingState(std::vector<AgentState> agent_states,
                              const bool terminal,
                              RuleStateMap rule_state_map,
                              std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> label_evaluator,
-                             const CrossingStateParameter &parameters,
-                             int depth) : agent_states_(std::move(agent_states)),
-                                          terminal_(terminal),
-                                          rule_state_map_(std::move(rule_state_map)),
+    const CrossingStateParameter &parameters, int depth,
+    const std::vector<bool> &terminal_agents)
+    : agent_states_(std::move(agent_states)),
+      terminal_(terminal),
+      rule_state_map_(std::move(rule_state_map)),
                                           label_evaluator_(std::move(label_evaluator)),
                                           depth_(depth),
-                                          parameters_(parameters) {}
+      parameters_(parameters),
+      terminal_agents_(terminal_agents) {}
 
 std::shared_ptr<CrossingState> CrossingState::execute(const JointAction &joint_action, std::vector<Reward> &rewards) const {
   EvaluationMap labels;
   RuleStateMap next_automata(rule_state_map_);
   World next_world;
-  bool terminal = false;
   std::vector<AgentState> next_agent_states(agent_states_.size());
   rewards.resize(parameters_.num_other_agents + 1);
 
   // CALCULATE NEXT STATE
   for (size_t i = 0; i < agent_states_.size(); ++i) {
-    const auto &old_state = agent_states_[i];
-    int new_x = old_state.x_pos + static_cast<int>(aconv(joint_action[i]));
-    next_agent_states[i] = AgentState(new_x, aconv(joint_action[i]), old_state.lane);
+    if (terminal_agents_[i]) {
+      next_agent_states[i] = agent_states_[i];
+    } else {
+      const auto &old_state = agent_states_[i];
+      int new_x = old_state.x_pos + parameters_.action_map[joint_action[i]];
+      next_agent_states[i] = AgentState(
+          new_x, parameters_.action_map[joint_action[i]], old_state.lane);
+    }
   }
   labels[Label("ego_out_of_map")] = false;
   if (next_agent_states[ego_agent_idx].x_pos < 0) {
@@ -57,14 +64,19 @@ std::shared_ptr<CrossingState> CrossingState::execute(const JointAction &joint_a
 
   // REWARD GENERATION
   // For each agent
+  std::vector<bool> agent_terminal(agent_states_.size(), false);
   for (size_t agent_idx = 0; agent_idx < rewards.size(); ++agent_idx) {
+    if (terminal_agents_[agent_idx]) {
+      agent_terminal[agent_idx] = true;
+      continue;
+    }
     // Labeling
     std::vector<AgentState> next_other_agents(next_agent_states);
     next_other_agents.erase(next_other_agents.begin() + agent_idx);
     // Create perspective from current agent
     next_world = World(next_agent_states[agent_idx], next_other_agents);
 
-    for (auto le : label_evaluator_) {
+    for (const auto &le : label_evaluator_) {
       labels[le->get_label()] = le->evaluate(next_world);
     }
     rewards[agent_idx] = Reward::Zero(parameters_.reward_vec_size);
@@ -75,15 +87,18 @@ std::shared_ptr<CrossingState> CrossingState::execute(const JointAction &joint_a
     }
 
     rewards[agent_idx] += get_action_cost(joint_action[agent_idx], agent_idx);
-//    LOG_IF(FATAL, next_automata[1].find(Rule::ZIP)->second.get_violation_count() > 0 && agent_states_[1].x_pos > parameters_.crossing_point) << "Should not be";
-    terminal |= labels[Label("collision")] || (depth_ + 1 >= parameters_.terminal_depth_);
-//    if(!labels[Label("goal_reached")]) {
-//      rewards[agent_idx] +=
-//          get_shaping_reward(next_agent_states[agent_idx]) - get_shaping_reward(agent_states_[agent_idx]);
-//    }
+    auto obstacle_rule_it = next_automata[agent_idx].find(Rule::OBSTACLE);
+    bool collision_obstacle =
+        obstacle_rule_it != next_automata[agent_idx].end() &&
+        obstacle_rule_it->second.get_violation_count() > 0;
+    agent_terminal[agent_idx] =
+        agent_terminal[agent_idx] || labels[Label("collision")] ||
+        collision_obstacle || (depth_ + 1 >= parameters_.terminal_depth_);
     labels.clear();
   }  // End for each agent
-  return std::make_shared<CrossingState>(next_agent_states, terminal, next_automata, label_evaluator_, parameters_, depth_ + 1);
+  return std::make_shared<CrossingState>(
+      next_agent_states, agent_terminal[0], next_automata, label_evaluator_,
+      parameters_, depth_ + 1, agent_terminal);
 }
 Reward CrossingState::get_action_cost(ActionIdx action, AgentIdx agent_idx) const {
   Reward reward = Reward::Zero(parameters_.reward_vec_size);

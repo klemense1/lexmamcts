@@ -57,6 +57,8 @@ class StageNode : public std::enable_shared_from_this<StageNode<S, SE, SO, H>> {
   StageNodeWPtr parent_;
   StageChildMap children_;
   StageRewardMap joint_rewards_;
+  std::unordered_map<JointAction, size_t, container_hash<JointAction>>
+      joint_action_counter_;
 
   // Intermediate decision nodes
   IntermediateNode<S, SE> ego_int_node_;
@@ -182,6 +184,7 @@ bool StageNode<S, SE, SO, H>::select_or_expand(StageNodeSPtr &next_node) {
     // SELECT EXISTING NODE
     next_node = it->second;
     fill_rewards(joint_rewards_[joint_action], joint_action);
+    ++joint_action_counter_[joint_action];
     return true;
   } else {   // EXPAND NEW NODE BASED ON NEW JOINT ACTION
     std::vector<Reward> rewards(state_->get_agent_idx().size(), Reward::Zero(mcts_parameters_.REWARD_VEC_SIZE));
@@ -195,6 +198,7 @@ bool StageNode<S, SE, SO, H>::select_or_expand(StageNodeSPtr &next_node) {
                                                        depth_ + 1,
                                                        mcts_parameters_);
     children_[joint_action] = next_node;
+    joint_action_counter_[joint_action] = 0;
 #ifdef PLAN_DEBUG_INFO
     //     std::cout << "expanded node state: " << state_->execute(joint_action, rewards)->sprintf();
 #endif

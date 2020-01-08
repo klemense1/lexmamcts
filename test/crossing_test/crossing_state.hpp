@@ -40,7 +40,8 @@ class CrossingState : public mcts::StateInterface<CrossingState> {
       std::vector<AgentState> agent_states, const bool terminal,
       RuleStateMap rule_state_map,
       std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> label_evaluator,
-      const CrossingStateParameter &parameters, int depth = 0);
+      const CrossingStateParameter &parameters, int depth,
+      const std::vector<bool> &terminal_agents);
   ~CrossingState() {}
 
   std::shared_ptr<CrossingState> clone() const;
@@ -95,6 +96,7 @@ class CrossingState : public mcts::StateInterface<CrossingState> {
   std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> label_evaluator_;
   int depth_;
   CrossingStateParameter parameters_;
+  std::vector<bool> terminal_agents_;
 };
 
 #endif  // TEST_CROSSING_TEST_CROSSING_STATE_HPP_

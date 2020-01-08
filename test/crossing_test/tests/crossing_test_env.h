@@ -29,7 +29,8 @@ class CrossingTestEnv : public BaseTestEnv {
                                                                                label_evaluators),
                                                                    mcts(mcts_parameters_) {}
   JointAction search(size_t num_iterations) override {
-    mcts.search(*(this->state), 50000, num_iterations);
+    mcts.search(*(this->state), std::numeric_limits<unsigned int>::max(),
+                num_iterations);
     this->set_jt(mcts.returnBestAction());
     VLOG(1) << "Best action: " << this->get_jt();
     return this->get_jt();

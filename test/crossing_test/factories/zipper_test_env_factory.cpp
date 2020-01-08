@@ -82,6 +82,7 @@ std::shared_ptr<BaseTestEnv> ZipperTestEnvFactory::make_test_env() {
 
   env->state = std::make_shared<CrossingState>(
       agent_states, false, env->state->get_rule_state_map(),
-      env->label_evaluators_, env->crossing_state_parameter_, 0);
+      env->label_evaluators_, env->crossing_state_parameter_, 0,
+      std::vector<bool>(agent_states.size(), false));
   return env;
 }
