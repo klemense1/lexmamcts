@@ -30,6 +30,7 @@ enum Rule {
   LEAVE_INTERSECTION,
   REACH_GOAL_FIRST,
   ZIP,
+  OBSTACLE,
   NUM,
 };
 

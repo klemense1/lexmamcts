@@ -131,6 +131,26 @@ cc_binary(
 )
 
 cc_binary(
+    name = "coop_factor",
+    srcs = [
+        "coop_factor_test.cpp",
+    ],
+    copts = ["-Iexternal/gtest/include"],
+    deps = [
+        ":crossing_test_env",
+        ":util",
+        ":test_runner",
+        "//test/crossing_test:state_file_writer",
+        "//mcts",
+        "//test/crossing_test:crossing_state",
+        "//test/crossing_test/factories",
+        "@com_github_gflags_gflags//:gflags",
+        "@com_github_google_glog//:glog",
+        "@gtest//:main",
+    ],
+)
+
+cc_binary(
     name = "scalar_vs_lex",
     srcs = [
         "scalar_vs_lex_test.cpp",
