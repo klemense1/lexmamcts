@@ -86,7 +86,4 @@ const std::deque<JointAction> &BaseTestEnv::get_action_history() const {
   return action_history;
 }
 const JointAction &BaseTestEnv::get_jt() const { return jt; }
-BaseTestEnv::~BaseTestEnv() {
-  LOG(INFO) << "Ego positions:" << pos_history;
-  LOG(INFO) << "Otr positions:" << pos_history_other;
-}
+BaseTestEnv::~BaseTestEnv() {}

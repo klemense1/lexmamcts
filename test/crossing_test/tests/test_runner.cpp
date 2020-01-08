@@ -4,26 +4,31 @@
 //
 
 #include "test_runner.h"
-void TestRunner::run_test(size_t num_iter) {
+void TestRunner::run_test(size_t num_iter, int max_steps) {
   latest_test_env_ = factory_->make_test_env();
-  const int MAX_STEPS = 40;
   int steps = 0;
   std::vector<Reward> step_reward(latest_test_env_->rewards);
-  latest_test_env_->pos_history.emplace_back(latest_test_env_->state->get_ego_pos());
-  latest_test_env_->pos_history_other.emplace_back(latest_test_env_->state->get_agent_states()[1].x_pos);
-  while (!latest_test_env_->state->is_terminal() && steps < MAX_STEPS) {
+  latest_test_env_->state_history_.emplace_back(get_state_vector().transpose());
+  while (!latest_test_env_->state->is_terminal() && steps < max_steps) {
     latest_test_env_->search(num_iter);
     latest_test_env_->state = latest_test_env_->state->execute(latest_test_env_->get_jt(), step_reward);
-    VLOG(1) << "Next state: " << latest_test_env_->state->sprintf();
+    VLOG(1) << "Iteration: " << steps
+            << ", Next state: " << latest_test_env_->state->sprintf();
     latest_test_env_->rewards += step_reward;
-    latest_test_env_->pos_history.emplace_back(latest_test_env_->state->get_ego_pos());
-    latest_test_env_->pos_history_other.emplace_back(latest_test_env_->state->get_agent_states()[1].x_pos);
+    latest_test_env_->state_history_.emplace_back(
+        get_state_vector().transpose());
     ++steps;
   }
   latest_test_env_->rewards += latest_test_env_->state->get_final_reward();
-  calculate_metric();
-  LOG(INFO) << "Ego history:" << latest_test_env_->pos_history;
-  LOG(INFO) << "Otr history:" << latest_test_env_->pos_history_other;
+  LOG(INFO) << "History:" << latest_test_env_->state_history_;
+}
+Eigen::VectorXi TestRunner::get_state_vector() const {
+  auto agent_states = latest_test_env_->state->get_agent_states();
+  Eigen::VectorXi state = Eigen::VectorXi::Zero(agent_states.size());
+  for (size_t i = 0; i < agent_states.size(); ++i) {
+    state(i) = agent_states[i].x_pos;
+  }
+  return state;
 }
 JointReward TestRunner::calculate_default_reward() {
   JointReward step_reward(latest_test_env_->rewards.size(), Reward::Zero(latest_test_env_->mcts_parameters_.REWARD_VEC_SIZE));
@@ -62,7 +67,7 @@ double TestRunner::calculate_metric() {
   metrics_.mean += calculate_vector_utility(candidate);
   return metrics_.mean;
 }
-void OptiTest::run_test(size_t num_iter) {
+void OptiTest::run_test(size_t num_iter, int max_steps) {
   latest_test_env_ = DefaultTestEnvFactory().make_test_env();
   get_optimal_reward(latest_test_env_.get());
 }

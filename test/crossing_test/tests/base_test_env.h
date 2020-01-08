@@ -57,8 +57,7 @@ class BaseTestEnv {
   const CrossingStateParameter crossing_state_parameter_;
   std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> label_evaluators_;
   std::vector<Reward> rewards;
-  std::vector<std::size_t> pos_history;
-  std::vector<size_t> pos_history_other;
+  std::vector<Eigen::MatrixXi> state_history_;
   std::shared_ptr<CrossingState> state;
 
  protected:

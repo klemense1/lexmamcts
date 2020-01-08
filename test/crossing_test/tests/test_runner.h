@@ -25,7 +25,7 @@ class TestRunner {
  public:
   TestRunner() : factory_(new DefaultTestEnvFactory()) {};
   explicit TestRunner(ITestEnvFactory *factory) : factory_(factory) {};
-  virtual void run_test(size_t num_iter);
+  virtual void run_test(size_t num_iter, int max_steps = 40);
 
   virtual JointReward calculate_default_reward();
 
@@ -49,11 +49,12 @@ class TestRunner {
     return metrics_;
   }
   const std::shared_ptr<BaseTestEnv> &get_latest_test_env() const;
+  Eigen::VectorXi get_state_vector() const;
 };
 
 class OptiTest : public TestRunner {
  public:
-  void run_test(size_t num_iter) override;
+  void run_test(size_t num_iter, int max_steps = 40) override;
   JointReward calculate_default_reward() override;
 };
 
