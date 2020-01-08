@@ -4,6 +4,7 @@
 // For a copy, see <https://opensource.org/licenses/MIT>.
 
 #include "test/crossing_test/crossing_state_parameter.h"
+#include "test/crossing_test/common.hpp"
 
 CrossingStateParameter make_default_crossing_state_parameters() {
   CrossingStateParameter p;
@@ -25,6 +26,11 @@ CrossingStateParameter make_default_crossing_state_parameters() {
   p.potential_weight = 20.0f;
 
   p.reward_vec_size = 5;
+
+  p.action_map = {static_cast<int>(Actions::FORWARD),
+                  static_cast<int>(Actions::WAIT),
+                  static_cast<int>(Actions::FASTFORWARD),
+                  static_cast<int>(Actions::BACKWARD)};
 
   return p;
 }

@@ -56,11 +56,14 @@ static inline ActionIdx aconv(const Actions &action) {
 }
 
 typedef struct AgentState {
-  AgentState() : x_pos(0), last_action(Actions::WAIT), lane(lane_counter++) {}
-  AgentState(const int &x, const Actions &last_action, int lane)
+  AgentState()
+      : x_pos(0),
+        last_action(static_cast<int>(Actions::WAIT)),
+        lane(lane_counter++) {}
+  AgentState(const int &x, const int &last_action, int lane)
       : x_pos(x), last_action(last_action), lane(lane) {}
   int x_pos;
-  Actions last_action;
+  int last_action;
   int lane;
   static int lane_counter;
 } AgentState;

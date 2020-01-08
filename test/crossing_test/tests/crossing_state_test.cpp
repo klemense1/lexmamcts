@@ -89,9 +89,9 @@ TEST_F(CrossingTestF, belief) {
 TEST_F(CrossingTestF, giveWay) {
   std::vector<AgentState> agent_states(2);
   agent_states[0].x_pos = crossing_state_parameter_.crossing_point - 1;
-  agent_states[0].last_action = Actions::FORWARD;
+  agent_states[0].last_action = static_cast<int>(Actions::FORWARD);
   agent_states[1].x_pos = crossing_state_parameter_.crossing_point - 2;
-  agent_states[1].last_action = Actions::FORWARD;
+  agent_states[1].last_action = static_cast<int>(Actions::FORWARD);
   label_evaluators_.emplace_back(std::make_shared<EvaluatorLabelAtPosition>("hp_xing", crossing_state_parameter_.crossing_point - 1));
   automata_.clear();
   automata_.resize(2);

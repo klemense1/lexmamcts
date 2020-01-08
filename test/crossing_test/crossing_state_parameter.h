@@ -29,6 +29,8 @@ struct CrossingStateParameter {
   float potential_weight;
 
   size_t reward_vec_size;
+
+  std::vector<int> action_map;
 };
 
 CrossingStateParameter make_default_crossing_state_parameters();

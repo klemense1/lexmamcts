@@ -7,5 +7,5 @@
 
 EvaluatorLabelSpeed::EvaluatorLabelSpeed(const std::string &label_str) : EvaluatorLabelBase(label_str) {}
 bool EvaluatorLabelSpeed::evaluate(const World &state) const {
-  return (state.first.last_action == Actions::FASTFORWARD);
+  return (state.first.last_action == static_cast<int>(Actions::FASTFORWARD));
 }

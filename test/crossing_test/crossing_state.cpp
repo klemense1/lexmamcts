@@ -89,10 +89,13 @@ Reward CrossingState::get_action_cost(ActionIdx action, AgentIdx agent_idx) cons
   Reward reward = Reward::Zero(parameters_.reward_vec_size);
   reward(parameters_.depth_prio) += -1.0f * parameters_.depth_weight;
   reward(parameters_.speed_deviation_prio) +=
-      -std::abs(static_cast<int>(aconv(action)) - static_cast<int>(Actions::FORWARD)) * parameters_.speed_deviation_weight;
+      -std::abs(parameters_.action_map[action] -
+                static_cast<int>(Actions::FORWARD)) *
+      parameters_.speed_deviation_weight;
   reward(parameters_.acceleration_prio) +=
-      -std::pow(static_cast<int>(aconv(action)) - static_cast<int>(get_last_action(agent_idx)), 2)
-          * parameters_.acceleration_weight;
+      -std::pow(
+          parameters_.action_map[action] - agent_states_[agent_idx].last_action,
+          2) * parameters_.acceleration_weight;
   return reward;
 }
 Reward CrossingState::get_shaping_reward(const AgentState &agent_state) const {
@@ -133,7 +136,10 @@ bool CrossingState::is_terminal() const {
   return terminal_;
 }
 ActionIdx CrossingState::get_num_actions(AgentIdx agent_idx) const {
-  return static_cast<size_t>(Actions::NUM);
+  if (terminal_agents_[agent_idx]) {
+    return static_cast<ActionIdx>(1);
+  }
+  return static_cast<ActionIdx>(parameters_.action_map.size());
 }
 const std::vector<AgentIdx> CrossingState::get_agent_idx() const {
   std::vector<AgentIdx> agent_idx(parameters_.num_other_agents + 1);
@@ -163,7 +169,7 @@ int CrossingState::get_ego_pos() const {
 }
 template<typename ActionType>
 ActionType CrossingState::get_last_action(const AgentIdx &agent_idx) const {
-  return agent_states_[agent_idx].last_action;
+  return static_cast<ActionType>(agent_states_[agent_idx].last_action);
 }
 std::shared_ptr<CrossingState> CrossingState::clone() const {
   return std::make_shared<CrossingState>(*this);
