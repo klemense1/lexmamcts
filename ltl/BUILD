@@ -1,14 +1,14 @@
 cc_library(
-    name = "rule_evaluator",
+    name = "rule_monitor",
     srcs = [
-        "evaluator_rule_ltl.cpp",
+        "rule_monitor.cpp",
         "label.cpp",
         "rule_state.cpp",
     ],
     hdrs = [
         "common.h",
         "evaluator_label_base.h",
-        "evaluator_rule_ltl.h",
+        "rule_monitor.h",
         "label.h",
         "rule_state.h",
     ],
@@ -35,7 +35,7 @@ cc_test(
     srcs = ["test/automaton_test.cpp"],
     copts = ["-Iexternal/gtest/include"],
     deps = [
-        ":rule_evaluator",
+        ":rule_monitor",
         "@com_github_gflags_gflags//:gflags",
         "@gtest//:main",
     ],
@@ -46,7 +46,7 @@ cc_test(
     srcs = ["test/zipper_merge_formula_test.cpp"],
     copts = ["-Iexternal/gtest/include"],
     deps = [
-        ":rule_evaluator",
+        ":rule_monitor",
         "@com_github_gflags_gflags//:gflags",
         "@com_github_google_glog//:glog",
         "@gtest//:main",

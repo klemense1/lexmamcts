@@ -3,8 +3,8 @@
 // This work is licensed under the terms of the MIT license.
 // For a copy, see <https://opensource.org/licenses/MIT>.
 
-#ifndef LTL_EVALUATOR_EVALUATOR_RULE_LTL_H_
-#define LTL_EVALUATOR_EVALUATOR_RULE_LTL_H_
+#ifndef LTL_RULE_MONITOR_H_
+#define LTL_RULE_MONITOR_H_
 
 #include <memory>
 #include <map>
@@ -14,9 +14,9 @@
 #include <vector>
 
 #include "Eigen/Core"
-#include "ltl_evaluator/common.h"
-#include "ltl_evaluator/label.h"
-#include "ltl_evaluator/rule_state.h"
+#include "ltl/common.h"
+#include "ltl/label.h"
+#include "ltl/rule_state.h"
 #include "spot/tl/parse.hh"
 #include "spot/twaalgos/translate.hh"
 
@@ -90,4 +90,4 @@ class RuleMonitor : public std::enable_shared_from_this<RuleMonitor> {
   float transit(const EvaluationMap &labels, RuleState &state) const;
 };
 }  // namespace ltl
-#endif  // LTL_EVALUATOR_EVALUATOR_RULE_LTL_H_
+#endif  // LTL_RULE_MONITOR_H_

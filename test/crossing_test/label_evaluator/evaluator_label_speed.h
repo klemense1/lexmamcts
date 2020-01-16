@@ -6,8 +6,8 @@
 #define MAMCTS_EVALUATOR_LABEL_SPEED_HPP
 
 #include <string>
+#include "ltl/evaluator_label_base.h"
 #include "test/crossing_test/common.hpp"
-#include "ltl_evaluator/evaluator_label_base.h"
 
 class EvaluatorLabelSpeed : public EvaluatorLabelBase<World> {
  public:

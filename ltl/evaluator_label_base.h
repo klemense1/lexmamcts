@@ -3,12 +3,12 @@
 // This work is licensed under the terms of the MIT license.
 // For a copy, see <https://opensource.org/licenses/MIT>.
 
-#ifndef LTL_EVALUATOR_EVALUATOR_LABEL_BASE_H_
-#define LTL_EVALUATOR_EVALUATOR_LABEL_BASE_H_
+#ifndef LTL_EVALUATOR_LABEL_BASE_H_
+#define LTL_EVALUATOR_LABEL_BASE_H_
 
 #include <string>
 #include <utility>
-#include "ltl_evaluator/label.h"
+#include "ltl/label.h"
 template <class S>
 class EvaluatorLabelBase {
  public:
@@ -22,4 +22,4 @@ class EvaluatorLabelBase {
   ltl::Label label_;
 };
 
-#endif  // LTL_EVALUATOR_EVALUATOR_LABEL_BASE_H_
+#endif  // LTL_EVALUATOR_LABEL_BASE_H_

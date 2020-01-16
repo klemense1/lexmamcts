@@ -3,8 +3,8 @@
 // This work is licensed under the terms of the MIT license.
 // For a copy, see <https://opensource.org/licenses/MIT>.
 
-#ifndef LTL_EVALUATOR_LABEL_H_
-#define LTL_EVALUATOR_LABEL_H_
+#ifndef LTL_LABEL_H_
+#define LTL_LABEL_H_
 
 #include <ostream>
 #include <string>
@@ -39,4 +39,4 @@ class LabelHash {
 
 }  // namespace ltl
 
-#endif  // LTL_EVALUATOR_LABEL_H_
+#endif  // LTL_LABEL_H_

@@ -3,7 +3,7 @@
 // Copyright (c) 2019 Luis Gressenbuch. All rights reserved.
 //
 
-#include "ltl_evaluator/rule_state.h"
+#include "ltl/rule_state.h"
 
 namespace ltl {
 uint32_t RuleState::get_current_state() const { return current_state_; }

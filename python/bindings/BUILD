@@ -29,15 +29,15 @@ cc_library(
     name = "python_ltl",
     srcs = [
         "common.hpp",
-        "define_evaluator_rule_ltl.cpp",
-        "define_evaluator_rule_ltl.hpp",
+        "define_rule_monitor.cpp",
+        "define_rule_monitor.hpp",
     ],
     hdrs = [
         "common.hpp",
-        "define_evaluator_rule_ltl.hpp",
+        "define_rule_monitor.hpp",
     ],
     deps = [
-        "//ltl_evaluator:rule_evaluator",
+        "//ltl:rule_monitor",
         "@pybind11",
         "@python_linux//:python-lib",
         "@spot",

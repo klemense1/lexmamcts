@@ -3,10 +3,10 @@
 // Copyright (c) 2019 Luis Gressenbuch. All rights reserved.
 //
 
-#include "gtest/gtest.h"
-#include "glog/logging.h"
 #include "gflags/gflags.h"
-#include "ltl_evaluator/evaluator_rule_ltl.h"
+#include "glog/logging.h"
+#include "gtest/gtest.h"
+#include "ltl/rule_monitor.h"
 
 using namespace ltl;
 using RuleMonitorSPtr = RuleMonitor::RuleMonitorSPtr;

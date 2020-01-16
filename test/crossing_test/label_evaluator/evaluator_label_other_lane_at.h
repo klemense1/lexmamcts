@@ -8,7 +8,7 @@
 
 #include <string>
 
-#include "ltl_evaluator/evaluator_label_base.h"
+#include "ltl/evaluator_label_base.h"
 #include "test/crossing_test/common.hpp"
 
 class EvaluatorLabelOtherLaneAt : public EvaluatorLabelBase<World>{

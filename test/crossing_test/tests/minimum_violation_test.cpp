@@ -12,9 +12,8 @@
 TEST(MinimumViolation, main) {
   TestRunner test_runner(new MinimumViolationTestEnvFactory());
   test_runner.run_test(5000);
-  LOG(INFO) << "Trajectories:";
-  LOG(INFO) << "Ego: " << test_runner.get_latest_test_env()->pos_history;
-  LOG(INFO) << "Other: " << test_runner.get_latest_test_env()->pos_history_other;
+  LOG(INFO) << "Trajectories:"
+            << test_runner.get_latest_test_env()->state_history_;
 }
 
 int main(int argc, char **argv) {

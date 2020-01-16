@@ -19,9 +19,11 @@ TEST(ZipperMergeTest, violated) {
   agent_states[1].x_pos = env->crossing_state_parameter_.crossing_point - 1;
   agent_states[2].x_pos = env->crossing_state_parameter_.crossing_point - 3;
   agent_states[2].lane = agent_states[1].lane;
+  std::vector<bool> terminal_agents(agent_states.size(), false);
   env->state = std::make_shared<CrossingState>(
       agent_states, false, env->state->get_rule_state_map(),
-      env->label_evaluators_, env->crossing_state_parameter_, 0);
+      env->label_evaluators_, env->crossing_state_parameter_, 0,
+      terminal_agents);
   env->set_jt({0,0,0});
   for(size_t i = 0; i < 4; ++i) {
     env->state = env->state->execute(env->get_jt(), env->rewards);
@@ -48,9 +50,11 @@ TEST(ZipperMergeTest, not_violated) {
   agent_states[1].x_pos = env->crossing_state_parameter_.crossing_point - 1;
   agent_states[2].x_pos = env->crossing_state_parameter_.crossing_point - 5;
   agent_states[2].lane = agent_states[1].lane;
+  std::vector<bool> terminal_agents(agent_states.size(), false);
   env->state = std::make_shared<CrossingState>(
       agent_states, false, env->state->get_rule_state_map(),
-      env->label_evaluators_, env->crossing_state_parameter_, 0);
+      env->label_evaluators_, env->crossing_state_parameter_, 0,
+      terminal_agents);
   env->set_jt({0,0,0});
   std::vector<Eigen::MatrixXi> states;
   for(size_t i = 0; i < 6; ++i) {

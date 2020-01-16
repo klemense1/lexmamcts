@@ -3,7 +3,7 @@
 // This work is licensed under the terms of the MIT license.
 // For a copy, see <https://opensource.org/licenses/MIT>.
 
-#include "ltl_evaluator/evaluator_rule_ltl.h"
+#include "ltl/rule_monitor.h"
 
 #include <algorithm>
 #include <map>
@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "glog/logging.h"
-#include "ltl_evaluator/label.h"
+#include "ltl/label.h"
 #include "spot/tl/apcollect.hh"
 #include "spot/tl/ltlf.hh"
 #include "spot/tl/print.hh"

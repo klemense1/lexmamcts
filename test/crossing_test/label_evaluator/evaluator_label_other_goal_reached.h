@@ -6,8 +6,8 @@
 #ifndef MAMCTS_TEST_CROSSING_TEST_LABEL_EVALUATOR_EVALUATOR_LABEL_OTHER_GOAL_REACHED_HPP_
 #define MAMCTS_TEST_CROSSING_TEST_LABEL_EVALUATOR_EVALUATOR_LABEL_OTHER_GOAL_REACHED_HPP_
 
+#include "ltl/evaluator_label_base.h"
 #include "test/crossing_test/common.hpp"
-#include "ltl_evaluator/evaluator_label_base.h"
 
 class EvaluatorLabelOtherGoalReached : public EvaluatorLabelBase<World> {
  public:

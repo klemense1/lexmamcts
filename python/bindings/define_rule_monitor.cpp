@@ -3,15 +3,15 @@
 // Copyright (c) 2019 Luis Gressenbuch. All rights reserved.
 //
 
-#include "define_evaluator_rule_ltl.hpp"
+#include "define_rule_monitor.hpp"
 
-#include "ltl_evaluator/evaluator_rule_ltl.h"
-#include "ltl_evaluator/evaluator_label_base.h"
-#include "ltl_evaluator/label.h"
+#include "ltl/evaluator_label_base.h"
+#include "ltl/label.h"
+#include "ltl/rule_monitor.h"
 
 namespace py = pybind11;
 using namespace ltl;
-void define_evaluator_rule_ltl(py::module m) {
+void define_rule_monitor(py::module m) {
   py::class_<RuleMonitor, std::shared_ptr<RuleMonitor>>(m, "RuleMonitor")
       .def(py::init(&RuleMonitor::make_rule))
       .def("make_rule", &RuleMonitor::make_rule)

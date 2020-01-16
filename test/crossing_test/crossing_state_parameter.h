@@ -6,7 +6,7 @@
 #ifndef TEST_CROSSING_TEST_CROSSING_STATE_PARAMETER_H_
 #define TEST_CROSSING_TEST_CROSSING_STATE_PARAMETER_H_
 
-#include "ltl_evaluator/evaluator_rule_ltl.h"
+#include "ltl/rule_monitor.h"
 
 using ltl::RewardPriority;
 

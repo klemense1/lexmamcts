@@ -13,8 +13,8 @@
 #include <string>
 #include <vector>
 
-#include "ltl_evaluator/evaluator_label_base.h"
-#include "ltl_evaluator/evaluator_rule_ltl.h"
+#include "ltl/evaluator_label_base.h"
+#include "ltl/rule_monitor.h"
 #include "test/crossing_test/common.hpp"
 #include "test/crossing_test/crossing_state_parameter.h"
 

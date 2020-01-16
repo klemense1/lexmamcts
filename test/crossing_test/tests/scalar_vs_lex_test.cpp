@@ -55,10 +55,12 @@ TEST(ScalarVsLex, scalar) {
   auto agent_states = env->state->get_agent_states();
   //agent_states[0].x_pos = crossing_params.crossing_point - 10;
 
+  std::vector<bool> terminal_agents(crossing_params.num_other_agents + 1,
+                                    false);
   env->state = std::make_shared<CrossingState>(
       agent_states, false, env->state->get_rule_state_map(),
-      env->label_evaluators_, env->crossing_state_parameter_, 0);
-
+      env->label_evaluators_, env->crossing_state_parameter_, 0,
+      terminal_agents);
 
   std::vector<Eigen::MatrixXi> states;
   Eigen::Vector3i state;
@@ -131,10 +133,12 @@ TEST(ScalarVsLex, lex) {
   auto agent_states = env->state->get_agent_states();
   //agent_states[0].x_pos = crossing_params.crossing_point - 10;
 
+  std::vector<bool> terminal_agents(crossing_params.num_other_agents + 1,
+                                    false);
   env->state = std::make_shared<CrossingState>(
       agent_states, false, env->state->get_rule_state_map(),
-      env->label_evaluators_, env->crossing_state_parameter_, 0);
-
+      env->label_evaluators_, env->crossing_state_parameter_, 0,
+      terminal_agents);
 
   std::vector<Eigen::MatrixXi> states;
   Eigen::Vector3i state;

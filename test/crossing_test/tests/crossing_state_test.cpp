@@ -37,8 +37,6 @@ TEST(CrossingTest, general) {
   get_optimal_reward(optimal_env.get());
   std::vector<Reward> optimal_reward = optimal_env->rewards;
   std::vector<Reward> accu_reward(test_env->state->get_agent_idx().size(), Reward::Zero(test_env->mcts_parameters_.REWARD_VEC_SIZE));
-  test_env->pos_history.emplace_back(test_env->state->get_ego_pos());
-  test_env->pos_history_other.emplace_back(test_env->state->get_agent_states()[1].x_pos);
   while (!test_env->state->is_terminal() && steps < MAX_STEPS) {
     test_env->mcts.search(*test_env->state, 50000, 10000);
     JointAction jt = test_env->mcts.returnBestAction();
@@ -46,8 +44,6 @@ TEST(CrossingTest, general) {
     LOG(INFO) << "Performing action:" << test_env->get_jt();
     test_env->state = test_env->state->execute(test_env->get_jt(), test_env->rewards);
     accu_reward += test_env->rewards;
-    test_env->pos_history.emplace_back(test_env->state->get_ego_pos());
-    test_env->pos_history_other.emplace_back(test_env->state->get_agent_states()[1].x_pos);
     ++steps;
   }
   accu_reward += test_env->state->get_final_reward();
@@ -100,12 +96,12 @@ TEST_F(CrossingTestF, giveWay) {
        RuleMonitor::make_rule("G((hp_xing & other_near) -> (X hp_xing))",
                               -500.0f,
                                                                    0)});
+  std::vector<bool> terminal_agents(agent_states.size(), false);
   state = std::make_shared<CrossingState>(agent_states,
                                           false,
                                           get_automata_vec(),
                                           label_evaluators_,
-                                          crossing_state_parameter_,
-                                          0);
+                                          crossing_state_parameter_, 0, terminal_agents);
   state = state->execute(get_jt(), rewards);
   state = state->execute(get_jt(), rewards);
 //  state = state->execute(get_jt(), rewards);

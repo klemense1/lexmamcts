@@ -3,15 +3,15 @@
 // This work is licensed under the terms of the MIT license.
 // For a copy, see <https://opensource.org/licenses/MIT>.
 
-#ifndef LTL_EVALUATOR_RULE_STATE_H_
-#define LTL_EVALUATOR_RULE_STATE_H_
+#ifndef LTL_RULE_STATE_H_
+#define LTL_RULE_STATE_H_
 
 #include <memory>
 #include <ostream>
 #include <vector>
 
-#include "ltl_evaluator/common.h"
-#include "ltl_evaluator/evaluator_rule_ltl.h"
+#include "ltl/common.h"
+#include "ltl/rule_monitor.h"
 
 namespace ltl {
 
@@ -43,4 +43,4 @@ class RuleState {
 
 }  // namespace ltl
 
-#endif  // LTL_EVALUATOR_RULE_STATE_H_
+#endif  // LTL_RULE_STATE_H_

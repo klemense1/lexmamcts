@@ -7,8 +7,8 @@
 #define TEST_CROSSING_TEST_LABEL_EVALUATOR_EVALUATOR_LABEL_OTHER_RANGE_H_
 
 #include <string>
+#include "ltl/evaluator_label_base.h"
 #include "test/crossing_test/common.hpp"
-#include "ltl_evaluator/evaluator_label_base.h"
 
 class EvaluatorLabelOtherRange : public EvaluatorLabelBase<World>{
  public:

@@ -3,8 +3,8 @@
 // Copyright (c) 2019 Luis Gressenbuch. All rights reserved.
 //
 
-#ifndef LTL_EVALUATOR_COMMON_H_
-#define LTL_EVALUATOR_COMMON_H_
+#ifndef LTL_COMMON_H_
+#define LTL_COMMON_H_
 
 namespace ltl {
 
@@ -18,4 +18,4 @@ enum RewardPriority {
 };
 }  // namespace ltl
 
-#endif  // LTL_EVALUATOR_COMMON_H_
+#endif  // LTL_COMMON_H_
