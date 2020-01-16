@@ -23,7 +23,7 @@ std::ostream &operator<<(std::ostream &os, const RuleState &state) {
      << " automaton_: " << state.automaton_;
   return os;
 }
-bool RuleState::is_agent_specific() const { return agent_ids_.size() > 0; }
+bool RuleState::is_agent_specific() const { return !agent_ids_.empty(); }
 RuleState::RuleState(uint32_t current_state, double rule_belief,
                      size_t violated,
                      std::shared_ptr<const RuleMonitor> automaton,

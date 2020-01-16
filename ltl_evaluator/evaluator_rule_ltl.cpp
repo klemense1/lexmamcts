@@ -81,8 +81,8 @@ std::string RuleMonitor::parse_agents(const std::string &ltl_formula_str) {
 }
 
 std::vector<RuleState> RuleMonitor::make_rule_state(
-    const std::vector<int> &agent_ids) const {
-  assert(is_agent_specific_ == !agent_ids.empty());
+    const std::vector<int> &new_agent_ids,
+    const std::vector<int> &existing_agent_ids) const {
   int num_other_agents =
       std::max_element(ap_alphabet_.begin(), ap_alphabet_.end(),
                        [](const APContainer &a, const APContainer &b) {
@@ -91,18 +91,38 @@ std::vector<RuleState> RuleMonitor::make_rule_state(
           ->id_idx_ +
       1;
   num_other_agents = std::max(num_other_agents, 0);
-  assert(agent_ids.size() >= static_cast<size_t>(num_other_agents));
+
+  std::vector<int> current_agent_ids;
+  std::set_union(new_agent_ids.begin(), new_agent_ids.end(),
+                 existing_agent_ids.begin(), existing_agent_ids.end(),
+                 std::back_inserter(current_agent_ids));
   std::vector<RuleState> l;
-  std::vector<std::vector<int>> permutations =
-      all_k_permutations(agent_ids, num_other_agents);
-  for (const auto &perm : permutations) {
+  if (is_agent_specific() && current_agent_ids.size() >= num_other_agents) {
+    std::vector<std::vector<int>> existing_permutations =
+        all_k_permutations(existing_agent_ids, num_other_agents);
+    std::vector<std::vector<int>> all_permutations =
+        all_k_permutations(current_agent_ids, num_other_agents);
+    // Permutations to create
+    std::vector<std::vector<int>> new_permutations;
+    std::set_difference(all_permutations.begin(), all_permutations.end(),
+                        existing_permutations.begin(),
+                        existing_permutations.end(),
+                        std::back_inserter(new_permutations));
+    for (const auto &perm : new_permutations) {
+      l.push_back(RuleState(aut_->get_init_state_number(), init_belief_, 0,
+                            shared_from_this(), perm));
+    }
+  } else if (!is_agent_specific()) {
     l.push_back(RuleState(aut_->get_init_state_number(), init_belief_, 0,
-                          shared_from_this(), perm));
+                          shared_from_this(), {}));
   }
   return l;
 }
 std::vector<std::vector<int>> RuleMonitor::all_k_permutations(
     const std::vector<int> &values, int k) const {
+  if (values.empty()) {
+    return {};
+  }
   std::vector<std::vector<int>> permutations;
   std::vector<int> value_permutation(k, 0);
   std::vector<int> idx_permutation(values.size());

@@ -37,7 +37,8 @@ class RuleMonitor : public std::enable_shared_from_this<RuleMonitor> {
   }
 
   std::vector<RuleState> make_rule_state(
-      const std::vector<int> &agent_ids = {}) const;
+      const std::vector<int> &current_agent_ids = {},
+      const std::vector<int> &existing_agent_ids = {}) const;
 
   float evaluate(EvaluationMap const &labels, RuleState &state) const;
 
@@ -78,7 +79,6 @@ class RuleMonitor : public std::enable_shared_from_this<RuleMonitor> {
   float weight_;
   float final_reward_;
   spot::twa_graph_ptr aut_;
-  std::set<spot::formula> alphabet_;
   spot::formula ltl_formula_;
   RulePriority priority_;
   Eigen::Matrix2d observation_prob_;
