@@ -5,8 +5,10 @@
 
 #include "evaluator_label_goal_reached.h"
 
-EvaluatorLabelGoalReached::EvaluatorLabelGoalReached(const std::string &label_str, const int goal_position)
+EvaluatorLabelGoalReached::EvaluatorLabelGoalReached(
+    const std::string &label_str, const int goal_position)
     : EvaluatorLabelBase(label_str), goal_position_(goal_position) {}
-bool EvaluatorLabelGoalReached::evaluate(const World &state) const {
-  return (state.first.x_pos >= goal_position_);
+std::vector<std::pair<ltl::Label, bool>> EvaluatorLabelGoalReached::evaluate(
+    const World &state) const {
+  return {{get_label(), (state.first.x_pos >= goal_position_)}};
 }

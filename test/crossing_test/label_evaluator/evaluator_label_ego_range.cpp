@@ -8,6 +8,8 @@
 EvaluatorLabelEgoRange::EvaluatorLabelEgoRange(const std::string& label_str,
                                                int start, int end)
     : EvaluatorLabelBase(label_str), start_(start), end_(end) {}
-bool EvaluatorLabelEgoRange::evaluate(const World& state) const {
-  return (state.first.x_pos >= start_ && state.first.x_pos <= end_);
+std::vector<std::pair<ltl::Label, bool>> EvaluatorLabelEgoRange::evaluate(
+    const World& state) const {
+  return {{get_label(),
+           (state.first.x_pos >= start_ && state.first.x_pos <= end_)}};
 }

@@ -12,14 +12,15 @@
 EvaluatorLabelOtherAtEgoLaneAtPos::EvaluatorLabelOtherAtEgoLaneAtPos(
     const std::string& label_str, int point)
     : EvaluatorLabelBase(label_str), point_(point) {}
-bool EvaluatorLabelOtherAtEgoLaneAtPos::evaluate(const World& state) const {
+std::vector<std::pair<ltl::Label, bool>>
+EvaluatorLabelOtherAtEgoLaneAtPos::evaluate(const World& state) const {
   EvaluatorLabelAtPosition at_point("DUMMYF", point_);
   auto agents = state.second;
   for (const auto& agent : agents) {
     if (agent.lane == state.first.lane && state.first.x_pos <= point_ &&
-        at_point.evaluate(World(agent, std::vector<AgentState>()))) {
-      return true;
+        at_point.evaluate(World(agent, std::vector<AgentState>()))[0].second) {
+      return {{get_label(), true}};
     }
   }
-  return false;
+  return {{get_label(), false}};
 }

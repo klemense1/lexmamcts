@@ -5,13 +5,14 @@
 
 #include "evaluator_label_other_range.h"
 EvaluatorLabelOtherRange::EvaluatorLabelOtherRange(const std::string& label_str,
-                                         int start, int end)
+                                                   int start, int end)
     : EvaluatorLabelBase(label_str), start_(start), end_(end) {}
-bool EvaluatorLabelOtherRange::evaluate(const World& state) const {
-  for(const auto &agent : state.second) {
-    if(agent.x_pos >= start_ && agent.x_pos <= end_) {
-      return true;
+std::vector<std::pair<ltl::Label, bool>> EvaluatorLabelOtherRange::evaluate(
+    const World& state) const {
+  for (const auto& agent : state.second) {
+    if (agent.x_pos >= start_ && agent.x_pos <= end_) {
+      return {{get_label(), true}};
     }
   }
-  return false;
+  return {{get_label(), false}};
 }

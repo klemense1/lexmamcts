@@ -13,7 +13,8 @@ class EvaluatorLabelSpeed : public EvaluatorLabelBase<World> {
  public:
   EvaluatorLabelSpeed(const std::string &label_str = "speeding");;
 
-  bool evaluate(const World &state) const override;
+  std::vector<std::pair<ltl::Label, bool>> evaluate(
+      const World &state) const override;
 };
 
 #endif //MAMCTS_EVALUATOR_LABEL_SPEED_HPP

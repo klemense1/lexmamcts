@@ -58,15 +58,25 @@ static inline ActionIdx aconv(const Actions &action) {
 
 typedef struct AgentState {
   AgentState()
-      : x_pos(0),
+      : id(id_counter++),
+        x_pos(0),
         last_action(static_cast<int>(Actions::WAIT)),
-        lane(lane_counter++) {}
-  AgentState(const int &x, const int &last_action, int lane)
-      : x_pos(x), last_action(last_action), lane(lane) {}
+        lane(++lane_counter),
+        init_lane(lane) {}
+  AgentState(const int &id, const int &x, const int &last_action, int lane,
+             int init_lane)
+      : id(id),
+        x_pos(x),
+        last_action(last_action),
+        lane(lane),
+        init_lane(init_lane) {}
+  int id;
   int x_pos;
   int last_action;
   int lane;
+  int init_lane;
   static int lane_counter;
+  static int id_counter;
 } AgentState;
 
 typedef std::pair<AgentState, std::vector<AgentState>> World;

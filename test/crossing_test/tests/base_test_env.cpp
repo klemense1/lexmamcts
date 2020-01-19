@@ -61,11 +61,16 @@ BaseTestEnv::make_default_labels(CrossingStateParameter params) {
 }
 RuleStateMap BaseTestEnv::get_automata_vec() const {
   RuleStateMap aut_v(automata_.size());
+  std::vector<int> agent_ids(automata_.size(), 0);
+  std::iota(agent_ids.begin(), agent_ids.end(), 0);
+  std::vector<int> others;
   for (size_t i = 0; i < automata_.size(); ++i) {
     LOG(INFO) << "Rules for agent " << i << ":";
+    others = agent_ids;
+    others.erase(others.begin() + i);
     for (const auto &it : automata_[i]) {
       LOG(INFO) << *(it.second);
-      auto rule_states = it.second->make_rule_state();
+      auto rule_states = it.second->make_rule_state(others, {});
       for (const auto &rs : rule_states) {
         aut_v[i].insert({it.first, rs});
       }

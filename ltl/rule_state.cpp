@@ -5,7 +5,18 @@
 
 #include "ltl/rule_state.h"
 
+#include <utility>
+
 namespace ltl {
+RuleState::RuleState(uint32_t current_state, double rule_belief,
+                     size_t violated,
+                     std::shared_ptr<const RuleMonitor> automaton,
+                     std::vector<int> agent_id)
+    : current_state_(current_state),
+      rule_belief_(rule_belief),
+      violated_(violated),
+      automaton_(std::move(automaton)),
+      agent_ids_(std::move(agent_id)) {}
 uint32_t RuleState::get_current_state() const { return current_state_; }
 RulePriority RuleState::get_priority() const {
   return automaton_->get_priority();
@@ -24,14 +35,5 @@ std::ostream &operator<<(std::ostream &os, const RuleState &state) {
   return os;
 }
 bool RuleState::is_agent_specific() const { return !agent_ids_.empty(); }
-RuleState::RuleState(uint32_t current_state, double rule_belief,
-                     size_t violated,
-                     std::shared_ptr<const RuleMonitor> automaton,
-                     std::vector<int> agent_id)
-    : current_state_(current_state),
-      rule_belief_(rule_belief),
-      violated_(violated),
-      automaton_(automaton),
-      agent_ids_(agent_id) {}
 const std::vector<int> &RuleState::get_agent_ids() const { return agent_ids_; }
 }  // namespace ltl

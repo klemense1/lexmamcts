@@ -5,9 +5,14 @@
 
 #include "evaluator_label_at_position.h"
 
-EvaluatorLabelAtPosition::EvaluatorLabelAtPosition(const std::string &label_str, const int position)
+EvaluatorLabelAtPosition::EvaluatorLabelAtPosition(const std::string &label_str,
+                                                   const int position)
     : EvaluatorLabelBase(label_str), position_(position) {}
-bool EvaluatorLabelAtPosition::evaluate(const World &state) const {
-  return ((state.first.x_pos - static_cast<int>(state.first.last_action)) < position_
-      && state.first.x_pos >= position_) || state.first.x_pos == position_;
+std::vector<std::pair<ltl::Label, bool>> EvaluatorLabelAtPosition::evaluate(
+    const World &state) const {
+  return {{get_label(),
+           ((state.first.x_pos - static_cast<int>(state.first.last_action)) <
+                position_ &&
+            state.first.x_pos >= position_) ||
+               state.first.x_pos == position_}};
 }

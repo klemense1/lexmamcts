@@ -5,7 +5,10 @@
 
 #include "evaluator_label_speed.h"
 
-EvaluatorLabelSpeed::EvaluatorLabelSpeed(const std::string &label_str) : EvaluatorLabelBase(label_str) {}
-bool EvaluatorLabelSpeed::evaluate(const World &state) const {
-  return (state.first.last_action == static_cast<int>(Actions::FASTFORWARD));
+EvaluatorLabelSpeed::EvaluatorLabelSpeed(const std::string &label_str)
+    : EvaluatorLabelBase(label_str) {}
+std::vector<std::pair<ltl::Label, bool>> EvaluatorLabelSpeed::evaluate(
+    const World &state) const {
+  return {{get_label(), (state.first.last_action ==
+                         static_cast<int>(Actions::FASTFORWARD))}};
 }

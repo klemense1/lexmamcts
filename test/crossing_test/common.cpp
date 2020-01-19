@@ -6,3 +6,4 @@
 #include "common.hpp"
 
 int AgentState::lane_counter = 0;
+int AgentState::id_counter = 0;

@@ -8,18 +8,22 @@
 
 #include <string>
 #include <utility>
+#include <vector>
 #include "ltl/label.h"
 template <class S>
 class EvaluatorLabelBase {
  public:
   explicit EvaluatorLabelBase(const std::string &label_str)
-      : label_(label_str) {}
-  explicit EvaluatorLabelBase(ltl::Label label) : label_(std::move(label)) {}
-  const ltl::Label &get_label() const { return label_; }
-  virtual bool evaluate(const S &state) const = 0;
+      : label_str_(label_str) {}
+  virtual std::vector<std::pair<ltl::Label, bool>> evaluate(
+      const S &state) const = 0;
+  ltl::Label get_label() const { return ltl::Label(label_str_); }
+  ltl::Label get_agent_label(int agent_id) const {
+    return ltl::Label(label_str_, agent_id);
+  }
 
  private:
-  ltl::Label label_;
+  std::string label_str_;
 };
 
 #endif  // LTL_EVALUATOR_LABEL_BASE_H_

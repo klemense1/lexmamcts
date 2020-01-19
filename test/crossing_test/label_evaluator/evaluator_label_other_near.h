@@ -11,8 +11,9 @@
 
 class EvaluatorLabelOtherNear : public EvaluatorLabelBase<World> {
  public:
-  EvaluatorLabelOtherNear(const std::string &label_str);;
-  bool evaluate(const World &state) const override;
+  EvaluatorLabelOtherNear(const std::string &label_str);
+  std::vector<std::pair<ltl::Label, bool>> evaluate(
+      const World &state) const override;
 };
 
-#endif //MAMCTS_TEST_CROSSING_TEST_EVALUATOR_LABEL_OTHER_NEAR_HPP_
+#endif  // MAMCTS_TEST_CROSSING_TEST_EVALUATOR_LABEL_OTHER_NEAR_HPP_

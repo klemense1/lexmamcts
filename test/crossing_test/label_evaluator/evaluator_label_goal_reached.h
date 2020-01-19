@@ -11,7 +11,9 @@
 class EvaluatorLabelGoalReached : public EvaluatorLabelBase<World> {
  public:
   EvaluatorLabelGoalReached(const std::string &label_str, const int goal_position);;
-  bool evaluate(const World &state) const override;
+  std::vector<std::pair<ltl::Label, bool>> evaluate(
+      const World &state) const override;
+
  private:
   int goal_position_;
 };

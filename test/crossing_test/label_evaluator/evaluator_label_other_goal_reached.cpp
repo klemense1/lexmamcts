@@ -5,13 +5,15 @@
 
 #include "evaluator_label_other_goal_reached.h"
 
-EvaluatorLabelOtherGoalReached::EvaluatorLabelOtherGoalReached(const std::string &label_str, const int goal_position)
+EvaluatorLabelOtherGoalReached::EvaluatorLabelOtherGoalReached(
+    const std::string &label_str, const int goal_position)
     : EvaluatorLabelBase(label_str), goal_position_(goal_position) {}
-bool EvaluatorLabelOtherGoalReached::evaluate(const World &state) const {
+std::vector<std::pair<ltl::Label, bool>>
+EvaluatorLabelOtherGoalReached::evaluate(const World &state) const {
   for (auto const &agent : state.second) {
     if (agent.x_pos >= goal_position_) {
-      return true;
+      return {{get_label(), true}};
     }
   }
-  return false;
+  return {{get_label(), false}};
 }
