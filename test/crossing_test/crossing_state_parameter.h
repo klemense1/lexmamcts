@@ -31,6 +31,8 @@ struct CrossingStateParameter {
   size_t reward_vec_size;
 
   std::vector<int> action_map;
+
+  bool merge;
 };
 
 CrossingStateParameter make_default_crossing_state_parameters();

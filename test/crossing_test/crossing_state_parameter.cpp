@@ -32,5 +32,7 @@ CrossingStateParameter make_default_crossing_state_parameters() {
                   static_cast<int>(Actions::FASTFORWARD),
                   static_cast<int>(Actions::BACKWARD)};
 
+  p.merge = false;
+
   return p;
 }

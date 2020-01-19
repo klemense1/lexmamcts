@@ -43,24 +43,10 @@ std::shared_ptr<CrossingState> CrossingState::execute(const JointAction &joint_a
   EvaluationMap labels;
   RuleStateMap next_automata(rule_state_map_);
   World next_world;
-  std::vector<AgentState> next_agent_states(agent_states_.size());
   rewards.resize(parameters_.num_other_agents + 1);
 
-  // CALCULATE NEXT STATE
-  for (size_t i = 0; i < agent_states_.size(); ++i) {
-    if (terminal_agents_[i]) {
-      next_agent_states[i] = agent_states_[i];
-    } else {
-      const auto &old_state = agent_states_[i];
-      int new_x = old_state.x_pos + parameters_.action_map[joint_action[i]];
-      next_agent_states[i] = AgentState(
-          new_x, parameters_.action_map[joint_action[i]], old_state.lane);
-    }
-  }
-  labels[Label("ego_out_of_map")] = false;
-  if (next_agent_states[ego_agent_idx].x_pos < 0) {
-    labels[Label("ego_out_of_map")] = true;
-  }
+  // CALCULATE SUCCESSOR AGENT STATES
+  std::vector<AgentState> next_agent_states = step(joint_action);
 
   // REWARD GENERATION
   // For each agent
@@ -77,7 +63,8 @@ std::shared_ptr<CrossingState> CrossingState::execute(const JointAction &joint_a
     next_world = World(next_agent_states[agent_idx], next_other_agents);
 
     for (const auto &le : label_evaluator_) {
-      labels[le->get_label()] = le->evaluate(next_world);
+      auto new_labels = le->evaluate(next_world);
+      labels.insert(new_labels.begin(), new_labels.end());
     }
     rewards[agent_idx] = Reward::Zero(parameters_.reward_vec_size);
 
@@ -99,6 +86,34 @@ std::shared_ptr<CrossingState> CrossingState::execute(const JointAction &joint_a
   return std::make_shared<CrossingState>(
       next_agent_states, agent_terminal[0], next_automata, label_evaluator_,
       parameters_, depth_ + 1, agent_terminal);
+}
+std::vector<AgentState> CrossingState::step(
+    const JointAction &joint_action) const {
+  std::vector<AgentState> next_agent_states(agent_states_.size());
+  for (size_t i = 0; i < this->agent_states_.size(); ++i) {
+    if (this->terminal_agents_[i]) {
+      next_agent_states[i] = this->agent_states_[i];
+    } else {
+      const auto &old_state = this->agent_states_[i];
+      int new_x =
+          old_state.x_pos + this->parameters_.action_map[joint_action[i]];
+      int new_lane = old_state.lane;
+      if (parameters_.merge && new_x >= parameters_.crossing_point) {
+        // If merging is activated, merge all agents to the same lane in and
+        // after crossing point.
+        new_lane = 0;
+      } else if (parameters_.merge && new_x < parameters_.crossing_point) {
+        // When driving backwards, restore the initial lane
+        new_lane = old_state.init_lane;
+      }
+      next_agent_states[i] = old_state;
+      next_agent_states[i].x_pos = new_x;
+      next_agent_states[i].last_action =
+          this->parameters_.action_map[joint_action[i]];
+      next_agent_states[i].lane = new_lane;
+    }
+  }
+  return next_agent_states;
 }
 Reward CrossingState::get_action_cost(ActionIdx action, AgentIdx agent_idx) const {
   Reward reward = Reward::Zero(parameters_.reward_vec_size);

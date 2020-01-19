@@ -28,42 +28,25 @@ inline bool check_final(const RuleState &rs) {
   return (res != 0.0);
 }
 
-// Two agents at merging point
-TEST_P(ZipperMergeFormula, collision) {
-  RuleMonitorSPtr rule = RuleMonitor::make_rule(GetParam(), -1.0, 0);
-  auto rs = rule->make_rule_state()[0];
-  EvaluationMap labels;
-  labels[Label("w_e")] = false;
-  labels[Label("mp_e")] = true;
-  labels[Label("w_o")] = false;
-  labels[Label("mp_o")] = true;
-  labels[Label("mp_oe")] = false;
-  EXPECT_TRUE(check_violation(&rs, labels));
-  EXPECT_FALSE(check_final(rs));
-}
-
 // Ego violated
 TEST_P(ZipperMergeFormula, false_alternation_l) {
   RuleMonitorSPtr rule = RuleMonitor::make_rule(GetParam(), -1.0, 0);
   auto rs = rule->make_rule_state()[0];
   EvaluationMap labels;
-  labels[Label("w_e")] = true;
-  labels[Label("mp_e")] = false;
-  labels[Label("mp_oe")] = true;
-  labels[Label("w_o")] = true;
-  labels[Label("mp_o")] = false;
+  labels[Label("merged_e")] = false;
+  labels[Label("on_ego_lane_x")] = true;
+  labels[Label("merged_x")] = false;
+  labels[Label("in_direct_front_x")] = true;
   EXPECT_FALSE(check_violation(&rs, labels));
-  labels[Label("w_e")] = true;
-  labels[Label("mp_e")] = false;
-  labels[Label("mp_oe")] = false;
-  labels[Label("w_o")] = true;
-  labels[Label("mp_o")] = false;
+  labels[Label("merged_e")] = false;
+  labels[Label("on_ego_lane_x")] = false;
+  labels[Label("merged_x")] = true;
+  labels[Label("in_direct_front_x")] = false;
   EXPECT_FALSE(check_violation(&rs, labels));
-  labels[Label("w_e")] = false;
-  labels[Label("mp_e")] = true;
-  labels[Label("mp_oe")] = false;
-  labels[Label("w_o")] = true;
-  labels[Label("mp_o")] = false;
+  labels[Label("merged_e")] = true;
+  labels[Label("on_ego_lane_x")] = true;
+  labels[Label("merged_x")] = true;
+  labels[Label("in_direct_front_x")] = true;
   EXPECT_TRUE(check_violation(&rs, labels));
   EXPECT_FALSE(check_final(rs));
 }
@@ -73,228 +56,32 @@ TEST_P(ZipperMergeFormula, true_alternation_l) {
   RuleMonitorSPtr rule = RuleMonitor::make_rule(GetParam(), -1.0, 0);
   auto rs = rule->make_rule_state()[0];
   EvaluationMap labels;
-  labels[Label("w_e")] = true;
-  labels[Label("mp_e")] = false;
-  labels[Label("mp_oe")] = true;
-  labels[Label("w_o")] = true;
-  labels[Label("mp_o")] = false;
+  labels[Label("merged_e")] = false;
+  labels[Label("on_ego_lane_x")] = true;
+  labels[Label("merged_x")] = false;
+  labels[Label("in_direct_front_x")] = true;
   EXPECT_FALSE(check_violation(&rs, labels));
-  labels[Label("w_e")] = true;
-  labels[Label("w_o")] = true;
-  labels[Label("mp_e")] = false;
-  labels[Label("mp_oe")] = false;
-  labels[Label("mp_o")] = false;
+  labels[Label("merged_e")] = false;
+  labels[Label("on_ego_lane_x")] = false;
+  labels[Label("merged_x")] = true;
+  labels[Label("in_direct_front_x")] = false;
   EXPECT_FALSE(check_violation(&rs, labels));
-  labels[Label("w_e")] = true;
-  labels[Label("w_o")] = false;
-  labels[Label("mp_e")] = false;
-  labels[Label("mp_oe")] = false;
-  labels[Label("mp_o")] = true;
+  labels[Label("merged_e")] = false;
+  labels[Label("on_ego_lane_x")] = false;
+  labels[Label("merged_x")] = true;
+  labels[Label("in_direct_front_x")] = false;
   EXPECT_FALSE(check_violation(&rs, labels));
-  labels[Label("w_e")] = true;
-  labels[Label("w_o")] = false;
-  labels[Label("mp_e")] = false;
-  labels[Label("mp_oe")] = false;
-  labels[Label("mp_o")] = true;
-  EXPECT_FALSE(check_violation(&rs, labels));
-  labels[Label("w_e")] = true;
-  labels[Label("w_o")] = false;
-  labels[Label("mp_e")] = false;
-  labels[Label("mp_oe")] = false;
-  labels[Label("mp_o")] = false;
-  EXPECT_FALSE(check_violation(&rs, labels));
-  labels[Label("w_e")] = false;
-  labels[Label("w_o")] = false;
-  labels[Label("mp_e")] = true;
-  labels[Label("mp_oe")] = false;
-  labels[Label("mp_o")] = false;
-  EXPECT_FALSE(check_violation(&rs, labels));
-  labels[Label("w_e")] = false;
-  labels[Label("w_o")] = false;
-  labels[Label("mp_e")] = true;
-  labels[Label("mp_oe")] = false;
-  labels[Label("mp_o")] = false;
-  EXPECT_FALSE(check_violation(&rs, labels));
-  labels[Label("w_e")] = false;
-  labels[Label("w_o")] = false;
-  labels[Label("mp_e")] = false;
-  labels[Label("mp_oe")] = false;
-  labels[Label("mp_o")] = false;
+  labels[Label("merged_e")] = true;
+  labels[Label("on_ego_lane_x")] = true;
+  labels[Label("merged_x")] = true;
+  labels[Label("in_direct_front_x")] = false;
   EXPECT_FALSE(check_violation(&rs, labels));
   EXPECT_FALSE(check_final(rs));
 }
 
-// No waiting agent on other lane
-TEST_P(ZipperMergeFormula, trivial_merge_r) {
-  RuleMonitorSPtr rule = RuleMonitor::make_rule(GetParam(), -1.0, 0);
-  auto rs = rule->make_rule_state()[0];
-  EvaluationMap labels;
-  labels[Label("w_e")] = true;
-  labels[Label("w_o")] = false;
-  labels[Label("mp_e")] = false;
-  labels[Label("mp_oe")] = false;
-  labels[Label("mp_o")] = false;
-  EXPECT_FALSE(check_violation(&rs, labels));
-  labels[Label("w_e")] = false;
-  labels[Label("w_o")] = false;
-  labels[Label("mp_e")] = true;
-  labels[Label("mp_oe")] = false;
-  labels[Label("mp_o")] = false;
-  EXPECT_FALSE(check_violation(&rs, labels));
-  labels[Label("w_e")] = false;
-  labels[Label("w_o")] = false;
-  labels[Label("mp_e")] = true;
-  labels[Label("mp_oe")] = false;
-  labels[Label("mp_o")] = false;
-  EXPECT_FALSE(check_violation(&rs, labels));
-  labels[Label("w_e")] = false;
-  labels[Label("w_o")] = false;
-  labels[Label("mp_e")] = false;
-  labels[Label("mp_oe")] = false;
-  labels[Label("mp_o")] = false;
-  EXPECT_FALSE(check_violation(&rs, labels));
-  EXPECT_FALSE(check_final(rs));
-}
-
-// On tie, w.l.g other should go first
-// We are first before the merge, but have not seen any other agent passing the merge
-// Should be violated if we go first
-TEST_P(ZipperMergeFormula, DISABLED_tie_violated) {
-  RuleMonitorSPtr rule = RuleMonitor::make_rule(GetParam(), -1.0, 0);
-  auto rs = rule->make_rule_state()[0];
-  EvaluationMap labels;
-  labels[Label("w_e")] = true;
-  labels[Label("w_o")] = true;
-  labels[Label("mp_e")] = false;
-  labels[Label("mp_oe")] = false;
-  labels[Label("mp_o")] = false;
-  EXPECT_FALSE(check_violation(&rs, labels));
-  labels[Label("w_e")] = false;
-  labels[Label("w_o")] = false;
-  labels[Label("mp_e")] = true;
-  labels[Label("mp_oe")] = false;
-  labels[Label("mp_o")] = false;
-  EXPECT_TRUE(check_violation(&rs, labels));
-  EXPECT_FALSE(check_final(rs));
-}
-
-// On tie, w.l.g other should go first
-// We are first before the merge, but have not seen any other agent passing the merge
-// Should be ok if other goes first
-TEST_P(ZipperMergeFormula, DISABLED_tie) {
-  RuleMonitorSPtr rule = RuleMonitor::make_rule(GetParam(), -1.0, 0);
-  auto rs = rule->make_rule_state()[0];
-  EvaluationMap labels;
-  labels[Label("w_e")] = true;
-  labels[Label("w_o")] = true;
-  labels[Label("mp_e")] = false;
-  labels[Label("mp_oe")] = false;
-  labels[Label("mp_o")] = false;
-  EXPECT_FALSE(check_violation(&rs, labels));
-  labels[Label("w_e")] = true;
-  labels[Label("w_o")] = false;
-  labels[Label("mp_e")] = false;
-  labels[Label("mp_oe")] = false;
-  labels[Label("mp_o")] = true;
-  EXPECT_FALSE(check_violation(&rs, labels));
-  labels[Label("w_e")] = true;
-  labels[Label("w_o")] = false;
-  labels[Label("mp_e")] = false;
-  labels[Label("mp_oe")] = false;
-  labels[Label("mp_o")] = true;
-  EXPECT_FALSE(check_violation(&rs, labels));
-  labels[Label("w_e")] = false;
-  labels[Label("w_o")] = false;
-  labels[Label("mp_e")] = true;
-  labels[Label("mp_oe")] = false;
-  labels[Label("mp_o")] = false;
-  EXPECT_FALSE(check_violation(&rs, labels));
-  labels[Label("w_e")] = false;
-  labels[Label("w_o")] = false;
-  labels[Label("mp_e")] = false;
-  labels[Label("mp_oe")] = false;
-  labels[Label("mp_o")] = false;
-  EXPECT_FALSE(check_violation(&rs, labels));
-  EXPECT_FALSE(check_final(rs));
-}
-
-// Agent arriving on the other lane, while other agent on ego lane is at merging point
-TEST_P(ZipperMergeFormula, intermittent_arrive) {
-  RuleMonitorSPtr rule = RuleMonitor::make_rule(GetParam(), -1.0, 0);
-  auto rs = rule->make_rule_state()[0];
-  EvaluationMap labels;
-  labels[Label("w_e")] = true;
-  labels[Label("w_o")] = false;
-  labels[Label("mp_e")] = false;
-  labels[Label("mp_oe")] = true;
-  labels[Label("mp_o")] = false;
-  EXPECT_FALSE(check_violation(&rs, labels));
-  labels[Label("w_e")] = true;
-  labels[Label("w_o")] = false;
-  labels[Label("mp_e")] = false;
-  labels[Label("mp_oe")] = true;
-  labels[Label("mp_o")] = false;
-  EXPECT_FALSE(check_violation(&rs, labels));
-  labels[Label("w_e")] = true;
-  labels[Label("w_o")] = true;
-  labels[Label("mp_e")] = false;
-  labels[Label("mp_oe")] = false;
-  labels[Label("mp_o")] = false;
-  EXPECT_FALSE(check_violation(&rs, labels));
-  labels[Label("w_e")] = true;
-  labels[Label("w_o")] = false;
-  labels[Label("mp_e")] = false;
-  labels[Label("mp_oe")] = false;
-  labels[Label("mp_o")] = true;
-  EXPECT_FALSE(check_violation(&rs, labels));
-  labels[Label("w_e")] = true;
-  labels[Label("w_o")] = false;
-  labels[Label("mp_e")] = false;
-  labels[Label("mp_oe")] = false;
-  labels[Label("mp_o")] = false;
-  EXPECT_FALSE(check_violation(&rs, labels));
-  labels[Label("w_e")] = false;
-  labels[Label("w_o")] = false;
-  labels[Label("mp_e")] = true;
-  labels[Label("mp_oe")] = false;
-  labels[Label("mp_o")] = false;
-  EXPECT_FALSE(check_violation(&rs, labels));
-  EXPECT_FALSE(check_final(rs));
-}
-
-// Agent arriving on the other lane, while other agent on ego lane is at merging point
-TEST_P(ZipperMergeFormula, intermittent_arrive_violated) {
-  RuleMonitorSPtr rule = RuleMonitor::make_rule(GetParam(), -1.0, 0);
-  auto rs = rule->make_rule_state()[0];
-  EvaluationMap labels;
-  labels[Label("w_e")] = true;
-  labels[Label("w_o")] = false;
-  labels[Label("mp_e")] = false;
-  labels[Label("mp_oe")] = true;
-  labels[Label("mp_o")] = false;
-  EXPECT_FALSE(check_violation(&rs, labels));
-  labels[Label("w_e")] = true;
-  labels[Label("w_o")] = false;
-  labels[Label("mp_e")] = false;
-  labels[Label("mp_oe")] = true;
-  labels[Label("mp_o")] = false;
-  EXPECT_FALSE(check_violation(&rs, labels));
-  labels[Label("w_e")] = true;
-  labels[Label("w_o")] = true;
-  labels[Label("mp_e")] = false;
-  labels[Label("mp_oe")] = false;
-  labels[Label("mp_o")] = false;
-  EXPECT_FALSE(check_violation(&rs, labels));
-  labels[Label("w_e")] = false;
-  labels[Label("w_o")] = true;
-  labels[Label("mp_e")] = true;
-  labels[Label("mp_oe")] = false;
-  labels[Label("mp_o")] = false;
-  EXPECT_TRUE(check_violation(&rs, labels));
-  EXPECT_FALSE(check_final(rs));
-}
-
-const std::string formulas[] = {"G((mp_oe & X !mp_oe & (w_o | X w_o) & w_e) -> (!mp_e W mp_o)) & G!((mp_oe & mp_e)|(mp_e & mp_o)|(mp_oe & mp_o)|(w_e & mp_e))"};
+const std::string formulas[] = {
+    "G((!merged_e & !merged_x & on_ego_lane_x) -> G((merged_e & merged_x) -> "
+    "!in_direct_front_x))"};
 
 INSTANTIATE_TEST_CASE_P(ZipperMergeFormulaTest, ZipperMergeFormula,
     testing::ValuesIn(formulas));
