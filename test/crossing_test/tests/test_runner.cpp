@@ -5,18 +5,19 @@
 
 #include "test_runner.h"
 void TestRunner::run_test(size_t num_iter, int max_steps) {
+  // Always recreate test environment to isolate test iterations
   latest_test_env_ = factory_->make_test_env();
   int steps = 0;
-  std::vector<Reward> step_reward(latest_test_env_->rewards);
+  std::vector<Reward> step_reward(latest_test_env_->crossing_state_parameter_.num_other_agents + 1);
+  // Store initial state in history
   latest_test_env_->state_history_.emplace_back(get_state_vector().transpose());
   while (!latest_test_env_->state->is_terminal() && steps < max_steps) {
     latest_test_env_->search(num_iter);
     latest_test_env_->state = latest_test_env_->state->execute(latest_test_env_->get_jt(), step_reward);
-    VLOG(1) << "Iteration: " << steps
-            << ", Next state: " << latest_test_env_->state->sprintf();
+    latest_test_env_->state->reset_depth();
+    VLOG(1) << "Iteration: " << steps << ", Next state: " << latest_test_env_->state->sprintf();
     latest_test_env_->rewards += step_reward;
-    latest_test_env_->state_history_.emplace_back(
-        get_state_vector().transpose());
+    latest_test_env_->state_history_.emplace_back(get_state_vector().transpose());
     ++steps;
   }
   latest_test_env_->rewards += latest_test_env_->state->get_final_reward();
@@ -31,8 +32,10 @@ Eigen::VectorXi TestRunner::get_state_vector() const {
   return state;
 }
 JointReward TestRunner::calculate_default_reward() {
-  JointReward step_reward(latest_test_env_->rewards.size(), Reward::Zero(latest_test_env_->mcts_parameters_.REWARD_VEC_SIZE));
-  JointReward accu_reward(latest_test_env_->rewards.size(), Reward::Zero(latest_test_env_->mcts_parameters_.REWARD_VEC_SIZE));
+  JointReward step_reward(latest_test_env_->rewards.size(),
+                          Reward::Zero(latest_test_env_->mcts_parameters_.REWARD_VEC_SIZE));
+  JointReward accu_reward(latest_test_env_->rewards.size(),
+                          Reward::Zero(latest_test_env_->mcts_parameters_.REWARD_VEC_SIZE));
   auto const &actions = latest_test_env_->get_action_history();
   auto d_test_env = DefaultTestEnvFactory().make_test_env();
   for (auto const &jt : actions) {
@@ -50,30 +53,43 @@ double TestRunner::calculate_vector_utility(const Reward &candidate) const {
   double shift = 1.0;
   for (int d = candidate.rows() - 1; d >= 0; --d) {
     u += shift * candidate(d);
-    shift *= std::abs(latest_test_env_->mcts_parameters_.uct_statistic.UPPER_BOUND(d)
-                          - latest_test_env_->mcts_parameters_.uct_statistic.LOWER_BOUND(d)) + 1;
+    shift *= std::abs(latest_test_env_->mcts_parameters_.uct_statistic.UPPER_BOUND(d) -
+                      latest_test_env_->mcts_parameters_.uct_statistic.LOWER_BOUND(d)) +
+             1;
   }
   return u;
 }
-double TestRunner::calculate_metric() {
-  // TODO: Calculate more metrics
-  Reward candidate = rewards_to_mat(calculate_default_reward()).rowwise().sum();
-  double new_value = calculate_vector_utility(candidate);
-  ++metrics_.n;
-  double delta = new_value - metrics_.mean;
-  metrics_.mean += delta / metrics_.n;
-  double delta2 = new_value - metrics_.mean;
-  metrics_.m_2 += delta * delta2;
-  metrics_.mean += calculate_vector_utility(candidate);
-  return metrics_.mean;
+TestRunner::Metrics TestRunner::calculate_metric() {
+  Reward agent_reward_sum = rewards_to_mat(calculate_default_reward()).rowwise().sum();
+  double value = agent_reward_sum(2);
+  if (agent_reward_sum(0) < 0) {
+    ++metrics_.collisions;
+  } else {
+    metrics_.value_.add_value(value);
+    metrics_.step_cost_.add_value(value / latest_test_env_->state_history_.size());
+    metrics_.pos_.add_value(static_cast<double>(latest_test_env_->state_history_.back()(0)));
+  }
+  if (agent_reward_sum(1) < 0) {
+    ++metrics_.violations;
+  }
+  return metrics_;
 }
 void OptiTest::run_test(size_t num_iter, int max_steps) {
   latest_test_env_ = DefaultTestEnvFactory().make_test_env();
   get_optimal_reward(latest_test_env_.get());
 }
-JointReward OptiTest::calculate_default_reward() {
-  return latest_test_env_->rewards;
+JointReward OptiTest::calculate_default_reward() { return latest_test_env_->rewards; }
+const std::shared_ptr<BaseTestEnv> &TestRunner::get_latest_test_env() const { return latest_test_env_; }
+ostream &operator<<(ostream &os, const TestRunner::MeanVar &var) {
+  os << var.mean_ << "\t";
+  return os;
 }
-const std::shared_ptr<BaseTestEnv> &TestRunner::get_latest_test_env() const {
-  return latest_test_env_;
+ostream &operator<<(ostream &os, const TestRunner::Metrics &metrics) {
+  os << metrics.pos_ << metrics.value_ << metrics.step_cost_ << metrics.collisions << "\t" << metrics.violations
+     << "\t";
+  return os;
+}
+ostream &TestRunner::Metrics::write_header(ostream &os) {
+  os << "# Mean final position\tMean cost\tMean step cost\t#Collisions\t#Rule violations\n";
+  return os;
 }

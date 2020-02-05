@@ -20,27 +20,25 @@ const std::string zip_formula =
 
 std::shared_ptr<BaseTestEnv> ZipperTestEnvFactory::make_test_env() {
   MctsParameters mcts_params = make_default_mcts_parameters();
-  mcts_params.uct_statistic.LOWER_BOUND << -30.0f, -30.0f, -30.0f, -30.0f,
-      -5000.0f;
-  mcts_params.uct_statistic.UPPER_BOUND << 0.0f, 0.0f, 0.0f, 0.0f, 5000.0f;
-  mcts_params.thres_uct_statistic_.THRESHOLD << -0.72, -0.3, -1.0, -1.0,
-      std::numeric_limits<ObjectiveVec::Scalar>::max();
-  mcts_params.COOP_FACTOR = 0.5;
+  mcts_params.uct_statistic.LOWER_BOUND << -30.0f, -30.0f, -5000.0f;
+  mcts_params.uct_statistic.UPPER_BOUND << 0.0f, 0.0f, 5000.0f;
+  mcts_params.thres_uct_statistic_.THRESHOLD << -0.72, -0.3, std::numeric_limits<ObjectiveVec::Scalar>::max();
+  mcts_params.COOP_FACTOR = 1.0;
   mcts_params.DISCOUNT_FACTOR = 0.9;
   mcts_params.uct_statistic.EXPLORATION_CONSTANT = 0.7;
   mcts_params.random_heuristic.MAX_SEARCH_TIME_RANDOM_HEURISTIC = std::numeric_limits<double>::infinity();
 
   CrossingStateParameter crossing_params =
       make_default_crossing_state_parameters();
-  crossing_params.depth_prio = 4;
-  crossing_params.speed_deviation_prio = 4;
-  crossing_params.acceleration_prio = 4;
-  crossing_params.potential_prio = 4;
+  crossing_params.depth_prio = 2;
+  crossing_params.speed_deviation_prio = 2;
+  crossing_params.acceleration_prio = 2;
+  crossing_params.potential_prio = 2;
 
   crossing_params.depth_weight = 0;
   crossing_params.speed_deviation_weight = 2;
   crossing_params.acceleration_weight = 0;
-  crossing_params.potential_weight = 0;
+  crossing_params.potential_weight = 1;
   crossing_params.num_other_agents = 2;
   crossing_params.ego_goal_reached_position = 1000;
   crossing_params.state_x_length = 1000;
@@ -52,12 +50,8 @@ std::shared_ptr<BaseTestEnv> ZipperTestEnvFactory::make_test_env() {
   auto automata =
       BaseTestEnv::make_default_automata(crossing_params.num_other_agents + 1);
   for (auto &aut : automata) {
-    aut.erase(Rule::NO_SPEEDING);
-    aut.erase(Rule::REACH_GOAL);
     aut.erase(Rule::GIVE_WAY);
-    aut.erase(Rule::LEAVE_INTERSECTION);
     aut.insert({Rule::ZIP, RuleMonitor::make_rule(zip_formula, -1, 1)});
-    aut.at(Rule::NO_COLLISION)->set_weight(-1.0f);
   }
   auto env = std::make_shared<CrossingTestEnv<ThresUCTStatistic>>(
       mcts_params, crossing_params, automata,

@@ -44,8 +44,8 @@ class BaseTestEnv {
 
   static std::vector<std::map<Rule, RuleMonitorSPtr>> make_default_automata(size_t num_agents);
 
-  static std::vector<std::shared_ptr<EvaluatorLabelBase<World>>>
-  make_default_labels(CrossingStateParameter params);
+  static std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> make_default_labels(
+      const CrossingStateParameter &params);
 
   virtual JointAction search(size_t num_iterations) = 0;
 
@@ -68,8 +68,8 @@ class BaseTestEnv {
  private:
   void create_state();
 
-  JointAction jt;
-  std::deque<JointAction> action_history;
+  JointAction jt_;
+  std::deque<JointAction> action_history_;
 };
 
 #endif  // TEST_CROSSING_TEST_TESTS_BASE_TEST_ENV_H_

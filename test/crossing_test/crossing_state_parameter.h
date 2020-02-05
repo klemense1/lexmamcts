@@ -15,7 +15,6 @@ struct CrossingStateParameter {
   int state_x_length;
   int ego_goal_reached_position;
   int terminal_depth_;
-  float ALPHA;
   int crossing_point;
 
   size_t depth_prio;

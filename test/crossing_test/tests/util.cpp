@@ -16,28 +16,28 @@ Eigen::MatrixXf rewards_to_mat(std::vector<Reward> const &rewards) {
 MctsParameters make_default_mcts_parameters() {
   MctsParameters param;
 
-  param.REWARD_VEC_SIZE = 5;
+  param.REWARD_VEC_SIZE = 3;
 
-  param.random_heuristic.MAX_SEARCH_TIME_RANDOM_HEURISTIC = 10000;
-  param.random_heuristic.MAX_NUMBER_OF_ITERATIONS = 40;
+  param.random_heuristic.MAX_SEARCH_TIME_RANDOM_HEURISTIC = std::numeric_limits<double>::max();
+  param.random_heuristic.MAX_NUMBER_OF_ITERATIONS = 30;
   param.COOP_FACTOR = 0.0;
-  param.DISCOUNT_FACTOR = 1;
+  param.DISCOUNT_FACTOR = 0.9;
 
   param.uct_statistic.PROGRESSIVE_WIDENING_ENABLED = false;
   param.uct_statistic.PROGRESSIVE_WIDENING_ALPHA = 0.5;
 
-  param.uct_statistic.EXPLORATION_CONSTANT = 1;
+  param.uct_statistic.EXPLORATION_CONSTANT = 0.7;
   param.uct_statistic.LOWER_BOUND = ObjectiveVec::Zero(param.REWARD_VEC_SIZE);
-  param.uct_statistic.LOWER_BOUND << -5000.0f, -5000.0f, -5000.0f, -5000.0f, -5000.0f;
+  param.uct_statistic.LOWER_BOUND << -2.0f, -30.0f, -5000.0f;
   param.uct_statistic.UPPER_BOUND = ObjectiveVec::Zero(param.REWARD_VEC_SIZE);
-  param.uct_statistic.UPPER_BOUND << 0.0f, 1000.0f, 0.0f, 0.0f, 5000.0f;
+  param.uct_statistic.UPPER_BOUND << 0.0f, 0.0f, 0.0f;
 
-  param.e_greedy_uct_statistic_.EPSILON = 0.1;
+  param.e_greedy_uct_statistic_.EPSILON = 0.0;
 
   param.slack_uct_statistic_.ALPHA = 0.05;
 
   param.thres_uct_statistic_.THRESHOLD = ObjectiveVec::Zero(param.REWARD_VEC_SIZE);
-  param.thres_uct_statistic_.THRESHOLD << -0.44, -0.541, -0.99, 0.0f, std::numeric_limits<ObjectiveVec::Scalar>::max();
+  param.thres_uct_statistic_.THRESHOLD << -0.28, -0.44, std::numeric_limits<ObjectiveVec::Scalar>::max();
 
   return param;
 }

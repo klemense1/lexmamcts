@@ -18,45 +18,28 @@ BaseTestEnv::BaseTestEnv(
       rewards(crossing_state_parameter.num_other_agents + 1,
               Reward::Zero(mcts_parameters.REWARD_VEC_SIZE)),
       automata_(std::move(automata)),
-      jt(2, static_cast<int>(Actions::FORWARD)) {
+      jt_(2, static_cast<int>(Actions::FORWARD)) {
   create_state();
 }
 std::vector<std::map<Rule, RuleMonitorSPtr>> BaseTestEnv::make_default_automata(size_t num_agents) {
   std::vector<std::map<Rule, RuleMonitorSPtr>> automata(num_agents);
-  automata[0].insert({Rule::NO_SPEEDING,
-                      RuleMonitor::make_rule("G !speeding", -1.0f, RewardPriority::LEGAL_RULE_B)});
-  automata[0].insert(
-      {Rule::REACH_GOAL,
-       RuleMonitor::make_rule("F goal_reached", -100.f, RewardPriority::GOAL)});
-  automata[0].insert(
-      {Rule::NO_COLLISION,
-       RuleMonitor::make_rule("G !collision", -1.0f, RewardPriority::SAFETY)});
-  automata[0].insert(
-      {Rule::LEAVE_INTERSECTION,
-                      RuleMonitor::make_rule("G(at_xing -> X !at_xing)", -1.0f,
-                                             RewardPriority::SAFETY)});
-  automata[0].insert({Rule::GIVE_WAY,
-                      RuleMonitor::make_rule("G(other_near -> !at_xing)", -1.0f,
-                                          RewardPriority::LEGAL_RULE)});
-
+  automata[0].insert({Rule::NO_COLLISION, RuleMonitor::make_rule("G !collision", -1.0f, 0)});
+  // Same default rules for all agents
   for (size_t i = 1; i < automata.size(); ++i) {
     automata[i] = automata[0];
   }
+  // Ego should give way
+  automata[0].insert({Rule::GIVE_WAY, RuleMonitor::make_rule("G(other_near -> !at_xing)", -1.0f, 1)});
   return automata;
 }
-std::vector<std::shared_ptr<EvaluatorLabelBase<World>>>
-BaseTestEnv::make_default_labels(CrossingStateParameter params) {
+std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> BaseTestEnv::make_default_labels(
+    const CrossingStateParameter &params) {
   std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> labels;
   labels.emplace_back(std::make_shared<EvaluatorLabelCollision>(
       "collision", params.crossing_point));
-  labels.emplace_back(std::make_shared<EvaluatorLabelGoalReached>(
-      "goal_reached", params.ego_goal_reached_position));
   labels.emplace_back(std::make_shared<EvaluatorLabelAtPosition>(
       "at_xing", params.crossing_point));
   labels.emplace_back(std::make_shared<EvaluatorLabelOtherNear>("other_near"));
-  labels.emplace_back(std::make_shared<EvaluatorLabelSpeed>("speeding"));
-  labels.emplace_back(std::make_shared<EvaluatorLabelOtherGoalReached>(
-      "other_goal_reached", params.ego_goal_reached_position));
   return labels;
 }
 RuleStateMap BaseTestEnv::get_automata_vec() const {
@@ -84,11 +67,9 @@ void BaseTestEnv::create_state() {
                                           crossing_state_parameter_);
 }
 void BaseTestEnv::set_jt(const JointAction &jt) {
-  BaseTestEnv::jt = jt;
-  action_history.emplace_back(jt);
+  jt_ = jt;
+  action_history_.emplace_back(jt);
 }
-const std::deque<JointAction> &BaseTestEnv::get_action_history() const {
-  return action_history;
-}
-const JointAction &BaseTestEnv::get_jt() const { return jt; }
+const std::deque<JointAction> &BaseTestEnv::get_action_history() const { return action_history_; }
+const JointAction &BaseTestEnv::get_jt() const { return jt_; }
 BaseTestEnv::~BaseTestEnv() {}
