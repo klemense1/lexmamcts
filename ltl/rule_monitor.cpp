@@ -76,7 +76,7 @@ std::string RuleMonitor::parse_agents(const std::string &ltl_formula_str) {
   }
   ap_alphabet_.push_back({"alive", spot::formula::ap("alive"), -1, false});
   agent_free_formula += remaining;
-  VLOG(1) << "Cleaned formula: " << agent_free_formula;
+  VLOG(2) << "Cleaned formula: " << agent_free_formula;
   return agent_free_formula;
 }
 
