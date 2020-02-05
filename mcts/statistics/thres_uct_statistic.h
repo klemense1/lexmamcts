@@ -43,16 +43,20 @@ class ThresUCTStatistic : public UctStatistic<ThresUCTStatistic> {
   ActionIdx choose_next_action(const S &state,
                                std::vector<int> &unexpanded_actions) {
     if (unexpanded_actions.empty()) {
-      // Select an action based on the UCB formula
+      std::uniform_real_distribution<float> uniform_norm(0, 1);
       std::vector<Eigen::VectorXf> values;
       calculate_ucb_values(ucb_statistics_, values);
       ActionIdx selected_action = std::distance(
-          values.begin(),
-          std::max_element(
-              values.begin(), values.end(),
-              ThresholdComparator(
-                  mcts_parameters_.thres_uct_statistic_.THRESHOLD)));
-      return selected_action;
+          values.begin(), std::max_element(values.begin(), values.end(),
+                                           ThresholdComparator(mcts_parameters_.thres_uct_statistic_.THRESHOLD)));
+      if (uniform_norm(random_generator_) >= mcts_parameters_.e_greedy_uct_statistic_.EPSILON) {
+        // Select an action based on the UCB formula
+        return selected_action;
+      } else {
+        std::uniform_int_distribution<ActionIdx> uniform_action(0, num_actions_ - 2);
+        ActionIdx random_action = uniform_action(random_generator_);
+        return random_action == selected_action ? random_action + 1 : random_action;
+      }
     } else {
       // Select randomly an unexpanded action
       std::uniform_int_distribution<ActionIdx> random_action_selection(
