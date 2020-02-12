@@ -11,7 +11,7 @@ CrossingStateParameter make_default_crossing_state_parameters() {
   p.num_other_agents = 1;
   p.state_x_length = 100;
   p.ego_goal_reached_position = 100;
-  p.terminal_depth_ = 6;
+  p.terminal_depth_ = 12;
   p.crossing_point = 8;
 
   p.depth_prio = 2;

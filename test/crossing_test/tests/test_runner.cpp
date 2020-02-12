@@ -15,7 +15,9 @@ void TestRunner::run_test(size_t num_iter, int max_steps) {
     latest_test_env_->search(num_iter);
     latest_test_env_->state = latest_test_env_->state->execute(latest_test_env_->get_jt(), step_reward);
     latest_test_env_->state->reset_depth();
-    VLOG(1) << "Iteration: " << steps << ", Next state: " << latest_test_env_->state->sprintf();
+    VLOG(1) << "Iteration: " << steps << ", Next state: " << latest_test_env_->state->sprintf()
+            << ", Ego step reward: " << step_reward[0].transpose();
+    print_labels();
     latest_test_env_->rewards += step_reward;
     latest_test_env_->state_history_.emplace_back(get_state_vector().transpose());
     ++steps;
@@ -60,8 +62,8 @@ double TestRunner::calculate_vector_utility(const Reward &candidate) const {
   return u;
 }
 TestRunner::Metrics TestRunner::calculate_metric() {
-  Reward agent_reward_sum = rewards_to_mat(calculate_default_reward()).rowwise().sum();
-  double value = agent_reward_sum(2);
+  Reward agent_reward_sum = rewards_to_mat(calculate_default_reward()).col(0);
+  double value = agent_reward_sum(agent_reward_sum.size() - 1);
   if (agent_reward_sum(0) < 0) {
     ++metrics_.collisions;
   } else {
@@ -81,7 +83,7 @@ void OptiTest::run_test(size_t num_iter, int max_steps) {
 JointReward OptiTest::calculate_default_reward() { return latest_test_env_->rewards; }
 const std::shared_ptr<BaseTestEnv> &TestRunner::get_latest_test_env() const { return latest_test_env_; }
 ostream &operator<<(ostream &os, const TestRunner::MeanVar &var) {
-  os << var.mean_ << "\t";
+  os << var.mean_ << "\t" << var.get_confidence_radius() << "\t";
   return os;
 }
 ostream &operator<<(ostream &os, const TestRunner::Metrics &metrics) {
@@ -90,6 +92,11 @@ ostream &operator<<(ostream &os, const TestRunner::Metrics &metrics) {
   return os;
 }
 ostream &TestRunner::Metrics::write_header(ostream &os) {
-  os << "# Mean final position\tMean cost\tMean step cost\t#Collisions\t#Rule violations\n";
+  os << "# Mean final position\t\tMean cost\t\tMean step cost\t\t#Collisions\t#Rule violations\t";
   return os;
+}
+void TestRunner::print_labels() {
+  for (const auto &label : latest_test_env_->state->get_agent_labels(0)) {
+    VLOG(1) << label.first.get_label_str() << " : " << label.second;
+  }
 }

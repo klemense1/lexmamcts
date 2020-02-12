@@ -86,6 +86,8 @@ class CrossingState : public mcts::StateInterface<CrossingState> {
   std::string sprintf() const;
   const CrossingStateParameter &get_parameters() const;
 
+  EvaluationMap get_agent_labels(AgentIdx agent_idx) const;
+
  private:
   std::vector<AgentState> step(const JointAction &joint_action) const;
   Reward get_action_cost(ActionIdx action, AgentIdx agent_idx) const;

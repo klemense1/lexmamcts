@@ -10,7 +10,7 @@ EvaluatorLabelOtherNear::EvaluatorLabelOtherNear(const std::string &label_str)
 std::vector<std::pair<ltl::Label, bool>> EvaluatorLabelOtherNear::evaluate(
     const World &state) const {
   for (auto agent : state.second) {
-    if (abs(state.first.x_pos - agent.x_pos) < 2) {
+    if (abs(state.first.x_pos - agent.x_pos) <= 2) {
       return {{get_label(), true}};
     }
   }

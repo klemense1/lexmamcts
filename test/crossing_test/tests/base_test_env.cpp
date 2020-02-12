@@ -4,6 +4,8 @@
 //
 
 #include "test/crossing_test/tests/base_test_env.h"
+#include "test/crossing_test/label_evaluator/evaluator_label_ego_range.h"
+#include "test/crossing_test/label_evaluator/evaluator_label_other_range.h"
 
 #include <utility>
 
@@ -29,16 +31,15 @@ std::vector<std::map<Rule, RuleMonitorSPtr>> BaseTestEnv::make_default_automata(
     automata[i] = automata[0];
   }
   // Ego should give way
-  automata[0].insert({Rule::GIVE_WAY, RuleMonitor::make_rule("G(other_near -> !at_xing)", -1.0f, 1)});
+  automata[0].insert({Rule::GIVE_WAY, RuleMonitor::make_rule("G(other_near -> !crossed W other_crossed)", -1.0f, 1)});
   return automata;
 }
 std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> BaseTestEnv::make_default_labels(
     const CrossingStateParameter &params) {
   std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> labels;
-  labels.emplace_back(std::make_shared<EvaluatorLabelCollision>(
-      "collision", params.crossing_point));
-  labels.emplace_back(std::make_shared<EvaluatorLabelAtPosition>(
-      "at_xing", params.crossing_point));
+  labels.emplace_back(std::make_shared<EvaluatorLabelCollision>("collision", params.crossing_point + 1));
+  labels.emplace_back(std::make_shared<EvaluatorLabelEgoRange>("crossed", params.crossing_point, 1000));
+  labels.emplace_back(std::make_shared<EvaluatorLabelOtherRange>("other_crossed", params.crossing_point + 1, 1000));
   labels.emplace_back(std::make_shared<EvaluatorLabelOtherNear>("other_near"));
   return labels;
 }

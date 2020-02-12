@@ -20,7 +20,7 @@ using std::ofstream;
 using std::ostream;
 using std::stringstream;
 
-const std::string spacer = "\t\t\t\t";
+const std::string spacer = "\t\t\t\t\t\t\t\t";
 const std::array<std::string, 5> stat_names = {"UCTStatistic", "ThresholdStatistic", "SlackStatistic",
                                                "MaxUCTStatistic"};
 
@@ -29,23 +29,25 @@ int main(int argc, char **argv) {
   FLAGS_minloglevel = 1;
   //  FLAGS_v = 1;
   FLAGS_logtostderr = true;
-  int const iterations = 3;
+  int const iterations = 50;
 
   // Use true randomness
   mcts::RandomGenerator::random_generator_ = std::mt19937(std::random_device()());
 
   ofstream ofs;
-  ofs.open("/tmp/trajectory_comp.dat");
+  ofs.open("/tmp/discrete_world_statistics.dat");
   ofs << "# Iterations\t";
   for (const auto &name : stat_names) {
     ofs << name << spacer;
   }
   ofs << "\n\t";
-  for (size_t i = 0; i < stat_names.size(); ++i) {
+  // Write header for every stat
+  for (size_t i = 0; i < stat_names.size() - 1; ++i) {
     TestRunner::Metrics::write_header(ofs);
   }
+  ofs << "\n";
 
-  ArrayXi sample_sizes = ArrayXi::LinSpaced(20, 100, 50000);
+  ArrayXi sample_sizes = ArrayXi::LinSpaced(5, 4, 500);
   int step = 1;
   for (int i : sample_sizes) {
     std::vector<std::unique_ptr<TestRunner>> test_runners;
@@ -62,8 +64,9 @@ int main(int argc, char **argv) {
       for (int j = 0; j < iterations; ++j) {
         LOG(WARNING) << "\t\tIterations [ " << j + 1 << " / " << iterations << " ]";
         it->run_test(i);
+        it->calculate_metric();
       }
-      ofs << it->calculate_metric();
+      ofs << it->get_metrics();
       ++n_test_runners;
     }
     ofs << "\n";

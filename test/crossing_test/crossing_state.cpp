@@ -22,7 +22,7 @@ CrossingState::CrossingState(RuleStateMap rule_state_map,
   for (auto &state : agent_states_) {
     state = AgentState();
   }
-  agent_states_[1].x_pos = 1;
+  //  agent_states_[1].x_pos = 1;
 }
 
 CrossingState::CrossingState(std::vector<AgentState> agent_states,
@@ -257,4 +257,17 @@ const CrossingStateParameter &CrossingState::get_parameters() const {
 }
 const RuleStateMap &CrossingState::get_rule_state_map() const {
   return rule_state_map_;
+}
+EvaluationMap CrossingState::get_agent_labels(AgentIdx agent_idx) const {
+  EvaluationMap labels;
+  std::vector<AgentState> next_other_agents(agent_states_);
+  next_other_agents.erase(next_other_agents.begin() + agent_idx);
+  // Create perspective from current agent
+  World next_world(agent_states_[agent_idx], next_other_agents);
+
+  for (const auto &le : label_evaluator_) {
+    auto new_labels = le->evaluate(next_world);
+    labels.insert(new_labels.begin(), new_labels.end());
+  }
+  return labels;
 }

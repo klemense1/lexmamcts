@@ -9,6 +9,7 @@
 #include <ostream>
 #include "glog/logging.h"
 
+#include "boost/math/distributions/students_t.hpp"
 #include "test/crossing_test/factories/default_test_env_factory.h"
 #include "test/crossing_test/factories/test_env_factory.h"
 #include "test/crossing_test/tests/crossing_test_env.h"
@@ -37,7 +38,18 @@ class TestRunner {
       double delta2 = value - mean_;
       m_2_ += delta * delta2;
     }
-    inline double get_variance() { return m_2_ / static_cast<double>(n_); }
+    inline double get_variance() const { return m_2_ / static_cast<double>(n_); }
+    inline double get_confidence_radius() const {
+      const double std_dev = std::sqrt(get_variance());
+      if (n_ > 1) {
+        boost::math::students_t dist(n_ - 1);
+        // 95% confidence interval
+        double t = quantile(complement(dist, 0.05 / 2.0));
+        return t * std_dev / sqrt(static_cast<double>(n_));
+      } else {
+        return 0.0;
+      }
+    }
   };
 
   struct Metrics {
@@ -66,6 +78,7 @@ class TestRunner {
   std::shared_ptr<ITestEnvFactory> factory_;
   std::shared_ptr<BaseTestEnv> latest_test_env_;
  private:
+  void print_labels();
   Metrics metrics_;
 };
 
