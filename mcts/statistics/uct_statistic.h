@@ -7,11 +7,12 @@
 #ifndef UCT_STATISTIC_H
 #define UCT_STATISTIC_H
 
-#include "mcts/mcts.h"
-#include <iostream>
-#include <iomanip>
 #include <cfloat>
+#include <cmath>
+#include <iomanip>
+#include <iostream>
 #include <type_traits>
+#include "mcts/mcts.h"
 
 namespace mcts {
 
@@ -39,6 +40,16 @@ class UctStatistic :
  public:
   MCTS_TEST
 
+  struct LexicographicalComperator {
+    const double eps_ = 1e-5;
+    bool operator()(const Eigen::VectorXf &a, const Eigen::VectorXf &b) const {
+      return std::lexicographical_compare(
+          a.begin(), a.end(), b.begin(), b.end(), [this](const float &a, const float &b) {
+            return (b - a) > ((std::fabs(a) < std::fabs(b) ? std::fabs(b) : std::fabs(a)) * eps_);
+          });
+    }
+  };
+
   UctStatistic(ActionIdx num_actions, MctsParameters const &mcts_parameters) :
       ParentType(num_actions, mcts_parameters),
       value_(ObjectiveVec::Zero(mcts_parameters.REWARD_VEC_SIZE)),
@@ -61,13 +72,7 @@ class UctStatistic :
       // find largest index
       ActionIdx selected_action = std::distance(values.begin(),
                                                 std::max_element(values.begin(),
-                                                                 values.end(),
-                                                                 [](Eigen::VectorXf &a, Eigen::VectorXf &b) -> bool {
-                                                                   return std::lexicographical_compare(a.begin(),
-                                                                                                       a.end(),
-                                                                                                       b.begin(),
-                                                                                                       b.end());
-                                                                 }));
+                                                                 values.end(), LexicographicalComperator()));
       return selected_action;
     } else {
       // Select randomly an unexpanded action
@@ -81,18 +86,16 @@ class UctStatistic :
 
   ActionIdx get_best_action() {
     // Lexicographical ordering of the UCT value vectors
+    LexicographicalComperator lex_comp;
     auto max = std::max_element(ucb_statistics_.begin(),
                                 ucb_statistics_.end(),
-                                [](ActionUCBMap::value_type const &a, ActionUCBMap::value_type const &b) {
+                                [lex_comp](ActionUCBMap::value_type const &a, ActionUCBMap::value_type const &b) {
                                   if (a.second.action_count_ == 0) {
                                     return true;
                                   } else if (b.second.action_count_ == 0) {
                                     return false;
                                   } else {
-                                    return std::lexicographical_compare(a.second.action_value_.begin(),
-                                                                        a.second.action_value_.end(),
-                                                                        b.second.action_value_.begin(),
-                                                                        b.second.action_value_.end());
+                                    return lex_comp(a.second.action_value_, b.second.action_value_);
                                   }
                                 });
     return max->first;
