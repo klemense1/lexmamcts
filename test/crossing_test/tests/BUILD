@@ -25,6 +25,8 @@ cc_library(
         "//test/crossing_test:crossing_state",
         "//test/crossing_test/factories",
         "@com_github_google_glog//:glog",
+        "@boost//:math",
+        "@boost//:multiprecision",
     ],
 )
 
