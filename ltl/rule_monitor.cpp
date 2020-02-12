@@ -21,7 +21,8 @@
 namespace ltl {
 RuleMonitor::RuleMonitor(const std::string &ltl_formula_str, float weight, RulePriority priority,
                                    float init_belief, float final_reward)
-    : weight_(weight),
+    : str_formula_(ltl_formula_str),
+      weight_(weight),
       final_reward_(final_reward),
       priority_(priority),
       init_belief_(init_belief),
@@ -163,22 +164,30 @@ float RuleMonitor::transit(const EvaluationMap &labels,
     }
   }
 
-  bool transition_found = false;
+  BddResult transition_found = BddResult::FALSE;
   for (const auto &transition : aut_->out(state.current_state_)) {
-    if (evaluate_bdd(transition.cond, bddvars) == BddResult::TRUE) {
+    transition_found = evaluate_bdd(transition.cond, bddvars);
+    if (transition_found == BddResult::TRUE) {
       state.current_state_ = transition.dst;
-      transition_found = true;
       break;
     }
   }
 
-  if (!transition_found) {
-    ++state.violated_;
-    // Reset automaton if rule has been violated
-    state.current_state_ = aut_->get_init_state_number();
+  float penalty;
+  switch (transition_found) {
+    case BddResult::FALSE:
+      ++state.violated_;
+      // Reset automaton if rule has been violated
+      state.current_state_ = aut_->get_init_state_number();
+      penalty = static_cast<float>(state.rule_belief_) * weight_;
+      break;
+    case BddResult::UNDEF:
+      LOG(WARNING) << "Rule" << str_formula_ << " undefined!";
+      // NO BREAK
+    default:
+      penalty = 0.0f;
   }
-  return !transition_found ? static_cast<float>(state.rule_belief_) * weight_
-                           : 0.0f;
+  return penalty;
 }
 
 RuleMonitor::BddResult RuleMonitor::evaluate_bdd(
