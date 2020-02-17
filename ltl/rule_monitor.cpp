@@ -165,27 +165,27 @@ float RuleMonitor::transit(const EvaluationMap &labels,
   }
 
   BddResult transition_found = BddResult::FALSE;
+  // Indicates if we have found undefined transitions
+  bool undef_trans_found = false;
   for (const auto &transition : aut_->out(state.current_state_)) {
     transition_found = evaluate_bdd(transition.cond, bddvars);
     if (transition_found == BddResult::TRUE) {
       state.current_state_ = transition.dst;
       break;
     }
+    if (transition_found == BddResult::UNDEF) {
+      undef_trans_found = true;
+    }
   }
 
-  float penalty;
-  switch (transition_found) {
-    case BddResult::FALSE:
-      ++state.violated_;
-      // Reset automaton if rule has been violated
-      state.current_state_ = aut_->get_init_state_number();
-      penalty = static_cast<float>(state.rule_belief_) * weight_;
-      break;
-    case BddResult::UNDEF:
-      LOG(WARNING) << "Rule" << str_formula_ << " undefined!";
-      // NO BREAK
-    default:
-      penalty = 0.0f;
+  float penalty = 0.0f;
+  if (transition_found == BddResult::FALSE && !undef_trans_found) {
+    ++state.violated_;
+    // Reset automaton if rule has been violated
+    state.current_state_ = aut_->get_init_state_number();
+    penalty = static_cast<float>(state.rule_belief_) * weight_;
+  } else if (transition_found != BddResult::TRUE && undef_trans_found) {
+    VLOG(2) << "Rule" << str_formula_ << " undefined!";
   }
   return penalty;
 }
