@@ -115,6 +115,21 @@ cc_binary(
 )
 
 cc_binary(
+    name = "testbench",
+    srcs = [
+        "testbench.cpp",
+    ],
+    deps = [
+        ":test_runner",
+        ":util",
+        "//mcts",
+        "//test/crossing_test:crossing_state",
+        "//test/crossing_test/factories",
+        "@com_github_google_glog//:glog",
+    ],
+)
+
+cc_binary(
     name = "zipper_merge",
     srcs = [
         "zipper_merge_test.cpp",
