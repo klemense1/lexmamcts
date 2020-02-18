@@ -49,6 +49,7 @@ class BaseTestEnv {
 
   virtual JointAction search(size_t num_iterations) = 0;
 
+  virtual std::map<unsigned long, Eigen::VectorXf> get_ego_qval() = 0;
   const JointAction &get_jt() const;
   void set_jt(const JointAction &jt);
   const std::deque<JointAction> &get_action_history() const;

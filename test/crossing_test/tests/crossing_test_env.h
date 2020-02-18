@@ -35,6 +35,9 @@ class CrossingTestEnv : public BaseTestEnv {
     VLOG(1) << "Best action: " << this->get_jt();
     return this->get_jt();
   }
+  std::map<unsigned long, Eigen::VectorXf> get_ego_qval() override {
+    return mcts.get_root()->get_ego_int_node().get_expected_rewards();
+  }
   Mcts<CrossingState, Stats, Stats, Heuristic> mcts;
 };
 
