@@ -7,6 +7,7 @@
 #define MCTS_STATISTICS_SLACK_UCT_STATISTIC_H_
 
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "boost/math/distributions/students_t.hpp"
@@ -20,19 +21,16 @@ class SlackUCTStatistic : public UctStatistic<SlackUCTStatistic> {
   typedef NodeStatistic<SlackUCTStatistic> ParentType;
 
  public:
-  struct SlackComperator {
-    explicit SlackComperator(const std::vector<ObjectiveVec> &slack)
-        : slack_(slack) {}
-    bool operator()(const ActionUCBMap::value_type &a,
-                    const ActionUCBMap::value_type &b) const {
-      assert(a.second.action_value_.rows() == b.second.action_value_.rows() &&
-             a.second.action_value_.rows() == slack_[a.first].rows() &&
-             b.second.action_value_.rows() == slack_[b.first].rows());
-      Eigen::VectorXf a_upper = a.second.action_value_ + slack_[a.first];
-      Eigen::VectorXf a_lower = a.second.action_value_ - slack_[a.first];
-      Eigen::VectorXf b_upper = b.second.action_value_ + slack_[b.first];
-      Eigen::VectorXf b_lower = b.second.action_value_ - slack_[b.first];
-      for (int i = 0; i < a_upper.rows(); ++i) {
+  template <class T>
+  struct SlackComparator {
+    explicit SlackComparator(T slack) : slack_(std::move(slack)) {}
+    bool operator()(const T &a, const T &b) const {
+      assert(a.rows() == b.rows() && a.rows() == slack_.rows() && b.rows() == slack_.rows());
+      auto a_upper = a + slack_;
+      auto a_lower = a - slack_;
+      auto b_upper = b + slack_;
+      auto b_lower = b - slack_;
+      for (long i = 0; i < a_upper.rows(); ++i) {
         if (a_upper(i) < b_lower(i)) {
           return true;
         } else if (b_upper(i) < a_lower(i)) {
@@ -41,20 +39,21 @@ class SlackUCTStatistic : public UctStatistic<SlackUCTStatistic> {
       }
       return false;
     }
-    const std::vector<ObjectiveVec> slack_;
+    const T slack_;
   };
 
   SlackUCTStatistic(ActionIdx num_actions,
                     MctsParameters const &mcts_parameters)
-      : UctStatistic<SlackUCTStatistic>(num_actions, mcts_parameters),
-        m_2_(num_actions, ObjectiveVec::Zero(mcts_parameters.REWARD_VEC_SIZE)) {
-  }
+      : UctStatistic<SlackUCTStatistic>(num_actions, mcts_parameters) {}
 
   ActionIdx get_best_action() {
     // Lexicographical ordering of the UCT value vectors
-    std::vector<ObjectiveVec> slack;
-    calculate_slack_values(ucb_statistics_, slack);
-    SlackComperator comp(slack);
+    ObjectiveVec slack;
+    std::vector<ObjectiveVec> qval;
+    std::transform(ucb_statistics_.begin(), ucb_statistics_.end(), std::back_inserter(qval),
+                   [](const ActionUCBMap::value_type &elem) { return elem.second.action_value_; });
+    calculate_slack_values(qval, &slack);
+    SlackComparator<ObjectiveVec> comp(slack);
     VLOG(1) << "Slack: " << slack;
     auto max = std::max_element(ucb_statistics_.begin(), ucb_statistics_.end(),
                                 [comp](ActionUCBMap::value_type const &a,
@@ -64,86 +63,53 @@ class SlackUCTStatistic : public UctStatistic<SlackUCTStatistic> {
                                   } else if (b.second.action_count_ == 0) {
                                     return false;
                                   } else {
-                                    return comp(a, b);
+                                    return comp(a.second.action_value_, b.second.action_value_);
                                   }
                                 });
     return max->first;
   }
 
-  void update_statistic(const ParentType &changed_child_statistic) {
-    const SlackUCTStatistic &changed_uct_statistic =
-        changed_child_statistic.impl();
-    // Action Value update step
-    auto ucb_pair = ucb_statistics_.find(this->collected_reward_.first);
-    // we remembered for which action we got the reward,
-    // must be the same as during backprop,
-    // if we linked parents and childs correctly
-    // action value: Q'(s,a) = Q'(s,a) + (latest_return - Q'(s,a))/N
-    Reward reward = this->collected_reward_.second +
-                    this->mcts_parameters_.DISCOUNT_FACTOR *
-                        changed_uct_statistic.latest_return_;
-    size_t action_count = ucb_pair->second.action_count_ + 1;
-    ObjectiveVec delta = reward - ucb_pair->second.action_value_;
-    ObjectiveVec action_value =
-        ucb_pair->second.action_value_ +
-        (reward - ucb_pair->second.action_value_) / action_count;
-    ObjectiveVec delta2 = reward - action_value;
-    // Recursive variance calculation
-    // https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance
-    m_2_.at(this->collected_reward_.first) += delta.cwiseProduct(delta2);
-    UctStatistic<SlackUCTStatistic>::update_statistic(changed_child_statistic);
-  }
-
-  std::string print_edge_information(const ActionIdx &action) const {
-    std::stringstream ss;
-    ss << UctStatistic<SlackUCTStatistic>::print_edge_information(action);
-    auto action_it = ucb_statistics_.find(action);
-    if (action_it != ucb_statistics_.end()) {
-      ss << ", sigma=" << (get_reward_variance(action)).cwiseSqrt().transpose();
+  template <class S>
+  ActionIdx choose_next_action(const S &state, std::vector<int> &unexpanded_actions) {
+    if (unexpanded_actions.empty()) {
+      std::uniform_real_distribution<double> uniform_norm(0.0, 1.0);
+      std::vector<Eigen::VectorXd> values;
+      Eigen::VectorXd slack;
+      calculate_ucb_values(ucb_statistics_, values);
+      calculate_slack_values(values, &slack);
+      ActionIdx selected_action = std::distance(
+          values.begin(), std::max_element(values.begin(), values.end(), SlackComparator<Eigen::VectorXd>(slack)));
+      const double epsilon = mcts_parameters_.e_greedy_uct_statistic_.EPSILON;
+      if (uniform_norm(random_generator_) <= 1.0 - epsilon + epsilon / num_actions_) {
+        // Select an action based on the UCB formula
+        return selected_action;
+      } else {
+        std::uniform_int_distribution<ActionIdx> uniform_action(0, num_actions_ - 2);
+        ActionIdx random_action = uniform_action(random_generator_);
+        return (random_action == selected_action ? random_action + 1 : random_action);
+      }
+    } else {
+      // Select randomly an unexpanded action
+      std::uniform_int_distribution<ActionIdx> random_action_selection(0, unexpanded_actions.size() - 1);
+      ActionIdx array_idx = random_action_selection(random_generator_);
+      ActionIdx selected_action = unexpanded_actions[array_idx];
+      unexpanded_actions.erase(unexpanded_actions.begin() + array_idx);
+      return selected_action;
     }
-    return ss.str();
   }
 
  protected:
-  void calculate_slack_values(const ActionUCBMap &ucb_statistics,
-                              std::vector<ObjectiveVec> &values) const {
-    values.resize(ucb_statistics.size());
-    ObjectiveVec max = ObjectiveVec::Constant(mcts_parameters_.REWARD_VEC_SIZE,
-                                              -std::numeric_limits<ObjectiveVec::Scalar>::infinity());
-    for (ActionIdx idx = 0; idx < ucb_statistics.size(); ++idx) {
-      UcbPair pair = ucb_statistics.at(idx);
-      //      // Students t distribution with n-1 degrees of freedom
-      //      VLOG_IF(1, pair.action_count_ < 2)
-      //          << "action_count < 2 -> falling back to lexicographical compare";
-      //      if (pair.action_count_ >= 2) {
-      //        boost::math::students_t dist(pair.action_count_ - 1);
-      //        double t = quantile(complement(
-      //            dist, mcts_parameters_.slack_uct_statistic_.ALPHA / 2.0));
-      //        // Standard deviation according to
-      //        // https://en.wikipedia.org/wiki/Algorithms_for_calculating_variance
-      //        ObjectiveVec std_dev = (get_reward_variance(idx)).cwiseSqrt();
-      //        // confidence interval radius
-      //        values[idx] =
-      //            t * std_dev / sqrt(static_cast<double>(pair.action_count_));
-      //      } else {
-      //        values[idx] = ObjectiveVec::Zero(mcts_parameters_.REWARD_VEC_SIZE);
-      //      }
-      max = max.cwiseMax(pair.action_value_);
+  template <class T>
+  void calculate_slack_values(const std::vector<T> &qval, T *values) const {
+    values->resize(qval.size());
+    *values = T::Constant(mcts_parameters_.REWARD_VEC_SIZE, -std::numeric_limits<typename T::Scalar>::infinity());
+    for (ActionIdx idx = 0; idx < qval.size(); ++idx) {
+      *values = values->cwiseMax(qval.at(idx));
     }
     // After C. Li and K. Czarnecki, “Urban Driving with Multi-Objective Deep Reinforcement Learning,” arXiv:1811.08586
     // [cs], Nov. 2018.
-    max = 0.2 * max.cwiseAbs();
-    for (auto &e : values) {
-      e = max;
-    }
+    *values = 0.2 * values->cwiseAbs();
   }
-
- private:
-  ObjectiveVec get_reward_variance(ActionIdx action_idx) const {
-    const UcbPair &pair = ucb_statistics_.at(action_idx);
-    return m_2_.at(action_idx) / static_cast<double>(pair.action_count_);
-  }
-  std::vector<ObjectiveVec> m_2_;
 };
 }  // namespace mcts
 #endif  // MCTS_STATISTICS_SLACK_UCT_STATISTIC_H_
