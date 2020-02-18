@@ -42,9 +42,10 @@ class UctStatistic :
 
   struct LexicographicalComperator {
     const double eps_ = 1e-5;
-    bool operator()(const Eigen::VectorXf &a, const Eigen::VectorXf &b) const {
+    template <class T>
+    bool operator()(const T &a, const T &b) const {
       return std::lexicographical_compare(
-          a.begin(), a.end(), b.begin(), b.end(), [this](const float &a, const float &b) {
+          a.begin(), a.end(), b.begin(), b.end(), [this](const typename T::Scalar &a, const typename T::Scalar &b) {
             return (b - a) > ((std::fabs(a) < std::fabs(b) ? std::fabs(b) : std::fabs(a)) * eps_);
           });
     }
@@ -67,7 +68,7 @@ class UctStatistic :
   ActionIdx choose_next_action(const S &state, std::vector<int> &unexpanded_actions) {
     if (unexpanded_actions.empty() || pw_limit_reached(unexpanded_actions)) {
       // Select an action based on the UCB formula
-      std::vector<Eigen::VectorXf> values;
+      std::vector<Eigen::VectorXd> values;
       calculate_ucb_values(ucb_statistics_, values);
       // find largest index
       ActionIdx selected_action = std::distance(values.begin(),
@@ -147,7 +148,7 @@ class UctStatistic :
     return ss.str();
   }
 
-  std::map<ActionIdx, Reward> get_expected_rewards() {
+  std::map<ActionIdx, Reward> get_expected_rewards() const {
     std::map<ActionIdx, Reward> v;
     for(auto const &pair : ucb_statistics_) {
       v[pair.first] = pair.second.action_value_;
@@ -159,8 +160,7 @@ class UctStatistic :
   }
 
  protected:
-
-  void calculate_ucb_values(const ActionUCBMap &ucb_statistics, std::vector<Eigen::VectorXf> &values) const {
+  void calculate_ucb_values(const ActionUCBMap &ucb_statistics, std::vector<Eigen::VectorXd> &values) const {
     values.resize(ucb_statistics.size());
 
     for (size_t idx = 0; idx < ucb_statistics.size(); ++idx) {

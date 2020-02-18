@@ -22,10 +22,11 @@ class ThresUCTStatistic : public UctStatistic<ThresUCTStatistic> {
   ThresUCTStatistic(ActionIdx num_actions,
                     MctsParameters const &mcts_parameters)
       : UctStatistic<ThresUCTStatistic>(num_actions, mcts_parameters) {}
+  template <class T>
   struct ThresholdComparator {
-    explicit ThresholdComparator(const Eigen::VectorXf &thr) : thr_(thr) {}
-    const Eigen::VectorXf thr_;
-    bool operator()(Eigen::VectorXf const &a, Eigen::VectorXf const &b) const {
+    explicit ThresholdComparator(const T &thr) : thr_(thr) {}
+    const T thr_;
+    bool operator()(const T &a, const T &b) const {
       assert(a.rows() == b.rows() && a.rows() == thr_.rows());
       for (auto ai = a.begin(), bi = b.begin(), thri = thr_.begin();
            ai != a.end(); ++ai, ++bi, ++thri) {
@@ -43,19 +44,20 @@ class ThresUCTStatistic : public UctStatistic<ThresUCTStatistic> {
   ActionIdx choose_next_action(const S &state,
                                std::vector<int> &unexpanded_actions) {
     if (unexpanded_actions.empty()) {
-      std::uniform_real_distribution<float> uniform_norm(0, 1);
-      std::vector<Eigen::VectorXf> values;
+      std::uniform_real_distribution<double> uniform_norm(0.0, 1.0);
+      std::vector<Eigen::VectorXd> values;
       calculate_ucb_values(ucb_statistics_, values);
       ActionIdx selected_action = std::distance(
           values.begin(), std::max_element(values.begin(), values.end(),
-                                           ThresholdComparator(mcts_parameters_.thres_uct_statistic_.THRESHOLD)));
+                                           ThresholdComparator<Eigen::VectorXd>(
+                                               mcts_parameters_.thres_uct_statistic_.THRESHOLD.cast<double>())));
       if (uniform_norm(random_generator_) >= mcts_parameters_.e_greedy_uct_statistic_.EPSILON) {
         // Select an action based on the UCB formula
         return selected_action;
       } else {
         std::uniform_int_distribution<ActionIdx> uniform_action(0, num_actions_ - 2);
         ActionIdx random_action = uniform_action(random_generator_);
-        return random_action == selected_action ? random_action + 1 : random_action;
+        return (random_action == selected_action ? random_action + 1 : random_action);
       }
     } else {
       // Select randomly an unexpanded action
@@ -85,8 +87,7 @@ class ThresUCTStatistic : public UctStatistic<ThresUCTStatistic> {
                                   } else if (b.second.action_count_ == 0) {
                                     return false;
                                   } else {
-                                    return (ThresholdComparator(thr))(
-                                        a.second.action_value_,
+                                    return (ThresholdComparator<Eigen::VectorXf>(thr))(a.second.action_value_,
                                         b.second.action_value_);
                                   }
                                 });
