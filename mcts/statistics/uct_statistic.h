@@ -164,15 +164,22 @@ class UctStatistic :
     values.resize(ucb_statistics.size());
 
     for (size_t idx = 0; idx < ucb_statistics.size(); ++idx) {
-      Eigen::VectorXf
-          action_value_normalized =
-          (ucb_statistics.at(idx).action_value_ - this->mcts_parameters_.uct_statistic.LOWER_BOUND).cwiseQuotient(
-              this->mcts_parameters_.uct_statistic.UPPER_BOUND - this->mcts_parameters_.uct_statistic.LOWER_BOUND);
-      LOG_IF(FATAL, !(action_value_normalized.array() >= ObjectiveVec::Constant(this->mcts_parameters_.REWARD_VEC_SIZE, 0).array()).all()) << "Normalized values < 0: " << action_value_normalized.transpose();
-      LOG_IF(FATAL, !(action_value_normalized.array() <= ObjectiveVec::Constant(this->mcts_parameters_.REWARD_VEC_SIZE, 1).array()).all()) << "Normalized values > 1: " << action_value_normalized.transpose();
-      values[idx] = action_value_normalized.array()
-          + 2 * this->mcts_parameters_.DISCOUNT_FACTOR
-              * sqrt((2 * log(total_node_visits_)) / (ucb_statistics.at(idx).action_count_));
+      Eigen::VectorXd action_value_normalized =
+          (ucb_statistics.at(idx).action_value_ - this->mcts_parameters_.uct_statistic.LOWER_BOUND)
+              .template cast<double>()
+              .cwiseQuotient(
+                  (this->mcts_parameters_.uct_statistic.UPPER_BOUND - this->mcts_parameters_.uct_statistic.LOWER_BOUND)
+                      .template cast<double>());
+      LOG_IF(FATAL, !(action_value_normalized.array() >=
+                      Eigen::VectorXd::Constant(this->mcts_parameters_.REWARD_VEC_SIZE, 0).array())
+                         .all())
+          << "Normalized values < 0: " << action_value_normalized.transpose();
+      LOG_IF(FATAL, !(action_value_normalized.array() <=
+                      Eigen::VectorXd::Constant(this->mcts_parameters_.REWARD_VEC_SIZE, 1).array())
+                         .all())
+          << "Normalized values > 1: " << action_value_normalized.transpose();
+      values[idx] = action_value_normalized.array() +
+                    2 * this->mcts_parameters_.uct_statistic.EXPLORATION_CONSTANT * sqrt((2 * log(total_node_visits_)) / (ucb_statistics.at(idx).action_count_));
     }
   }
 
