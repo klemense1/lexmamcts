@@ -22,13 +22,13 @@ TEST(ComperatorTest, slack_comperator) {
   slack_a << 2, 2, 4, 0, 0;
   slack_b << 2, 3, 0, 4, 4;
   // a == b
-  SlackUCTStatistic::SlackComperator slack_compare(slack);
+  SlackUCTStatistic::SlackComparator slack_compare(slack);
   ASSERT_FALSE(slack_compare(a, b));
   ASSERT_FALSE(slack_compare(b, a));
   // a < b
   slack_a << 1, 1, 0, 0, 0;
   slack_b << 1, 1, 0, 0, 0;
-  SlackUCTStatistic::SlackComperator slack_compare1(slack);
+  SlackUCTStatistic::SlackComparator slack_compare1(slack);
   ASSERT_TRUE(slack_compare1(a, b));
   ASSERT_FALSE(slack_compare1(b, a));
   // a > b
@@ -36,7 +36,7 @@ TEST(ComperatorTest, slack_comperator) {
   b.second.action_value_ << 0, 0, 0, 0, 0;
   slack_a << 1, 1, 0, 0, 0;
   slack_b << 1, 1, 0, 0, 0;
-  SlackUCTStatistic::SlackComperator slack_compare2(slack);
+  SlackUCTStatistic::SlackComparator slack_compare2(slack);
   ASSERT_FALSE(slack_compare2(a, b));
   ASSERT_TRUE(slack_compare2(b, a));
 }
