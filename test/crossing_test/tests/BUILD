@@ -132,6 +132,22 @@ cc_binary(
 )
 
 cc_binary(
+    name = "threshold_comparison",
+    srcs = [
+        "threshold_comparison.cpp",
+    ],
+    deps = [
+        ":test_runner",
+        ":util",
+        "//mcts",
+        "//test/crossing_test:crossing_state",
+        "//test/crossing_test:state_file_writer",
+        "//test/crossing_test/factories",
+        "@com_github_google_glog//:glog",
+    ],
+)
+
+cc_binary(
     name = "zipper_merge",
     srcs = [
         "zipper_merge_test.cpp",
