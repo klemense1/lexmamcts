@@ -32,7 +32,7 @@ public:
 
     void collect_reward(const Reward& reward, const ActionIdx& action_idx);
 
-    std::map<ActionIdx,Reward> get_expected_rewards();
+    std::map<ActionIdx,Reward> get_expected_rewards() const;
 
     std::string print_node_information() const;
     std::string print_edge_information(const ActionIdx& action) const;
@@ -98,7 +98,7 @@ void NodeStatistic<Implementation>::set_heuristic_estimate(const Reward& accum_r
     return impl().set_heuristic_estimate(accum_rewards);
 }
 template<class Implementation>
-std::map<ActionIdx,Reward> NodeStatistic<Implementation>::get_expected_rewards() {
+std::map<ActionIdx,Reward> NodeStatistic<Implementation>::get_expected_rewards() const {
   return impl().get_expected_rewards();
 }
 

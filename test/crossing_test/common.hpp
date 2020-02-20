@@ -70,6 +70,8 @@ typedef struct AgentState {
         last_action(last_action),
         lane(lane),
         init_lane(init_lane) {}
+  friend bool operator==(const AgentState &lhs, const AgentState &rhs);
+  friend bool operator!=(const AgentState &lhs, const AgentState &rhs);
   int id;
   int x_pos;
   int last_action;

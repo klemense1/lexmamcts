@@ -21,12 +21,13 @@ cc_library(
     srcs = ["test_runner.cpp"],
     hdrs = ["test_runner.h"],
     deps = [
+        "//evaluation",
         "//mcts",
         "//test/crossing_test:crossing_state",
         "//test/crossing_test/factories",
-        "@com_github_google_glog//:glog",
         "@boost//:math",
         "@boost//:multiprecision",
+        "@com_github_google_glog//:glog",
     ],
 )
 
@@ -124,6 +125,7 @@ cc_binary(
         ":util",
         "//mcts",
         "//test/crossing_test:crossing_state",
+        "//test/crossing_test:state_file_writer",
         "//test/crossing_test/factories",
         "@com_github_google_glog//:glog",
     ],
@@ -138,9 +140,9 @@ cc_binary(
     deps = [
         ":crossing_test_env",
         ":util",
-        "//test/crossing_test:state_file_writer",
         "//mcts",
         "//test/crossing_test:crossing_state",
+        "//test/crossing_test:state_file_writer",
         "//test/crossing_test/factories",
         "@com_github_gflags_gflags//:gflags",
         "@com_github_google_glog//:glog",
@@ -156,11 +158,11 @@ cc_binary(
     copts = ["-Iexternal/gtest/include"],
     deps = [
         ":crossing_test_env",
-        ":util",
         ":test_runner",
-        "//test/crossing_test:state_file_writer",
+        ":util",
         "//mcts",
         "//test/crossing_test:crossing_state",
+        "//test/crossing_test:state_file_writer",
         "//test/crossing_test/factories",
         "@com_github_gflags_gflags//:gflags",
         "@com_github_google_glog//:glog",

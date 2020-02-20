@@ -101,6 +101,7 @@ class StageNode : public std::enable_shared_from_this<StageNode<S, SE, SO, H>> {
   const StageRewardMap &get_joint_rewards() const;
 
   static void reset_counter();
+  const IntermediateNode < S, SE> &get_ego_int_node() const;
 
   MCTS_TEST
 };
@@ -175,8 +176,8 @@ bool StageNode<S, SE, SO, H>::select_or_expand(StageNodeSPtr &next_node) {
   // Let each agent select an action according to its statistic model -> yields joint_action
   JointAction joint_action(state_->get_agent_idx().size());
   joint_action[ego_int_node_.get_agent_idx()] = ego_int_node_.choose_next_action();
-  for (auto it = other_int_nodes_.begin(); it != other_int_nodes_.end(); ++it) {
-    joint_action[it->get_agent_idx()] = it->choose_next_action();
+  for(auto& it : other_int_nodes_) {
+    joint_action[it.get_agent_idx()] = it.choose_next_action();
   }
 
   // Check if joint action was already expanded
@@ -389,6 +390,11 @@ JointReward StageNode<S, SE, SO, H>::get_value() {
 template <class S, class SE, class SO, class H>
 const StageRewardMap &StageNode<S, SE, SO, H>::get_joint_rewards() const {
   return joint_rewards_;
+}
+template <class S, class SE, class SO, class H>
+    const IntermediateNode < S, SE>
+    &StageNode<S, SE, SO, H>::get_ego_int_node() const {
+  return ego_int_node_;
 }
 
 } // namespace mcts

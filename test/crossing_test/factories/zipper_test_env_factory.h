@@ -21,41 +21,31 @@ template <class Stat>
 class ZipperTestEnvFactory : public ITestEnvFactory {
  public:
   std::shared_ptr<BaseTestEnv> make_test_env() override {
-    const std::string zip_formula =
-        "G((!merged_e & !merged_x#0) -> in_direct_front_x#0) -> G(merged_e -> !in_direct_front_x#0)";
+    const std::string zip_formula = "(in_direct_front_x#0 & !merged_e & (in_direct_front_x#0 | merged_x#0) U merged_e) -> G(merged_e & merged_x#0 -> !in_direct_front_x#0)";
+//        "G((!merged_e & !merged_x#0) -> in_direct_front_x#0) -> G(merged_e -> !in_direct_front_x#0)";
 
     MctsParameters mcts_params = make_default_mcts_parameters();
-    mcts_params.uct_statistic.LOWER_BOUND << -30.0f, -30.0f, -5000.0f;
+    mcts_params.uct_statistic.LOWER_BOUND << -1.0f, -1.0f, -5000.0f;
     mcts_params.uct_statistic.UPPER_BOUND << 0.0f, 0.0f, 5000.0f;
-    mcts_params.thres_uct_statistic_.THRESHOLD << -0.56, -0.3, std::numeric_limits<ObjectiveVec::Scalar>::max();
-    mcts_params.COOP_FACTOR = 0.5;
+    mcts_params.thres_uct_statistic_.THRESHOLD << -0.81, -0.3, std::numeric_limits<ObjectiveVec::Scalar>::max();
+    mcts_params.COOP_FACTOR = 0.0;
     mcts_params.DISCOUNT_FACTOR = 0.9;
     mcts_params.uct_statistic.EXPLORATION_CONSTANT = 0.7;
     mcts_params.random_heuristic.MAX_SEARCH_TIME_RANDOM_HEURISTIC = std::numeric_limits<double>::infinity();
     mcts_params.e_greedy_uct_statistic_.EPSILON = 0.2;
 
     CrossingStateParameter crossing_params = make_default_crossing_state_parameters();
-    crossing_params.depth_prio = 2;
-    crossing_params.speed_deviation_prio = 2;
-    crossing_params.acceleration_prio = 2;
-    crossing_params.potential_prio = 2;
-
-    crossing_params.depth_weight = 0;
-    crossing_params.speed_deviation_weight = 2;
-    crossing_params.acceleration_weight = 0;
-    crossing_params.potential_weight = 0;
     crossing_params.num_other_agents = 2;
     crossing_params.ego_goal_reached_position = 1000;
     crossing_params.state_x_length = 1000;
     crossing_params.crossing_point = 8;
     crossing_params.terminal_depth_ = 25;
-
     crossing_params.merge = true;
+//    crossing_params.action_map.erase(crossing_params.action_map.begin() + 3);
 
     auto automata = BaseTestEnv::make_default_automata(crossing_params.num_other_agents + 1);
     for (auto &aut : automata) {
-      aut.erase(Rule::GIVE_WAY);
-      //      aut.insert({Rule::ZIP, RuleMonitor::make_rule(zip_formula, -1, 1)});
+      aut.insert({Rule::ZIP, RuleMonitor::make_rule(zip_formula, -1, 1)});
     }
     auto labels = BaseTestEnv::make_default_labels(crossing_params);
     labels.clear();

@@ -4,8 +4,9 @@
 //
 
 #include "state_file_writer.h"
+
 void StateFileWriter::write_multi_timestep(
-    std::vector<Eigen::MatrixXi> states) {
+    const std::vector<Eigen::MatrixXi>& states) {
   for (const auto &t : states) {
     ofstream_ << timestamp_++;
     for (const auto &agent_state : t.row(0)) {

@@ -15,7 +15,7 @@ class StateFileWriter {
  public:
   StateFileWriter(size_t num_agents, const std::string& filename);
   virtual ~StateFileWriter();
-  void write_multi_timestep(std::vector<Eigen::MatrixXi> states);
+  void write_multi_timestep(const std::vector<Eigen::MatrixXi>& states);
 
  private:
   int timestamp_;
