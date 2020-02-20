@@ -87,7 +87,7 @@ class RuleMonitor : public std::enable_shared_from_this<RuleMonitor> {
   Eigen::Matrix2d observation_prob_;
   const float init_belief_;
   std::vector<APContainer> ap_alphabet_;
-  bool is_agent_specific_;
+  bool rule_is_agent_specific_;
   std::vector<std::vector<int>> all_k_permutations(
       const std::vector<int> &values, int k) const;
   float transit(const EvaluationMap &labels, RuleState &state) const;

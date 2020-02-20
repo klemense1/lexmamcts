@@ -16,6 +16,7 @@
 #include "spot/tl/apcollect.hh"
 #include "spot/tl/ltlf.hh"
 #include "spot/tl/print.hh"
+#include "spot/tl/hierarchy.hh"
 #include "spot/twa/bddprint.hh"
 
 namespace ltl {
@@ -26,7 +27,7 @@ RuleMonitor::RuleMonitor(const std::string &ltl_formula_str, float weight, RuleP
       final_reward_(final_reward),
       priority_(priority),
       init_belief_(init_belief),
-      is_agent_specific_(false) {
+      rule_is_agent_specific_(false) {
   assert(init_belief <= 1.0 && init_belief >= 0.0);
 
   const std::string agent_free_formula = parse_agents(ltl_formula_str);
@@ -37,8 +38,7 @@ RuleMonitor::RuleMonitor(const std::string &ltl_formula_str, float weight, RuleP
   aut_ = trans.run(spot::from_ltlf(ltl_formula_));
 
   // If formula has the safety property, also accept empty words.
-  //
-  if (ltl_formula_.is_syntactic_safety()) {
+  if (spot::mp_class(ltl_formula_) == 'S') {
     // Find unique accepting state
     size_t final_state;
     for (final_state = 0; final_state < aut_->num_states(); ++final_state) {
@@ -47,32 +47,35 @@ RuleMonitor::RuleMonitor(const std::string &ltl_formula_str, float weight, RuleP
       }
     }
     // Create transition from init state to final state, accepting empty words
-    bdd alive_bdd = bdd_ithvar(aut_->get_dict()->has_registered_proposition(
-        spot::formula::ap("alive"), aut_));
+    bdd alive_bdd = bdd_ithvar(aut_->get_dict()->has_registered_proposition(spot::formula::ap("alive"), aut_));
     aut_->new_edge(aut_->get_init_state_number(), final_state, !alive_bdd);
   }
-
   observation_prob_ << 0.9, 0.1, 0.5, 0.5;
 }
 std::string RuleMonitor::parse_agents(const std::string &ltl_formula_str) {
   std::string remaining = ltl_formula_str;
   std::string agent_free_formula;
+  // Use #[0-9]+ as suffix of any AP to indicate agent specific rules.
+  // Same numbers are instantiated with same agents.
   std::regex r("([[:lower:][:digit:]_]+)(#([[:digit:]])+)?");
   std::smatch sm;
   while (std::regex_search(remaining, sm, r)) {
     std::string ap_name = sm[1];
+    bool ap_is_agent_specific = false;
     for (const auto &a : sm) {
       DVLOG(2) << a;
     }
     int agent_id_placeholder = -1;
     if (sm[3] != "") {
       agent_id_placeholder = std::stoi(sm[3]);
-      is_agent_specific_ = true;
+      rule_is_agent_specific_ = true;
+      ap_is_agent_specific = true;
     }
     agent_free_formula += sm.prefix();
     agent_free_formula += ap_name;
+    // TODO: Make ap_alphabet a set, so AP containers are unique
     ap_alphabet_.push_back({ap_name, spot::formula::ap(ap_name),
-                            agent_id_placeholder, is_agent_specific_});
+                            agent_id_placeholder, ap_is_agent_specific});
     remaining = sm.suffix();
   }
   ap_alphabet_.push_back({"alive", spot::formula::ap("alive"), -1, false});
@@ -185,7 +188,7 @@ float RuleMonitor::transit(const EvaluationMap &labels,
     state.current_state_ = aut_->get_init_state_number();
     penalty = static_cast<float>(state.rule_belief_) * weight_;
   } else if (transition_found != BddResult::TRUE && undef_trans_found) {
-    VLOG(2) << "Rule" << str_formula_ << " undefined!";
+      VLOG(2) << "Rule" << str_formula_ << " undefined!";
   }
   return penalty;
 }
@@ -253,5 +256,5 @@ void RuleMonitor::set_final_reward(float final_reward) {
 void RuleMonitor::set_priority(RulePriority priority) { priority_ = priority;
 }
 RulePriority RuleMonitor::get_priority() const { return priority_; }
-bool RuleMonitor::is_agent_specific() const { return is_agent_specific_; }
+bool RuleMonitor::is_agent_specific() const { return rule_is_agent_specific_; }
 }  // namespace ltl
