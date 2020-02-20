@@ -18,4 +18,6 @@ class EvaluatorLabelCollision : public EvaluatorLabelBase<World> {
   int crossing_point_;
 };
 
+bool check_collision(const AgentState& a, const AgentState& b);
+
 #endif //MAMCTS_TEST_CROSSING_TEST_EVALUATOR_LABEL_COLLISION_HPP_

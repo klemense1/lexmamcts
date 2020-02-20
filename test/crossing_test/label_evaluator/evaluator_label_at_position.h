@@ -14,6 +14,7 @@ class EvaluatorLabelAtPosition : public EvaluatorLabelBase<World> {
   EvaluatorLabelAtPosition(const std::string &label_str, const int position);
   std::vector<std::pair<ltl::Label, bool>> evaluate(
       const World &state) const override;
+  void set_position(int position);
 
  private:
   int position_;

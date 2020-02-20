@@ -15,10 +15,13 @@ bool EvaluatorLabelInDirectFront::evaluate_agent(const World& state,
     return false;
   }
   for (const auto& agent : state.second) {
+    if(agent == state.second[agent_id]) {
+      continue;
+    }
     if (agent.x_pos >= state.first.x_pos &&
-        agent.x_pos < state.second[agent_id].x_pos &&
+        agent.x_pos <= state.second[agent_id].x_pos &&
         agent.lane == state.first.lane) {
-      // Found another agent that is closer
+      // Found another agent that is closer or equal
       return false;
     }
   }
