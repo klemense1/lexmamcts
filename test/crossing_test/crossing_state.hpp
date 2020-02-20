@@ -92,7 +92,7 @@ class CrossingState : public mcts::StateInterface<CrossingState> {
   std::vector<AgentState> step(const JointAction &joint_action) const;
   Reward get_action_cost(ActionIdx action, AgentIdx agent_idx) const;
   Reward get_shaping_reward(const AgentState &agent_state) const;
-
+  void fix_collision_positions(std::vector<AgentState> *agent_states) const;
   std::vector<AgentState> agent_states_;
   bool terminal_;
   RuleStateMap rule_state_map_;

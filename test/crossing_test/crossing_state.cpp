@@ -9,6 +9,7 @@
 
 #include "mcts/mcts.h"
 #include "test/crossing_test/crossing_state.hpp"
+#include "test/crossing_test/label_evaluator/evaluator_label_collision.h"
 #include "test/crossing_test/viewer.h"
 
 CrossingState::CrossingState(RuleStateMap rule_state_map,
@@ -22,7 +23,6 @@ CrossingState::CrossingState(RuleStateMap rule_state_map,
   for (auto &state : agent_states_) {
     state = AgentState();
   }
-  //  agent_states_[1].x_pos = 1;
 }
 
 CrossingState::CrossingState(std::vector<AgentState> agent_states,
@@ -112,6 +112,9 @@ std::vector<AgentState> CrossingState::step(
           this->parameters_.action_map[joint_action[i]];
       next_agent_states[i].lane = new_lane;
     }
+  }
+  if(parameters_.merge) {
+    fix_collision_positions(&next_agent_states);
   }
   return next_agent_states;
 }
@@ -270,4 +273,18 @@ EvaluationMap CrossingState::get_agent_labels(AgentIdx agent_idx) const {
     labels.insert(new_labels.begin(), new_labels.end());
   }
   return labels;
+}
+void CrossingState::fix_collision_positions(std::vector<AgentState> *agent_states) const {
+  for(auto it_begin = agent_states->begin(); it_begin != agent_states->end(); ++it_begin) {
+    for(auto it = it_begin + 1; it != agent_states->end(); ++it) {
+      if(check_collision(*it_begin, *it)) {
+        int correct_pos = std::max(it_begin->x_pos, it->x_pos);
+        it_begin->x_pos = correct_pos;
+        it->x_pos = correct_pos;
+        it_begin->lane = 0;
+        it_begin->lane = 0;
+        break;
+      }
+    }
+  }
 }
