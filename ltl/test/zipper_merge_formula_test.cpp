@@ -137,11 +137,12 @@ TEST_P(ZipperMergeFormula, false_merge_with_lane_change) {
 }
 
 const std::string formulas[] = {
-    "G((!merged_e & !merged_x & on_ego_lane_x) -> G((merged_e & merged_x) -> "
-    "!in_direct_front_x))",
-    "G((!merged_e & !merged_x & in_direct_front_x) -> G((merged_e & merged_x) -> !in_direct_front_x))",
-    "G(!merged_e -> in_direct_front_x) -> G(merged_e -> !in_direct_front_x)",
-    "G((!merged_e & !merged_x) -> in_direct_front_x) -> G(merged_e -> !in_direct_front_x)"};
+//    "G((!merged_e & !merged_x & on_ego_lane_x) -> G((merged_e & merged_x) -> "
+//    "!in_direct_front_x))",
+//    "G((!merged_e & !merged_x & in_direct_front_x) -> G((merged_e & merged_x) -> !in_direct_front_x))",
+//    "G(!merged_e -> in_direct_front_x) -> G(merged_e -> !in_direct_front_x)",
+//    "G((!merged_e & !merged_x) -> in_direct_front_x) -> G(merged_e -> !in_direct_front_x)",
+    "((in_direct_front_x | merged_x) W merged_e) -> G(merged_e & merged_x -> !in_direct_front_x)"};
 
 INSTANTIATE_TEST_CASE_P(ZipperMergeFormulaTest, ZipperMergeFormula,
     testing::ValuesIn(formulas));
