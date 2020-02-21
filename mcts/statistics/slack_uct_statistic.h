@@ -108,7 +108,7 @@ class SlackUCTStatistic : public UctStatistic<SlackUCTStatistic> {
     }
     // After C. Li and K. Czarnecki, “Urban Driving with Multi-Objective Deep Reinforcement Learning,” arXiv:1811.08586
     // [cs], Nov. 2018.
-    *values = 0.2 * values->cwiseAbs();
+    *values = mcts_parameters_.slack_uct_statistic_.SLACK_FACTOR * values->cwiseAbs();
   }
 };
 }  // namespace mcts

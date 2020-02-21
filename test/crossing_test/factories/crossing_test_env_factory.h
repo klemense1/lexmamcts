@@ -13,11 +13,13 @@ template <class Stat>
 class CrossingTestEnvFactory : public ITestEnvFactory {
  public:
   explicit CrossingTestEnvFactory(ObjectiveVec thres = make_default_mcts_parameters().thres_uct_statistic_.THRESHOLD,
-                                  bool enable_right_of_way = true)
-      : thres_(std::move(thres)), enable_right_of_way_(enable_right_of_way) {}
+                                  bool enable_right_of_way = true,
+                                  float slack_factor = 0.2f)
+      : thres_(std::move(thres)), enable_right_of_way_(enable_right_of_way), slack_factor_(slack_factor) {}
   std::shared_ptr<BaseTestEnv> make_test_env() override {
     auto mcts_params = make_default_mcts_parameters();
     mcts_params.thres_uct_statistic_.THRESHOLD = thres_;
+    mcts_params.slack_uct_statistic_.SLACK_FACTOR = slack_factor_;
     auto automata = CrossingTestEnv<Stat>::make_default_automata(2);
     if (enable_right_of_way_) {
       // Ego should give way
@@ -37,6 +39,7 @@ class CrossingTestEnvFactory : public ITestEnvFactory {
  private:
   ObjectiveVec thres_;
   bool enable_right_of_way_;
+  float slack_factor_;
 };
 
 #endif  // TEST_CROSSING_TEST_FACTORIES_CROSSING_TEST_ENV_FACTORY_H_

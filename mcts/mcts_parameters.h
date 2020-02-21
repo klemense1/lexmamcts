@@ -43,10 +43,8 @@ struct MctsParameters {
   };
 
   struct SlackUCTStatistic {
-    friend std::ostream& operator<<(std::ostream& os,
-                                    const SlackUCTStatistic& statistic);
-    /// Confidence level 1-ALPHA
-    double ALPHA;
+    friend std::ostream& operator<<(std::ostream& os, const SlackUCTStatistic& statistic);
+    float SLACK_FACTOR;
   };
 
   struct ThresUCTStatistic {

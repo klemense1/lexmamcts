@@ -44,13 +44,12 @@ std::ostream& operator<<(std::ostream& os,
   return os;
 }
 std::ostream& operator<<(std::ostream& os,
-                         const MctsParameters::SlackUCTStatistic& statistic) {
-  os << "ALPHA: " << statistic.ALPHA;
-  return os;
-}
-std::ostream& operator<<(std::ostream& os,
                          const MctsParameters::ThresUCTStatistic& statistic) {
   os << "THRESHOLD: " << statistic.THRESHOLD;
+  return os;
+}
+std::ostream& operator<<(std::ostream& os, const MctsParameters::SlackUCTStatistic& statistic) {
+  os << "SLACK_FACTOR: " << statistic.SLACK_FACTOR;
   return os;
 }
 } // namespace mcts
