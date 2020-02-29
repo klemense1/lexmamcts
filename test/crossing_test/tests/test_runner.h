@@ -63,8 +63,8 @@ class TestRunner {
     int violations;
   };
 
-  TestRunner() : factory_(nullptr) {};
-  explicit TestRunner(ITestEnvFactory *factory) : factory_(factory) {};
+  TestRunner() : factory_(nullptr), q_val_fname_("/tmp/q_val.dat") {};
+  explicit TestRunner(ITestEnvFactory *factory) : factory_(factory), q_val_fname_("/tmp/q_val.dat") {};
   virtual void run_test(size_t num_iter, int max_steps = 40);
   double calculate_vector_utility(const Reward &candidate) const;
   Metrics calculate_metric();
@@ -80,6 +80,10 @@ class TestRunner {
   void print_labels();
   void print_rule_states();
   Metrics metrics_;
+  std::string q_val_fname_;
+
+ public:
+  void set_q_val_fname(const std::string &q_val_fname);
 };
 
 #endif //MAMCTS_TEST_CROSSING_TEST_TESTS_TEST_RUNNER_H_

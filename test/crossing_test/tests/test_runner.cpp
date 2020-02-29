@@ -6,6 +6,8 @@
 #include "test_runner.h"
 #include "evaluation/evaluation.h"
 
+using mcts::evaluation::QValWriter;
+
 void TestRunner::run_test(size_t num_iter, int max_steps) {
   // Always recreate test environment to isolate test iterations
   latest_test_env_ = factory_->make_test_env();
@@ -13,7 +15,7 @@ void TestRunner::run_test(size_t num_iter, int max_steps) {
   std::vector<Reward> step_reward(latest_test_env_->crossing_state_parameter_.num_other_agents + 1);
   // Store initial state in history
   latest_test_env_->state_history_.emplace_back(get_state_vector().transpose());
-  QValWriter qw(latest_test_env_->mcts_parameters_.thres_uct_statistic_.THRESHOLD);
+  QValWriter qw(latest_test_env_->mcts_parameters_.thres_uct_statistic_.THRESHOLD, q_val_fname_);
   while (!latest_test_env_->state->is_terminal() && steps < max_steps) {
     latest_test_env_->search(num_iter);
     qw.WriteQVal(latest_test_env_->get_ego_qval(), latest_test_env_->get_jt()[0]);
@@ -90,3 +92,4 @@ ostream &operator<<(ostream &os, const TestRunner::MeanVar &var) {
   return os;
 }
 const std::shared_ptr<BaseTestEnv> &TestRunner::get_latest_test_env() const { return latest_test_env_; }
+void TestRunner::set_q_val_fname(const std::string &q_val_fname) { q_val_fname_ = q_val_fname; }
