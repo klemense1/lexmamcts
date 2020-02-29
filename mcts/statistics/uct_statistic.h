@@ -1,5 +1,5 @@
 // Copyright (c) 2019 Julian Bernhard
-// 
+//
 // This work is licensed under the terms of the MIT license.
 // For a copy, see <https://opensource.org/licenses/MIT>.
 // ========================================================
@@ -17,7 +17,7 @@
 namespace mcts {
 
 typedef struct UcbPair {
-  UcbPair(size_t reward_vec_size) : action_count_(0), action_value_(ObjectiveVec::Zero(reward_vec_size)) {};
+  UcbPair(size_t reward_vec_size) : action_count_(0), action_value_(ObjectiveVec::Zero(reward_vec_size)){};
   unsigned action_count_;
   ObjectiveVec action_value_;
 } UcbPair;
@@ -26,16 +26,15 @@ typedef std::map<ActionIdx, UcbPair> ActionUCBMap;
 class NodeStatistic_Final_Impl;
 
 // A upper confidence bound implementation
-template<typename IMPL = NodeStatistic_Final_Impl>
-class UctStatistic :
-    public std::conditional<std::is_same<IMPL, NodeStatistic_Final_Impl>::value,
-                            NodeStatistic<UctStatistic<>>, NodeStatistic<IMPL>>::type, public mcts::RandomGenerator {
+template <typename IMPL = NodeStatistic_Final_Impl>
+class UctStatistic : public std::conditional<std::is_same<IMPL, NodeStatistic_Final_Impl>::value,
+                                             NodeStatistic<UctStatistic<>>, NodeStatistic<IMPL>>::type,
+                     public mcts::RandomGenerator {
  private:
-  typedef typename std::conditional<std::is_same<IMPL, NodeStatistic_Final_Impl>::value,
-                                    UctStatistic<>,
+  typedef typename std::conditional<std::is_same<IMPL, NodeStatistic_Final_Impl>::value, UctStatistic<>,
                                     UctStatistic<IMPL>>::type ThisType;
-  typedef typename std::conditional<std::is_same<IMPL, NodeStatistic_Final_Impl>::value,
-                                    NodeStatistic<UctStatistic<>>, NodeStatistic<IMPL>>::type ParentType;
+  typedef typename std::conditional<std::is_same<IMPL, NodeStatistic_Final_Impl>::value, NodeStatistic<UctStatistic<>>,
+                                    NodeStatistic<IMPL>>::type ParentType;
 
  public:
   MCTS_TEST
@@ -51,29 +50,30 @@ class UctStatistic :
     }
   };
 
-  UctStatistic(ActionIdx num_actions, MctsParameters const &mcts_parameters) :
-      ParentType(num_actions, mcts_parameters),
-      value_(ObjectiveVec::Zero(mcts_parameters.REWARD_VEC_SIZE)),
-      latest_return_(ObjectiveVec::Zero(mcts_parameters.REWARD_VEC_SIZE)),
-      ucb_statistics_([&]() -> ActionUCBMap {
-        ActionUCBMap map;
-        for (ActionIdx ai = 0; ai < num_actions; ++ai) { map.insert({ai, UcbPair(mcts_parameters.REWARD_VEC_SIZE)}); }
-        return map;
-      }()),
-      total_node_visits_(0) {};
+  UctStatistic(ActionIdx num_actions, MctsParameters const &mcts_parameters)
+      : ParentType(num_actions, mcts_parameters),
+        value_(ObjectiveVec::Zero(mcts_parameters.REWARD_VEC_SIZE)),
+        latest_return_(ObjectiveVec::Zero(mcts_parameters.REWARD_VEC_SIZE)),
+        ucb_statistics_([&]() -> ActionUCBMap {
+          ActionUCBMap map;
+          for (ActionIdx ai = 0; ai < num_actions; ++ai) {
+            map.insert({ai, UcbPair(mcts_parameters.REWARD_VEC_SIZE)});
+          }
+          return map;
+        }()),
+        total_node_visits_(0){};
 
-  ~UctStatistic() {};
+  ~UctStatistic(){};
 
-  template<class S>
+  template <class S>
   ActionIdx choose_next_action(const S &state, std::vector<int> &unexpanded_actions) {
     if (unexpanded_actions.empty() || pw_limit_reached(unexpanded_actions)) {
       // Select an action based on the UCB formula
       std::vector<Eigen::VectorXd> values;
       calculate_ucb_values(ucb_statistics_, values);
       // find largest index
-      ActionIdx selected_action = std::distance(values.begin(),
-                                                std::max_element(values.begin(),
-                                                                 values.end(), LexicographicalComperator()));
+      ActionIdx selected_action =
+          std::distance(values.begin(), std::max_element(values.begin(), values.end(), LexicographicalComperator()));
       return selected_action;
     } else {
       // Select randomly an unexpanded action
@@ -88,8 +88,7 @@ class UctStatistic :
   ActionIdx get_best_action() {
     // Lexicographical ordering of the UCT value vectors
     LexicographicalComperator lex_comp;
-    auto max = std::max_element(ucb_statistics_.begin(),
-                                ucb_statistics_.end(),
+    auto max = std::max_element(ucb_statistics_.begin(), ucb_statistics_.end(),
                                 [lex_comp](ActionUCBMap::value_type const &a, ActionUCBMap::value_type const &b) {
                                   if (a.second.action_count_ == 0) {
                                     return true;
@@ -106,32 +105,30 @@ class UctStatistic :
     const ThisType &heuristic_statistic_impl = heuristic_statistic.impl();
     value_ = heuristic_statistic_impl.value_;
     latest_return_ = value_;
-    MCTS_EXPECT_TRUE(total_node_visits_ == 0); // This should be the first visit
+    MCTS_EXPECT_TRUE(total_node_visits_ == 0);  // This should be the first visit
     total_node_visits_ += 1;
   }
 
   void update_statistic(const ParentType &changed_child_statistic) {
     const ThisType &changed_uct_statistic = changed_child_statistic.impl();
 
-    //Action Value update step
-    auto ucb_pair =
-        ucb_statistics_.find(this->collected_reward_.first); // we remembered for which action we got the reward, must be the same as during backprop, if we linked parents and childs correctly
-    //action value: Q'(s,a) = Q'(s,a) + (latest_return - Q'(s,a))/N
+    // Action Value update step
+    auto ucb_pair = ucb_statistics_.find(
+        this->collected_reward_.first);  // we remembered for which action we got the reward, must be the same as during
+                                         // backprop, if we linked parents and childs correctly
+    // action value: Q'(s,a) = Q'(s,a) + (latest_return - Q'(s,a))/N
     latest_return_ =
         this->collected_reward_.second + this->mcts_parameters_.DISCOUNT_FACTOR * changed_uct_statistic.latest_return_;
     ucb_pair->second.action_count_ += 1;
-    ucb_pair->second.action_value_ =
-        ucb_pair->second.action_value_ + (latest_return_ - ucb_pair->second.action_value_) / ucb_pair->second.action_count_;
+    ucb_pair->second.action_value_ = ucb_pair->second.action_value_ +
+                                     (latest_return_ - ucb_pair->second.action_value_) / ucb_pair->second.action_count_;
     total_node_visits_ += 1;
     value_ = value_ + (latest_return_ - value_) / total_node_visits_;
   }
 
-  void set_heuristic_estimate(const Reward &accum_rewards) {
-    value_ = accum_rewards;
-  }
+  void set_heuristic_estimate(const Reward &accum_rewards) { value_ = accum_rewards; }
 
  public:
-
   std::string print_node_information() const {
     std::stringstream ss;
     ss << std::setprecision(2) << "V=" << value_ << ", N=" << total_node_visits_;
@@ -142,60 +139,48 @@ class UctStatistic :
     std::stringstream ss;
     auto action_it = ucb_statistics_.find(action);
     if (action_it != ucb_statistics_.end()) {
-      ss << "a=" << int(action) << ", N=" << action_it->second.action_count_ << ", V="
-         << action_it->second.action_value_.transpose();
+      ss << "a=" << int(action) << ", N=" << action_it->second.action_count_
+         << ", V=" << action_it->second.action_value_.transpose();
     }
     return ss.str();
   }
 
   std::map<ActionIdx, Reward> get_expected_rewards() const {
     std::map<ActionIdx, Reward> v;
-    for(auto const &pair : ucb_statistics_) {
+    for (auto const &pair : ucb_statistics_) {
       v[pair.first] = pair.second.action_value_;
     }
     return v;
   }
-  const ObjectiveVec get_value() const {
-    return value_;
-  }
+  const ObjectiveVec get_value() const { return value_; }
 
  protected:
   void calculate_ucb_values(const ActionUCBMap &ucb_statistics, std::vector<Eigen::VectorXd> &values) const {
     values.resize(ucb_statistics.size());
-
     for (size_t idx = 0; idx < ucb_statistics.size(); ++idx) {
-      Eigen::VectorXd action_value_normalized =
-          (ucb_statistics.at(idx).action_value_ - this->mcts_parameters_.uct_statistic.LOWER_BOUND)
-              .template cast<double>()
-              .cwiseQuotient(
-                  (this->mcts_parameters_.uct_statistic.UPPER_BOUND - this->mcts_parameters_.uct_statistic.LOWER_BOUND)
-                      .template cast<double>());
-      LOG_IF(FATAL, !(action_value_normalized.array() >=
-                      Eigen::VectorXd::Constant(this->mcts_parameters_.REWARD_VEC_SIZE, 0).array())
-                         .all())
-          << "Normalized values < 0: " << action_value_normalized.transpose();
-      LOG_IF(FATAL, !(action_value_normalized.array() <=
-                      Eigen::VectorXd::Constant(this->mcts_parameters_.REWARD_VEC_SIZE, 1).array())
-                         .all())
-          << "Normalized values > 1: " << action_value_normalized.transpose();
-      values[idx] = action_value_normalized.array() +
-                    2 * this->mcts_parameters_.uct_statistic.EXPLORATION_CONSTANT * sqrt((2 * log(total_node_visits_)) / (ucb_statistics.at(idx).action_count_));
+      Eigen::VectorXd exploration_offset =
+          ((this->mcts_parameters_.uct_statistic.UPPER_BOUND - this->mcts_parameters_.uct_statistic.LOWER_BOUND)
+               .template cast<double>() *
+           2.0 * this->mcts_parameters_.uct_statistic.EXPLORATION_CONSTANT *
+           sqrt((2 * log(total_node_visits_)) / (ucb_statistics.at(idx).action_count_))) -
+          this->mcts_parameters_.uct_statistic.LOWER_BOUND.template cast<double>();
+      values[idx] = ucb_statistics.at(idx).action_value_.template cast<double>() + exploration_offset;
     }
   }
 
   inline bool pw_limit_reached(const std::vector<int> &unexpanded_actions) const {
-    return ((ucb_statistics_.size() - unexpanded_actions.size())
-        > std::floor(std::pow(total_node_visits_ + 1, this->mcts_parameters_.uct_statistic.PROGRESSIVE_WIDENING_ALPHA)))
-        && this->mcts_parameters_.uct_statistic.PROGRESSIVE_WIDENING_ENABLED;
+    return ((ucb_statistics_.size() - unexpanded_actions.size()) >
+            std::floor(
+                std::pow(total_node_visits_ + 1, this->mcts_parameters_.uct_statistic.PROGRESSIVE_WIDENING_ALPHA))) &&
+           this->mcts_parameters_.uct_statistic.PROGRESSIVE_WIDENING_ENABLED;
   }
 
   ObjectiveVec value_;
-  ObjectiveVec latest_return_;  // tracks the return during backpropagation
+  ObjectiveVec latest_return_;   // tracks the return during backpropagation
   ActionUCBMap ucb_statistics_;  // first: action selection count, action-value
   unsigned int total_node_visits_;
-
 };
 
-} // namespace mcts
+}  // namespace mcts
 
 #endif
