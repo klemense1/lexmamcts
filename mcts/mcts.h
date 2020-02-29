@@ -79,12 +79,29 @@ void Mcts<S, SE, SO, H>::search(const S &current_state, unsigned int max_search_
                            const unsigned int &>(nullptr, current_state.clone(), JointAction(), 0, mcts_parameters_);
 
   num_iterations = 0;
+#ifdef DUMP_Q_VAL
+  std::ofstream ofs;
+  ofs.open(Q_VAL_DUMPFILE);
+  Eigen::IOFormat fmt(Eigen::StreamPrecision, Eigen::DontAlignCols, "\t");
+#endif
   while (
       std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count()
           < max_search_time_ms && num_iterations < max_iterations) {
     iterate(root_);
     num_iterations += 1;
+#ifdef DUMP_Q_VAL
+    if(num_iterations % 50 == 0) {
+      ofs << num_iterations << "\t";
+      for(auto const& pair : root_->get_ego_int_node().get_expected_rewards()) {
+        ofs << pair.second.transpose().format(fmt) << "\t";
+      }
+      ofs << root_->get_best_action()[0] << "\n";
+    }
+#endif
   }
+#ifdef DUMP_Q_VAL
+  ofs.close();
+#endif
   VLOG(1) << "Search time: " << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count() << " ms" << ", Samples: " << this->numIterations();
 }
 
