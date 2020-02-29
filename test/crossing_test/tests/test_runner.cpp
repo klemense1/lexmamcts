@@ -53,24 +53,22 @@ double TestRunner::calculate_vector_utility(const Reward &candidate) const {
   return u;
 }
 TestRunner::Metrics TestRunner::calculate_metric() {
-  Reward agent_reward_sum = rewards_to_mat(latest_test_env_->rewards).col(0);
-  double value = agent_reward_sum(agent_reward_sum.size() - 1);
-  if (agent_reward_sum(0) < 0) {
+  Reward cumulated_ego_reward = rewards_to_mat(latest_test_env_->rewards).col(0);
+  if (cumulated_ego_reward(0) < 0) {
     ++metrics_.collisions;
   } else {
-    metrics_.value_.add_value(value);
-    metrics_.step_cost_.add_value(value / latest_test_env_->state_history_.size());
+    metrics_.value_.add_value(cumulated_ego_reward(cumulated_ego_reward.size() - 1));
+    metrics_.step_cost_.add_value(cumulated_ego_reward(cumulated_ego_reward.size() - 1) / latest_test_env_->state_history_.size());
     metrics_.pos_.add_value(static_cast<double>(latest_test_env_->state_history_.back()(0)));
   }
-  if (agent_reward_sum(1) < 0) {
+  if (cumulated_ego_reward(1) < 0) {
     ++metrics_.violations;
   }
   return metrics_;
 }
 
 ostream &operator<<(ostream &os, const TestRunner::Metrics &metrics) {
-  os << metrics.pos_ << metrics.value_ << metrics.step_cost_ << metrics.collisions << "\t" << metrics.violations
-     << "\t";
+  os << metrics.pos_ << metrics.value_ << metrics.step_cost_ << metrics.collisions << "\t" << metrics.violations << "\t";
   return os;
 }
 ostream &TestRunner::Metrics::write_header(ostream &os) {
