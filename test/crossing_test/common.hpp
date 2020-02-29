@@ -60,7 +60,7 @@ typedef struct AgentState {
   AgentState()
       : id(id_counter++),
         x_pos(0),
-        last_action(static_cast<int>(Actions::WAIT)),
+        last_action(static_cast<int>(Actions::FORWARD)),
         lane(++lane_counter),
         init_lane(lane) {}
   AgentState(const int &id, const int &x, const int &last_action, int lane,
