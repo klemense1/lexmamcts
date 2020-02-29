@@ -218,3 +218,35 @@ cc_test(
         "@gtest//:main",
     ],
 )
+
+cc_binary(
+    name = "performance",
+    srcs = [
+        "performance.cpp",
+    ],
+    deps = [
+        ":test_runner",
+        ":util",
+        "//evaluation:evaluation",
+        "//mcts",
+        "//test/crossing_test:crossing_state",
+        "//test/crossing_test/factories",
+        "@com_github_google_glog//:glog",
+    ],
+)
+
+cc_binary(
+    name = "pareto_convergence",
+    srcs = [
+        "pareto_convergence.cpp",
+    ],
+    deps = [
+        ":test_runner",
+        ":util",
+        "//mcts",
+        "//test/crossing_test:crossing_state",
+        "//test/crossing_test:state_file_writer",
+        "//test/crossing_test/factories",
+        "@com_github_google_glog//:glog",
+    ],
+)
