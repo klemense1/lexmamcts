@@ -20,6 +20,7 @@ public:
 
   template<class S, class SE, class SO, class H>
   std::vector<SE> get_heuristic_values(const std::shared_ptr<StageNode<S, SE, SO, H>> &node) {
+    EASY_FUNCTION();
     //catch case where newly expanded state is terminal
     if (node->get_state()->is_terminal()) {
       const AgentIdx num_agents = node->get_state()->get_agent_idx().size();

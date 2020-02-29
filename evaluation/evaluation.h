@@ -6,15 +6,18 @@
 #ifndef EVALUATION_EVALUATION_H_
 #define EVALUATION_EVALUATION_H_
 
+#include <easy/profiler.h>
 #include <fstream>
 #include <map>
 #include <string>
 #include <vector>
 #include "Eigen/Core"
 
+namespace mcts {
+namespace evaluation {
 class QValWriter {
  public:
-  QValWriter(const Eigen::VectorXf& thres, const std::string& filename = "/tmp/q_val.dat");
+  QValWriter(Eigen::VectorXf thres, const std::string& filename = "/tmp/q_val.dat");
   virtual ~QValWriter();
   void WriteQVal(const std::map<unsigned long, Eigen::VectorXf>& action_val_map, unsigned long best_action);
 
@@ -25,5 +28,10 @@ class QValWriter {
   std::ofstream ofstream_;
   std::string filename_;
 };
+}  // namespace evaluation
+}  // namespace mcts
+
+void setup();
+void shutdown(char* file_dump_name = "/tmp/easy_profiler.prof");
 
 #endif  //  EVALUATION_EVALUATION_H_

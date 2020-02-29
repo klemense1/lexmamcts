@@ -40,6 +40,7 @@ CrossingState::CrossingState(std::vector<AgentState> agent_states,
       terminal_agents_(terminal_agents) {}
 
 std::shared_ptr<CrossingState> CrossingState::execute(const JointAction &joint_action, std::vector<Reward> &rewards) const {
+  EASY_FUNCTION();
   EvaluationMap labels;
   RuleStateMap next_automata(rule_state_map_);
   World next_world;
@@ -57,6 +58,7 @@ std::shared_ptr<CrossingState> CrossingState::execute(const JointAction &joint_a
       continue;
     }
     // Labeling
+    EASY_BLOCK("labelling");
     std::vector<AgentState> next_other_agents(next_agent_states);
     next_other_agents.erase(next_other_agents.begin() + agent_idx);
     // Create perspective from current agent
@@ -66,6 +68,7 @@ std::shared_ptr<CrossingState> CrossingState::execute(const JointAction &joint_a
       auto new_labels = le->evaluate(next_world);
       labels.insert(new_labels.begin(), new_labels.end());
     }
+    EASY_END_BLOCK;
     rewards[agent_idx] = Reward::Zero(parameters_.reward_vec_size);
 
     // Automata transit
@@ -89,6 +92,7 @@ std::shared_ptr<CrossingState> CrossingState::execute(const JointAction &joint_a
 }
 std::vector<AgentState> CrossingState::step(
     const JointAction &joint_action) const {
+  EASY_FUNCTION();
   std::vector<AgentState> next_agent_states(agent_states_.size());
   for (size_t i = 0; i < this->agent_states_.size(); ++i) {
     if (this->terminal_agents_[i]) {

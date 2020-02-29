@@ -6,6 +6,10 @@
 #include "evaluation.h"
 
 #include <utility>
+#include "glog/logging.h"
+
+namespace mcts {
+namespace evaluation {
 
 struct ThresholdComparator {
   explicit ThresholdComparator(Eigen::VectorXf thr) : thr_(std::move(thr)) {}
@@ -50,4 +54,11 @@ int QValWriter::FindLexMax(const std::map<unsigned long, Eigen::VectorXf>& actio
     decision_level = std::max(decision_level, comp(action_val_map.at(best_action), item.second));
   }
   return decision_level;
+}
+}  // namespace evaluation
+}  // namespace mcts
+void setup() { EASY_PROFILER_ENABLE; }
+void shutdown(char* file_dump_name) {
+  auto blocks_written = profiler::dumpBlocksToFile(file_dump_name);
+  LOG(INFO) << "Easy profiler blocks written: " << blocks_written;
 }

@@ -7,12 +7,17 @@
 #ifndef MCTS_H
 #define MCTS_H
 
+#ifdef DUMP_Q_VAL
+extern std::string Q_VAL_DUMPFILE;
+#endif
+
 #include "stage_node.h"
 #include "heuristic.h"
 #include <chrono>  // for high_resolution_clock
 #include "common.h"
 #include <string>
-
+#include <iostream>
+#include <easy/profiler.h>
 namespace mcts {
 
 /*
@@ -65,6 +70,7 @@ class Mcts {
 
 template<class S, class SE, class SO, class H>
 void Mcts<S, SE, SO, H>::search(const S &current_state, unsigned int max_search_time_ms, unsigned int max_iterations) {
+  EASY_FUNCTION();
   namespace chr = std::chrono;
   DLOG(INFO) << "Max search samples: " << max_iterations;
   auto start = std::chrono::high_resolution_clock::now();
@@ -107,17 +113,19 @@ void Mcts<S, SE, SO, H>::search(const S &current_state, unsigned int max_search_
 
 template<class S, class SE, class SO, class H>
 void Mcts<S, SE, SO, H>::iterate(const StageNodeSPtr &root_node) {
-
+  EASY_FUNCTION();
   StageNodeSPtr node = root_node;
   StageNodeSPtr node_p;
 
   // --------------Select & Expand  -----------------
   // We descend the tree for all joint actions already available -> last node is the newly expanded one
+  EASY_BLOCK("selection");
   while (node->select_or_expand(node));
-
+  EASY_END_BLOCK;
   // -------------- Heuristic Update ----------------
   // Heuristic until terminal node
   std::vector<SE> calculated_heuristic = heuristic_.get_heuristic_values(node);
+  EASY_BLOCK("backpropagation");
   node->update_statistics(calculated_heuristic);
 
   // --------------- Backpropagation ----------------
@@ -133,6 +141,7 @@ void Mcts<S, SE, SO, H>::iterate(const StageNodeSPtr &root_node) {
 
     }
   }
+  EASY_END_BLOCK;
 
 #ifdef PLAN_DEBUG_INFO
   sprintf(root_node);

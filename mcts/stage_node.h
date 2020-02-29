@@ -13,6 +13,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <easy/profiler.h>
 
 #include "boost/functional/hash.hpp"
 #include "glog/logging.h"
@@ -151,6 +152,7 @@ StageNodeSPtr<S, SE, SO, H> StageNode<S, SE, SO, H>::get_shared() {
 
 template<class S, class SE, class SO, class H>
 bool StageNode<S, SE, SO, H>::select_or_expand(StageNodeSPtr &next_node) {
+  EASY_FUNCTION();
   // helper function to fill rewards
   auto fill_rewards = [this](const std::vector<Reward> &reward_list, const JointAction &ja) {
     Reward coop_sum = Reward::Zero(mcts_parameters_.REWARD_VEC_SIZE);
@@ -184,11 +186,13 @@ bool StageNode<S, SE, SO, H>::select_or_expand(StageNodeSPtr &next_node) {
   auto it = children_.find(joint_action);
   if (it != children_.end()) {
     // SELECT EXISTING NODE
+    EASY_EVENT("select");
     next_node = it->second;
     fill_rewards(joint_rewards_[joint_action], joint_action);
     ++joint_action_counter_[joint_action];
     return true;
   } else {   // EXPAND NEW NODE BASED ON NEW JOINT ACTION
+    EASY_BLOCK("expand");
     std::vector<Reward> rewards(state_->get_agent_idx().size(), Reward::Zero(mcts_parameters_.REWARD_VEC_SIZE));
     next_node = std::make_shared<StageNode<S, SE, SO, H>,
                                  StageNodeSPtr,
@@ -199,6 +203,7 @@ bool StageNode<S, SE, SO, H>::select_or_expand(StageNodeSPtr &next_node) {
                                                        joint_action,
                                                        depth_ + 1,
                                                        mcts_parameters_);
+    EASY_END_BLOCK;
     children_[joint_action] = next_node;
     joint_action_counter_[joint_action] = 0;
 #ifdef PLAN_DEBUG_INFO

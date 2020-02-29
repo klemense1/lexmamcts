@@ -9,3 +9,5 @@ build:gprof --copt='-pg' --cxxopt='-pg' --linkopt='-pg'
 
 build:gperftools --linkopt='-lprofiler'
 test:gperftools --test_env='CPUPROFILE=/tmp/prof.out'
+
+build:easy_profiler --linkopt='-L/usr/local/lib/ -leasy_profiler' --copt='-DBUILD_WITH_EASY_PROFILER'

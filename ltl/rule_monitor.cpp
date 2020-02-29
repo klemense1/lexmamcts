@@ -10,6 +10,7 @@
 #include <numeric>
 #include <regex>
 #include <vector>
+#include <easy/profiler.h>
 
 #include "glog/logging.h"
 #include "ltl/label.h"
@@ -145,6 +146,7 @@ std::vector<std::vector<int>> RuleMonitor::all_k_permutations(
 
 float RuleMonitor::evaluate(const EvaluationMap &labels,
                             RuleState &state) const {
+  EASY_FUNCTION();
   EvaluationMap alive_labels = labels;
   alive_labels.insert({Label::make_alive(), true});
   return transit(alive_labels, state);
