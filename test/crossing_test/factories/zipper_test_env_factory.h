@@ -20,16 +20,25 @@
 template <class Stat>
 class ZipperTestEnvFactory : public ITestEnvFactory {
  public:
+  ZipperTestEnvFactory(float slack_factor = 0.2f)
+      : thres_(std::move(ObjectiveVec::Zero(3))), slack_factor_(slack_factor) {
+    thres_ << -0.28, -0.15, std::numeric_limits<ObjectiveVec::Scalar>::max();
+  }
+  ZipperTestEnvFactory(const ObjectiveVec &thres, float slack_factor) : thres_(thres), slack_factor_(slack_factor) {}
   std::shared_ptr<BaseTestEnv> make_test_env() override {
-    const std::string zip_formula = "(in_direct_front_x#0 & !merged_e & (in_direct_front_x#0 | merged_x#0) U merged_e) -> G(merged_e & merged_x#0 -> !in_direct_front_x#0)";
-//        "G((!merged_e & !merged_x#0) -> in_direct_front_x#0) -> G(merged_e -> !in_direct_front_x#0)";
+    const std::string zip_formula =
+        "(in_direct_front_x#0 & !merged_e & (in_direct_front_x#0 | merged_x#0) U merged_e) -> G(merged_e & merged_x#0 "
+        "-> !in_direct_front_x#0)";
+    //        "G((!merged_e & !merged_x#0) -> in_direct_front_x#0) -> G(merged_e -> !in_direct_front_x#0)";
 
-    MctsParameters mcts_params = make_default_mcts_parameters();
+    auto mcts_params = make_default_mcts_parameters();
+    mcts_params.thres_uct_statistic_.THRESHOLD = thres_;
+    mcts_params.slack_uct_statistic_.SLACK_FACTOR = slack_factor_;
     mcts_params.uct_statistic.LOWER_BOUND << -1.0f, -1.0f, -5000.0f;
     mcts_params.uct_statistic.UPPER_BOUND << 0.0f, 0.0f, 5000.0f;
-    mcts_params.thres_uct_statistic_.THRESHOLD << -0.81, -0.3, std::numeric_limits<ObjectiveVec::Scalar>::max();
+//    mcts_params.thres_uct_statistic_.THRESHOLD << -0.28, -0.15, std::numeric_limits<ObjectiveVec::Scalar>::max();
     mcts_params.COOP_FACTOR = 0.0;
-    mcts_params.DISCOUNT_FACTOR = 0.9;
+    mcts_params.DISCOUNT_FACTOR = 0.85;
     mcts_params.uct_statistic.EXPLORATION_CONSTANT = 0.7;
     mcts_params.random_heuristic.MAX_SEARCH_TIME_RANDOM_HEURISTIC = std::numeric_limits<double>::infinity();
     mcts_params.e_greedy_uct_statistic_.EPSILON = 0.2;
@@ -39,9 +48,10 @@ class ZipperTestEnvFactory : public ITestEnvFactory {
     crossing_params.ego_goal_reached_position = 1000;
     crossing_params.state_x_length = 1000;
     crossing_params.crossing_point = 8;
-    crossing_params.terminal_depth_ = 25;
+    crossing_params.terminal_depth_ = 9;
     crossing_params.merge = true;
-//    crossing_params.action_map.erase(crossing_params.action_map.begin() + 3);
+    crossing_params.acceleration_weight = 1.5f;
+    //    crossing_params.action_map.erase(crossing_params.action_map.begin() + 3);
 
     auto automata = BaseTestEnv::make_default_automata(crossing_params.num_other_agents + 1);
     for (auto &aut : automata) {
@@ -74,6 +84,10 @@ class ZipperTestEnvFactory : public ITestEnvFactory {
                                                  std::vector<bool>(agent_states.size(), false));
     return env;
   };
+
+ private:
+  ObjectiveVec thres_;
+  float slack_factor_;
 };
 
 #endif  // TEST_CROSSING_TEST_TESTS_ZIPPER_TEST_ENV_FACTORY_H_

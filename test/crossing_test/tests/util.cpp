@@ -34,10 +34,10 @@ MctsParameters make_default_mcts_parameters() {
 
   param.e_greedy_uct_statistic_.EPSILON = 0.2;
 
-  param.slack_uct_statistic_.ALPHA = 0.05;
+  param.slack_uct_statistic_.SLACK_FACTOR = 0.2;
 
   param.thres_uct_statistic_.THRESHOLD = ObjectiveVec::Zero(param.REWARD_VEC_SIZE);
-  param.thres_uct_statistic_.THRESHOLD << -0.28, -0.44, std::numeric_limits<ObjectiveVec::Scalar>::max();
+  param.thres_uct_statistic_.THRESHOLD << -0.28, -0.52, std::numeric_limits<ObjectiveVec::Scalar>::max();
 
   return param;
 }

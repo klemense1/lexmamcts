@@ -27,8 +27,8 @@ class CrossingTestEnvFactory : public ITestEnvFactory {
     }
     auto env =  std::make_shared<CrossingTestEnv<Stat>>(mcts_params, make_default_crossing_state_parameters(), automata);
     auto agent_states = env->state->get_agent_states();
-    agent_states[0].x_pos = 0;
-    agent_states[1].x_pos = 1;
+    agent_states[0].x_pos = 1;
+    agent_states[1].x_pos = 0;
 
     env->state = std::make_shared<CrossingState>(agent_states, false, env->state->get_rule_state_map(),
                                                  env->label_evaluators_, env->crossing_state_parameter_, 0,
