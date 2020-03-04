@@ -57,6 +57,10 @@ class RuleMonitor : public std::enable_shared_from_this<RuleMonitor> {
   bool is_agent_specific() const;
 
   friend std::ostream &operator<<(std::ostream &os, RuleMonitor const &d);
+  const std::string &get_str_formula() const;
+  float get_weight() const;
+  float get_final_reward1() const;
+  const float get_init_belief() const;
 
  private:
   enum BddResult { TRUE, FALSE, UNDEF };
@@ -76,9 +80,7 @@ class RuleMonitor : public std::enable_shared_from_this<RuleMonitor> {
     bool is_agent_specific;
   };
 
-  // For debugging
   std::string str_formula_;
-
   float weight_;
   float final_reward_;
   spot::twa_graph_ptr aut_;

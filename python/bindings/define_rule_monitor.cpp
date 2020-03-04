@@ -19,7 +19,16 @@ void define_rule_monitor(py::module m) {
         std::stringstream os;
         os << m;
         return os.str();
-      });
+      })
+      .def(py::pickle(
+          [](const RuleMonitor& b) {
+            return py::make_tuple(b.get_str_formula(), b.get_weight(), b.get_priority(), b.get_init_belief(), b.get_final_reward1());
+          },
+          [](py::tuple t) {
+            if (t.size() != 4)
+              throw std::runtime_error("Invalid RuleMonitor evaluator state!");
+            return RuleMonitor::make_rule(t[0].cast<std::string>(), t[1].cast<float>(), t[2].cast<RulePriority>(), t[3].cast<float>(), t[4].cast<float>());
+          }));
 
   py::class_<Label, std::shared_ptr<Label>>(m, "Label")
   .def(py::init<const std::string&, int>())

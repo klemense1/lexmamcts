@@ -5,24 +5,24 @@
 
 #include "ltl/rule_monitor.h"
 
+#include <easy/profiler.h>
 #include <algorithm>
 #include <map>
 #include <numeric>
 #include <regex>
 #include <vector>
-#include <easy/profiler.h>
 
 #include "glog/logging.h"
 #include "ltl/label.h"
 #include "spot/tl/apcollect.hh"
+#include "spot/tl/hierarchy.hh"
 #include "spot/tl/ltlf.hh"
 #include "spot/tl/print.hh"
-#include "spot/tl/hierarchy.hh"
 #include "spot/twa/bddprint.hh"
 
 namespace ltl {
-RuleMonitor::RuleMonitor(const std::string &ltl_formula_str, float weight, RulePriority priority,
-                                   float init_belief, float final_reward)
+RuleMonitor::RuleMonitor(const std::string &ltl_formula_str, float weight, RulePriority priority, float init_belief,
+                         float final_reward)
     : str_formula_(ltl_formula_str),
       weight_(weight),
       final_reward_(final_reward),
@@ -75,8 +75,7 @@ std::string RuleMonitor::parse_agents(const std::string &ltl_formula_str) {
     agent_free_formula += sm.prefix();
     agent_free_formula += ap_name;
     // TODO: Make ap_alphabet a set, so AP containers are unique
-    ap_alphabet_.push_back({ap_name, spot::formula::ap(ap_name),
-                            agent_id_placeholder, ap_is_agent_specific});
+    ap_alphabet_.push_back({ap_name, spot::formula::ap(ap_name), agent_id_placeholder, ap_is_agent_specific});
     remaining = sm.suffix();
   }
   ap_alphabet_.push_back({"alive", spot::formula::ap("alive"), -1, false});
@@ -85,46 +84,35 @@ std::string RuleMonitor::parse_agents(const std::string &ltl_formula_str) {
   return agent_free_formula;
 }
 
-std::vector<RuleState> RuleMonitor::make_rule_state(
-    const std::vector<int> &new_agent_ids,
-    const std::vector<int> &existing_agent_ids) const {
+std::vector<RuleState> RuleMonitor::make_rule_state(const std::vector<int> &new_agent_ids,
+                                                    const std::vector<int> &existing_agent_ids) const {
   int num_other_agents =
       std::max_element(ap_alphabet_.begin(), ap_alphabet_.end(),
-                       [](const APContainer &a, const APContainer &b) {
-                         return (a.id_idx_ < b.id_idx_);
-                       })
+                       [](const APContainer &a, const APContainer &b) { return (a.id_idx_ < b.id_idx_); })
           ->id_idx_ +
       1;
   num_other_agents = std::max(num_other_agents, 0);
 
   std::vector<int> current_agent_ids;
-  std::set_union(new_agent_ids.begin(), new_agent_ids.end(),
-                 existing_agent_ids.begin(), existing_agent_ids.end(),
+  std::set_union(new_agent_ids.begin(), new_agent_ids.end(), existing_agent_ids.begin(), existing_agent_ids.end(),
                  std::back_inserter(current_agent_ids));
   std::vector<RuleState> l;
   if (is_agent_specific() && current_agent_ids.size() >= num_other_agents) {
-    std::vector<std::vector<int>> existing_permutations =
-        all_k_permutations(existing_agent_ids, num_other_agents);
-    std::vector<std::vector<int>> all_permutations =
-        all_k_permutations(current_agent_ids, num_other_agents);
+    std::vector<std::vector<int>> existing_permutations = all_k_permutations(existing_agent_ids, num_other_agents);
+    std::vector<std::vector<int>> all_permutations = all_k_permutations(current_agent_ids, num_other_agents);
     // Permutations to create
     std::vector<std::vector<int>> new_permutations;
-    std::set_difference(all_permutations.begin(), all_permutations.end(),
-                        existing_permutations.begin(),
-                        existing_permutations.end(),
-                        std::back_inserter(new_permutations));
+    std::set_difference(all_permutations.begin(), all_permutations.end(), existing_permutations.begin(),
+                        existing_permutations.end(), std::back_inserter(new_permutations));
     for (const auto &perm : new_permutations) {
-      l.push_back(RuleState(aut_->get_init_state_number(), init_belief_, 0,
-                            shared_from_this(), perm));
+      l.push_back(RuleState(aut_->get_init_state_number(), init_belief_, 0, shared_from_this(), perm));
     }
   } else if (!is_agent_specific()) {
-    l.push_back(RuleState(aut_->get_init_state_number(), init_belief_, 0,
-                          shared_from_this(), {}));
+    l.push_back(RuleState(aut_->get_init_state_number(), init_belief_, 0, shared_from_this(), {}));
   }
   return l;
 }
-std::vector<std::vector<int>> RuleMonitor::all_k_permutations(
-    const std::vector<int> &values, int k) const {
+std::vector<std::vector<int>> RuleMonitor::all_k_permutations(const std::vector<int> &values, int k) const {
   if (values.empty()) {
     return {};
   }
@@ -139,20 +127,17 @@ std::vector<std::vector<int>> RuleMonitor::all_k_permutations(
     }
     permutations.emplace_back(value_permutation);
     std::reverse(idx_permutation.begin() + k, idx_permutation.end());
-  } while (
-      std::next_permutation(idx_permutation.begin(), idx_permutation.end()));
+  } while (std::next_permutation(idx_permutation.begin(), idx_permutation.end()));
   return permutations;
 }
 
-float RuleMonitor::evaluate(const EvaluationMap &labels,
-                            RuleState &state) const {
+float RuleMonitor::evaluate(const EvaluationMap &labels, RuleState &state) const {
   EASY_FUNCTION();
   EvaluationMap alive_labels = labels;
   alive_labels.insert({Label::make_alive(), true});
   return transit(alive_labels, state);
 }
-float RuleMonitor::transit(const EvaluationMap &labels,
-                           RuleState &state) const {
+float RuleMonitor::transit(const EvaluationMap &labels, RuleState &state) const {
   std::map<int, bool> bddvars;
   spot::bdd_dict_ptr bddDictPtr = aut_->get_dict();
   for (const auto &ap : ap_alphabet_) {
@@ -190,13 +175,12 @@ float RuleMonitor::transit(const EvaluationMap &labels,
     state.current_state_ = aut_->get_init_state_number();
     penalty = static_cast<float>(state.rule_belief_) * weight_;
   } else if (transition_found != BddResult::TRUE && undef_trans_found) {
-      VLOG(2) << "Rule" << str_formula_ << " undefined!";
+    VLOG(2) << "Rule" << str_formula_ << " undefined!";
   }
   return penalty;
 }
 
-RuleMonitor::BddResult RuleMonitor::evaluate_bdd(
-    bdd cond, const std::map<int, bool> &vars) {
+RuleMonitor::BddResult RuleMonitor::evaluate_bdd(bdd cond, const std::map<int, bool> &vars) {
   bdd bdd_node = cond;
   while (bdd_node != bddtrue && bdd_node != bddfalse) {
     auto it = vars.find(bdd_var(bdd_node));
@@ -231,14 +215,12 @@ std::ostream &operator<<(std::ostream &os, RuleMonitor const &d) {
 
 void RuleMonitor::update_belief(RuleState &state) const {
   Eigen::Vector2d belief_v(state.rule_belief_, 1.0 - state.rule_belief_);
-  if (!ltl_formula_.is_syntactic_safety() &&
-      !aut_->state_is_accepting(state.current_state_)) {
+  if (!ltl_formula_.is_syntactic_safety() && !aut_->state_is_accepting(state.current_state_)) {
     ++state.violated_;
   }
   if (state.violated_ > 0) {
     int observation = 1;
-    double eta =
-        1.0 / (observation_prob_.col(observation).transpose() * belief_v)(0);
+    double eta = 1.0 / (observation_prob_.col(observation).transpose() * belief_v)(0);
     belief_v = eta * observation_prob_.col(observation).cwiseProduct(belief_v);
     state.rule_belief_ = belief_v(0);
   }
@@ -252,11 +234,12 @@ spot::formula RuleMonitor::parse_formula(const std::string &ltl_formula_str) {
   return pf.f;
 }
 void RuleMonitor::set_weight(float weight) { weight_ = weight; }
-void RuleMonitor::set_final_reward(float final_reward) {
-  final_reward_ = final_reward;
-}
-void RuleMonitor::set_priority(RulePriority priority) { priority_ = priority;
-}
+void RuleMonitor::set_final_reward(float final_reward) { final_reward_ = final_reward; }
+void RuleMonitor::set_priority(RulePriority priority) { priority_ = priority; }
 RulePriority RuleMonitor::get_priority() const { return priority_; }
 bool RuleMonitor::is_agent_specific() const { return rule_is_agent_specific_; }
+const std::string &RuleMonitor::get_str_formula() const { return str_formula_; }
+float RuleMonitor::get_weight() const { return weight_; }
+float RuleMonitor::get_final_reward1() const { return final_reward_; }
+const float RuleMonitor::get_init_belief() const { return init_belief_; }
 }  // namespace ltl
