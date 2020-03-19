@@ -29,9 +29,13 @@ const std::shared_ptr<const RuleMonitor> &RuleState::get_automaton() const {
 }
 std::ostream &operator<<(std::ostream &os, const RuleState &state) {
   os << "current_state_: " << state.current_state_
-     << " rule_belief_: " << state.rule_belief_
      << " violated_: " << state.violated_
-     << " automaton_: " << state.automaton_;
+     << " automaton_: " << state.automaton_->get_str_formula()
+     << " agent_ids: [";
+  for(const auto& id : state.get_agent_ids()) {
+    os << id << ", ";
+  }
+  os << "]";
   return os;
 }
 bool RuleState::is_agent_specific() const { return !agent_ids_.empty(); }
