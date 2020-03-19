@@ -61,7 +61,7 @@ class RuleMonitor : public std::enable_shared_from_this<RuleMonitor> {
   float get_weight() const;
   float get_final_reward1() const;
   const float get_init_belief() const;
-
+  void PrintToDot(const std::string& fname);
  private:
   enum BddResult { TRUE, FALSE, UNDEF };
 

@@ -7,6 +7,7 @@
 
 #include <easy/profiler.h>
 #include <algorithm>
+#include <fstream>
 #include <map>
 #include <numeric>
 #include <regex>
@@ -19,6 +20,7 @@
 #include "spot/tl/ltlf.hh"
 #include "spot/tl/print.hh"
 #include "spot/twa/bddprint.hh"
+#include "spot/twaalgos/dot.hh"
 
 namespace ltl {
 RuleMonitor::RuleMonitor(const std::string &ltl_formula_str, float weight, RulePriority priority, float init_belief,
@@ -242,4 +244,10 @@ const std::string &RuleMonitor::get_str_formula() const { return str_formula_; }
 float RuleMonitor::get_weight() const { return weight_; }
 float RuleMonitor::get_final_reward1() const { return final_reward_; }
 const float RuleMonitor::get_init_belief() const { return init_belief_; }
+void RuleMonitor::PrintToDot(const std::string &fname) {
+  std::ofstream os;
+  os.open(fname);
+  spot::print_dot(os, aut_);
+  os.close();
+}
 }  // namespace ltl
