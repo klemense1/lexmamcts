@@ -157,10 +157,14 @@ class UctStatistic : public std::conditional<std::is_same<IMPL, NodeStatistic_Fi
  protected:
   void calculate_ucb_values(const ActionUCBMap &ucb_statistics, std::vector<Eigen::VectorXd> &values) const {
     values.resize(ucb_statistics.size());
-    const auto scale = this->mcts_parameters_.uct_statistic.EXPLORATION_CONSTANT * (this->mcts_parameters_.uct_statistic.UPPER_BOUND - this->mcts_parameters_.uct_statistic.LOWER_BOUND).template cast<double>();
+    auto upper_bound = this->mcts_parameters_.uct_statistic.UPPER_BOUND.template cast<double>();
+    auto lower_bound = this->mcts_parameters_.uct_statistic.LOWER_BOUND.template cast<double>();
+    const auto scale = this->mcts_parameters_.uct_statistic.EXPLORATION_CONSTANT * (upper_bound - lower_bound);
+    double exploration_term;
     Eigen::VectorXd exploration_offset;
     for (size_t idx = 0; idx < ucb_statistics.size(); ++idx) {
-      exploration_offset = scale * sqrt((2.0 * log(total_node_visits_)) / (ucb_statistics.at(idx).action_count_)) + this->mcts_parameters_.uct_statistic.LOWER_BOUND.template cast<double>();
+      exploration_term = sqrt((2.0 * log(total_node_visits_)) / (ucb_statistics.at(idx).action_count_));
+      exploration_offset = scale * exploration_term + lower_bound;
       values[idx] = ucb_statistics.at(idx).action_value_.template cast<double>() + exploration_offset;
     }
   }
