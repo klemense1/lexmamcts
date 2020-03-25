@@ -101,9 +101,9 @@ cc_binary(
 )
 
 cc_binary(
-    name = "trajectory_compare",
+    name = "convergence_comparison",
     srcs = [
-        "trajectory_compare.cpp",
+        "convergence_comparison.cpp",
     ],
     deps = [
         ":test_runner",
