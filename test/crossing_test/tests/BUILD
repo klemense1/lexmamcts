@@ -186,23 +186,6 @@ cc_binary(
     ],
 )
 
-cc_binary(
-    name = "scalar_vs_lex",
-    srcs = [
-        "scalar_vs_lex_test.cpp",
-    ],
-    copts = ["-Iexternal/gtest/include"],
-    deps = [
-        ":crossing_test_env",
-        ":util",
-        "//mcts",
-        "//test/crossing_test:crossing_state",
-        "@com_github_gflags_gflags//:gflags",
-        "@com_github_google_glog//:glog",
-        "@gtest//:main",
-    ],
-)
-
 cc_test(
     name = "minimum_violation",
     srcs = ["minimum_violation_test.cpp"],
