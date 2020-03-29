@@ -15,7 +15,8 @@ void TestRunner::run_test(size_t num_iter, int max_steps) {
   std::vector<Reward> step_reward(latest_test_env_->crossing_state_parameter_.num_other_agents + 1);
   // Store initial state in history
   latest_test_env_->state_history_.emplace_back(get_state_vector().transpose());
-  QValWriter qw(latest_test_env_->mcts_parameters_.thres_uct_statistic_.THRESHOLD, q_val_fname_);
+  QValWriter qw(latest_test_env_->mcts_parameters_.thres_uct_statistic_.THRESHOLD, q_val_fname_,
+                latest_test_env_->crossing_state_parameter_.action_map.size());
   while (!latest_test_env_->state->is_terminal() && steps < max_steps) {
     latest_test_env_->search(num_iter);
     qw.WriteQVal(latest_test_env_->get_ego_qval(), latest_test_env_->get_jt()[0]);
@@ -60,7 +61,8 @@ TestRunner::Metrics TestRunner::calculate_metric() {
     ++metrics_.collisions;
   } else {
     metrics_.value_.add_value(cumulated_ego_reward(cumulated_ego_reward.size() - 1));
-    metrics_.step_cost_.add_value(cumulated_ego_reward(cumulated_ego_reward.size() - 1) / latest_test_env_->state_history_.size());
+    metrics_.step_cost_.add_value(cumulated_ego_reward(cumulated_ego_reward.size() - 1) /
+                                  latest_test_env_->state_history_.size());
     metrics_.pos_.add_value(static_cast<double>(latest_test_env_->state_history_.back()(0)));
   }
   if (cumulated_ego_reward(1) < 0) {
@@ -70,7 +72,8 @@ TestRunner::Metrics TestRunner::calculate_metric() {
 }
 
 ostream &operator<<(ostream &os, const TestRunner::Metrics &metrics) {
-  os << metrics.pos_ << metrics.value_ << metrics.step_cost_ << metrics.collisions << "\t" << metrics.violations << "\t";
+  os << metrics.pos_ << metrics.value_ << metrics.step_cost_ << metrics.collisions << "\t" << metrics.violations
+     << "\t";
   return os;
 }
 ostream &TestRunner::Metrics::write_header(ostream &os) {
@@ -83,7 +86,7 @@ void TestRunner::print_labels() {
   }
 }
 void TestRunner::print_rule_states() {
-  for(const auto &rs : latest_test_env_->state->get_rule_state_map()[0]) {
+  for (const auto &rs : latest_test_env_->state->get_rule_state_map()[0]) {
     VLOG(1) << rs.second;
   }
 }

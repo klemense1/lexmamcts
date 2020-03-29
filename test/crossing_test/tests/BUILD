@@ -20,6 +20,7 @@ cc_library(
     name = "test_runner",
     srcs = ["test_runner.cpp"],
     hdrs = ["test_runner.h"],
+    visibility = ["//visibility:public"],
     deps = [
         "//evaluation",
         "//mcts",
@@ -210,7 +211,7 @@ cc_binary(
     deps = [
         ":test_runner",
         ":util",
-        "//evaluation:evaluation",
+        "//evaluation",
         "//mcts",
         "//test/crossing_test:crossing_state",
         "//test/crossing_test/factories",

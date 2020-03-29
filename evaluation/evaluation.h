@@ -17,7 +17,7 @@ namespace mcts {
 namespace evaluation {
 class QValWriter {
  public:
-  QValWriter(Eigen::VectorXf thres, const std::string& filename = "/tmp/q_val.dat");
+  QValWriter(Eigen::VectorXf thres, const std::string& filename = "/tmp/q_val.dat", unsigned long num_actions = 4);
   virtual ~QValWriter();
   void WriteQVal(const std::map<unsigned long, Eigen::VectorXf>& action_val_map, unsigned long best_action);
 

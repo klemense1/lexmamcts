@@ -28,8 +28,17 @@ struct ThresholdComparator {
   }
 };
 
-QValWriter::QValWriter(Eigen::VectorXf thres, const std::string& filename) : thres_(std::move(thres)), timestamp_(0) {
+QValWriter::QValWriter(Eigen::VectorXf thres, const std::string& filename, unsigned long num_actions)
+    : thres_(std::move(thres)), timestamp_(0) {
   ofstream_.open(filename);
+  ofstream_ << "tstep\t";
+  for(unsigned long a = 0; a < num_actions; ++a) {
+    for(unsigned long l = 0; l < thres_.size(); ++l) {
+      ofstream_ << "a" << a << "_l" << l << "\t";
+    }
+  }
+  ofstream_ << "best_action\tdecision_lvl\n";
+  ofstream_.flush();
 }
 
 void QValWriter::WriteQVal(const std::map<unsigned long, Eigen::VectorXf>& action_val_map, unsigned long best_action) {

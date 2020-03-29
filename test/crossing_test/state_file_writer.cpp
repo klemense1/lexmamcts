@@ -18,9 +18,9 @@ void StateFileWriter::write_multi_timestep(
 StateFileWriter::StateFileWriter(size_t num_agents, const std::string &filename)
     : timestamp_(0), num_agents_(num_agents), filename_(filename) {
   ofstream_.open(filename);
-  ofstream_ << "# Timestep";
+  ofstream_ << "Timestep";
   for (size_t i = 0; i < num_agents; ++i) {
-    ofstream_ << "\t Agent " << i;
+    ofstream_ << "\tAgent " << i;
   }
   ofstream_ << "\n";
 }
