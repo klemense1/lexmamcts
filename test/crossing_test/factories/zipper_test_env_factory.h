@@ -34,8 +34,8 @@ class ZipperTestEnvFactory : public ITestEnvFactory {
     auto mcts_params = make_default_mcts_parameters();
     mcts_params.thres_uct_statistic_.THRESHOLD = thres_;
     mcts_params.slack_uct_statistic_.SLACK_FACTOR = slack_factor_;
-    mcts_params.uct_statistic.LOWER_BOUND << -1.0f, -1.0f, -5000.0f;
-    mcts_params.uct_statistic.UPPER_BOUND << 0.0f, 0.0f, 5000.0f;
+    mcts_params.uct_statistic.LOWER_BOUND << -1.0f, -1.0f, -100.0f;
+    mcts_params.uct_statistic.UPPER_BOUND << 0.0f, 0.0f, 0.0f;
 //    mcts_params.thres_uct_statistic_.THRESHOLD << -0.28, -0.15, std::numeric_limits<ObjectiveVec::Scalar>::max();
     mcts_params.COOP_FACTOR = 0.0;
     mcts_params.DISCOUNT_FACTOR = 0.85;
@@ -48,10 +48,11 @@ class ZipperTestEnvFactory : public ITestEnvFactory {
     crossing_params.ego_goal_reached_position = 1000;
     crossing_params.state_x_length = 1000;
     crossing_params.crossing_point = 8;
-    crossing_params.terminal_depth_ = 9;
+    crossing_params.terminal_depth_ = 12;
     crossing_params.merge = true;
     crossing_params.acceleration_weight = 1.5f;
-    //    crossing_params.action_map.erase(crossing_params.action_map.begin() + 3);
+    crossing_params.speed_deviation_weight = 5.0f;
+    crossing_params.action_map.erase(crossing_params.action_map.begin() + 2);
 
     auto automata = BaseTestEnv::make_default_automata(crossing_params.num_other_agents + 1);
     for (auto &aut : automata) {
