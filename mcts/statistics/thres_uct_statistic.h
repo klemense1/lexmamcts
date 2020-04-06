@@ -32,11 +32,15 @@ class ThresUCTStatistic : public UctStatistic<ThresUCTStatistic> {
     if (unexpanded_actions.empty()) {
       std::uniform_real_distribution<double> uniform_norm(0.0, 1.0);
       std::vector<Eigen::VectorXd> values;
+      auto thres = mcts_parameters_.thres_uct_statistic_.THRESHOLD.cast<double>();
+      auto lower = mcts_parameters_.uct_statistic.LOWER_BOUND.cast<double>();
+      auto upper = mcts_parameters_.uct_statistic.UPPER_BOUND.cast<double>();
+      Eigen::VectorXd normalized_thresholds = (thres - lower).cwiseQuotient(upper-lower);
       calculate_ucb_values(ucb_statistics_, values);
       selected_action = std::distance(
           values.begin(), std::max_element(values.begin(), values.end(),
                                            ThresholdComparator<Eigen::VectorXd>(
-                                               mcts_parameters_.thres_uct_statistic_.THRESHOLD.cast<double>())));
+                                               normalized_thresholds)));
       const double p = uniform_norm(random_generator_);
       if (p < mcts_parameters_.thres_uct_statistic_.EPSILON && num_actions_ >= 2) {
         std::uniform_int_distribution<ActionIdx> uniform_action(0, num_actions_ - 2);

@@ -159,15 +159,25 @@ class UctStatistic : public std::conditional<std::is_same<IMPL, NodeStatistic_Fi
  protected:
   void calculate_ucb_values(const ActionUCBMap &ucb_statistics, std::vector<Eigen::VectorXd> &values) const {
     values.resize(ucb_statistics.size());
-    auto upper_bound = this->mcts_parameters_.uct_statistic.UPPER_BOUND.template cast<double>();
-    auto lower_bound = this->mcts_parameters_.uct_statistic.LOWER_BOUND.template cast<double>();
-    const auto scale = this->mcts_parameters_.uct_statistic.EXPLORATION_CONSTANT * (upper_bound - lower_bound);
+    Eigen::MatrixXd action_val_mat(this->mcts_parameters_.REWARD_VEC_SIZE, ucb_statistics.size());
+    size_t i = 0;
+    for(const auto& stat : ucb_statistics) {
+      action_val_mat.col(i) = stat.second.action_value_.template cast<double>();;
+      ++i;
+    }
+    double min_coeff = action_val_mat.row(action_val_mat.rows()-1).minCoeff();
+    Eigen::VectorXd upper_bound = action_val_mat.rowwise().maxCoeff().template cast<double>();
+    Eigen::VectorXd lower_bound = Eigen::VectorXd::Constant(this->mcts_parameters_.REWARD_VEC_SIZE, -1.0);
+    lower_bound(lower_bound.rows()-1) = min_coeff;
+    const auto scale =  upper_bound - lower_bound;
     double exploration_term;
+    Eigen::VectorXd normalized_mean;
     Eigen::VectorXd exploration_offset;
     for (size_t idx = 0; idx < ucb_statistics.size(); ++idx) {
-      exploration_term = sqrt((2.0 * log(total_node_visits_)) / (ucb_statistics.at(idx).action_count_));
-      exploration_offset = scale * exploration_term + lower_bound;
-      values[idx] = ucb_statistics.at(idx).action_value_.template cast<double>() + exploration_offset;
+      exploration_term = this->mcts_parameters_.uct_statistic.EXPLORATION_CONSTANT * sqrt((2.0 * log(total_node_visits_)) / (ucb_statistics.at(idx).action_count_));
+//      exploration_offset = exploration_term * ObjectiveVec;
+      normalized_mean = (ucb_statistics.at(idx).action_value_.template cast<double>() - lower_bound).cwiseQuotient(scale);
+      values[idx] = normalized_mean.array() + exploration_term;
     }
   }
 
