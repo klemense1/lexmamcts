@@ -40,6 +40,8 @@ struct MctsParameters {
                                     const EGreedyUCTStatistic& statistic);
     /// Probability of random exploration
     double EPSILON;
+    double MINIMUM_EPSILON;
+    double EPSILON_DECAY;
   };
 
   struct SlackUCTStatistic {
@@ -51,6 +53,7 @@ struct MctsParameters {
     friend std::ostream& operator<<(std::ostream& os,
                                     const ThresUCTStatistic& statistic);
     ObjectiveVec THRESHOLD;
+    double EPSILON;
   };
 
   size_t REWARD_VEC_SIZE = 5;

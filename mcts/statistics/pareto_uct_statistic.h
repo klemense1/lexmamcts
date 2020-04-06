@@ -20,7 +20,8 @@ class ParetoUCTStatistic : public UctStatistic<ParetoUCTStatistic> {
 
   template <class S>
   ActionIdx choose_next_action(const S &state,
-                               std::vector<int> &unexpanded_actions) {
+                               std::vector<int> &unexpanded_actions,
+                               unsigned int iteration) {
     if (unexpanded_actions.empty()) {
       // Select an action based on the UCB formula
       std::vector<Eigen::VectorXf> values;

@@ -82,7 +82,7 @@ class StageNode : public std::enable_shared_from_this<StageNode<S, SE, SO, H>> {
             const unsigned int &depth,
             MctsParameters const &mcts_parameters);
   ~StageNode();
-  bool select_or_expand(StageNodeSPtr &next_node);
+  bool select_or_expand(StageNodeSPtr &next_node, unsigned int iteration);
   void update_statistics(const std::vector<SE> &heuristic_estimates);
   void update_statistics(const StageNodeSPtr &changed_child_node);
   bool each_agents_actions_expanded();
@@ -151,7 +151,8 @@ StageNodeSPtr<S, SE, SO, H> StageNode<S, SE, SO, H>::get_shared() {
 }
 
 template<class S, class SE, class SO, class H>
-bool StageNode<S, SE, SO, H>::select_or_expand(StageNodeSPtr &next_node) {
+bool StageNode<S, SE, SO, H>::select_or_expand(StageNodeSPtr &next_node,
+                                               unsigned int iteration) {
   EASY_FUNCTION();
   // helper function to fill rewards
   auto fill_rewards = [this](const std::vector<Reward> &reward_list, const JointAction &ja) {
@@ -177,9 +178,10 @@ bool StageNode<S, SE, SO, H>::select_or_expand(StageNodeSPtr &next_node) {
 
   // Let each agent select an action according to its statistic model -> yields joint_action
   JointAction joint_action(state_->get_agent_idx().size());
-  joint_action[ego_int_node_.get_agent_idx()] = ego_int_node_.choose_next_action();
+  joint_action[ego_int_node_.get_agent_idx()] =
+      ego_int_node_.choose_next_action(iteration);
   for(auto& it : other_int_nodes_) {
-    joint_action[it.get_agent_idx()] = it.choose_next_action();
+    joint_action[it.get_agent_idx()] = it.choose_next_action(iteration);
   }
 
   // Check if joint action was already expanded

@@ -37,7 +37,7 @@ class IntermediateNode : public Stats {
 
   ~IntermediateNode();
 
-  ActionIdx choose_next_action();
+  ActionIdx choose_next_action(unsigned int iteration);
 
   bool all_actions_expanded();
 
@@ -67,8 +67,9 @@ template<class S, class Stats>
 IntermediateNode<S, Stats>::~IntermediateNode() {}
 
 template<class S, class Stats>
-ActionIdx IntermediateNode<S, Stats>::choose_next_action() {
-        return Stats::choose_next_action(state_, unexpanded_actions_);
+ActionIdx IntermediateNode<S, Stats>::choose_next_action(
+    unsigned int iteration) {
+        return Stats::choose_next_action(state_, unexpanded_actions_, iteration);
 }
 
 template<class S, class Stats>

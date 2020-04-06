@@ -70,7 +70,9 @@ class SlackUCTStatistic : public UctStatistic<SlackUCTStatistic> {
   }
 
   template <class S>
-  ActionIdx choose_next_action(const S &state, std::vector<int> &unexpanded_actions) {
+  ActionIdx choose_next_action(const S &state,
+                               std::vector<int> &unexpanded_actions,
+                               unsigned int iteration) {
     if (unexpanded_actions.empty()) {
       std::uniform_real_distribution<double> uniform_norm(0.0, 1.0);
       std::vector<Eigen::VectorXd> values;

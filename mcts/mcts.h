@@ -120,7 +120,7 @@ void Mcts<S, SE, SO, H>::iterate(const StageNodeSPtr &root_node) {
   // --------------Select & Expand  -----------------
   // We descend the tree for all joint actions already available -> last node is the newly expanded one
   EASY_BLOCK("selection");
-  while (node->select_or_expand(node));
+  while (node->select_or_expand(node, num_iterations));
   EASY_END_BLOCK;
   // -------------- Heuristic Update ----------------
   // Heuristic until terminal node

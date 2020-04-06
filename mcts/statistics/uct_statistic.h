@@ -66,7 +66,9 @@ class UctStatistic : public std::conditional<std::is_same<IMPL, NodeStatistic_Fi
   ~UctStatistic(){};
 
   template <class S>
-  ActionIdx choose_next_action(const S &state, std::vector<int> &unexpanded_actions) {
+  ActionIdx choose_next_action(const S &state,
+                               std::vector<int> &unexpanded_actions,
+                               unsigned int iteration) {
     if (unexpanded_actions.empty() || pw_limit_reached(unexpanded_actions)) {
       // Select an action based on the UCB formula
       std::vector<Eigen::VectorXd> values;

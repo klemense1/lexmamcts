@@ -12,6 +12,7 @@
 #include "glog/logging.h"
 
 #include "mcts/statistics/uct_statistic.h"
+#include "mcts/statistics/threshold_comperator.h"
 
 namespace mcts {
 
@@ -22,27 +23,11 @@ class ThresUCTStatistic : public UctStatistic<ThresUCTStatistic> {
   ThresUCTStatistic(ActionIdx num_actions,
                     MctsParameters const &mcts_parameters)
       : UctStatistic<ThresUCTStatistic>(num_actions, mcts_parameters) {}
-  template <class T>
-  struct ThresholdComparator {
-    explicit ThresholdComparator(const T &thr) : thr_(thr) {}
-    const T thr_;
-    bool operator()(const T &a, const T &b) const {
-      assert(a.rows() == b.rows() && a.rows() == thr_.rows());
-      for (auto ai = a.begin(), bi = b.begin(), thri = thr_.begin();
-           ai != a.end(); ++ai, ++bi, ++thri) {
-        if ((*ai > *thri && *bi > *thri) || (*ai == *bi)) {
-          continue;
-        } else {
-          return *ai < *bi;
-        }
-      }
-      return false;
-    }
-  };
 
   template <class S>
   ActionIdx choose_next_action(const S &state,
-                               std::vector<int> &unexpanded_actions) {
+                               std::vector<int> &unexpanded_actions,
+                               unsigned int iteration) {
     ActionIdx selected_action;
     if (unexpanded_actions.empty()) {
       std::uniform_real_distribution<double> uniform_norm(0.0, 1.0);
@@ -53,10 +38,10 @@ class ThresUCTStatistic : public UctStatistic<ThresUCTStatistic> {
                                            ThresholdComparator<Eigen::VectorXd>(
                                                mcts_parameters_.thres_uct_statistic_.THRESHOLD.cast<double>())));
       const double p = uniform_norm(random_generator_);
-      if (p < mcts_parameters_.e_greedy_uct_statistic_.EPSILON && num_actions_ >= 2) {
+      if (p < mcts_parameters_.thres_uct_statistic_.EPSILON && num_actions_ >= 2) {
         std::uniform_int_distribution<ActionIdx> uniform_action(0, num_actions_ - 2);
         ActionIdx random_action = uniform_action(random_generator_);
-        selected_action = (random_action == selected_action ? random_action + 1 : random_action);
+        selected_action = (random_action >= selected_action ? random_action + 1 : random_action);
       }
     } else {
       // Select randomly an unexpanded action
