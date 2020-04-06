@@ -37,7 +37,7 @@ class Mcts {
 
   Mcts(MctsParameters const &mcts_parameters)
       : root_(), num_iterations(0), heuristic_(mcts_parameters), mcts_parameters_(mcts_parameters) {
-    DVLOG(1) << mcts_parameters_;
+    DVLOG(2) << mcts_parameters_;
   };
 
   ~Mcts() {}
