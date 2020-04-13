@@ -26,21 +26,22 @@ MctsParameters make_default_mcts_parameters() {
   param.uct_statistic.PROGRESSIVE_WIDENING_ENABLED = false;
   param.uct_statistic.PROGRESSIVE_WIDENING_ALPHA = 0.5;
 
-  param.uct_statistic.EXPLORATION_CONSTANT = 0.7;
+  param.uct_statistic.EXPLORATION_CONSTANT = Eigen::VectorXd::Zero(param.REWARD_VEC_SIZE);
+  param.uct_statistic.EXPLORATION_CONSTANT << 0.8, 0.8, 8.0;
   param.uct_statistic.LOWER_BOUND = ObjectiveVec::Zero(param.REWARD_VEC_SIZE);
   param.uct_statistic.LOWER_BOUND << -1.0f, -1.0f, -5000.0f;
   param.uct_statistic.UPPER_BOUND = ObjectiveVec::Zero(param.REWARD_VEC_SIZE);
   param.uct_statistic.UPPER_BOUND << 0.0f, 0.0f, 0.0f;
 
-  param.e_greedy_uct_statistic_.EPSILON = 0.2;
-  param.e_greedy_uct_statistic_.EPSILON_DECAY = 0.9997;
-  param.e_greedy_uct_statistic_.MINIMUM_EPSILON = 0.1;
+  param.e_greedy_uct_statistic_.EPSILON = 1.0;
+  param.e_greedy_uct_statistic_.EPSILON_DECAY = 0.9999;
+  param.e_greedy_uct_statistic_.MINIMUM_EPSILON = 0.05;
 
   param.slack_uct_statistic_.SLACK_FACTOR = 0.2;
 
   param.thres_uct_statistic_.THRESHOLD = ObjectiveVec::Zero(param.REWARD_VEC_SIZE);
   param.thres_uct_statistic_.THRESHOLD << -0.28, -0.52, std::numeric_limits<ObjectiveVec::Scalar>::max();
-  param.thres_uct_statistic_.EPSILON = 0.1;
+  param.thres_uct_statistic_.EPSILON = 0.0;
 
   return param;
 }
