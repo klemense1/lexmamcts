@@ -14,7 +14,6 @@
 #include "test/crossing_test/label_evaluator/evaluator_label_ego_range.h"
 #include "test/crossing_test/label_evaluator/evaluator_label_in_direct_front.h"
 #include "test/crossing_test/label_evaluator/evaluator_label_in_range.h"
-#include "test/crossing_test/label_evaluator/evaluator_label_on_ego_lane.h"
 #include "test/crossing_test/tests/crossing_test_env.h"
 
 template <class Stat>
@@ -36,7 +35,6 @@ class ZipperTestEnvFactory : public ITestEnvFactory {
     mcts_params.slack_uct_statistic_.SLACK_FACTOR = slack_factor_;
     mcts_params.uct_statistic.LOWER_BOUND << -1.0f, -1.0f, -100.0f;
     mcts_params.uct_statistic.UPPER_BOUND << 0.0f, 0.0f, 0.0f;
-//    mcts_params.thres_uct_statistic_.THRESHOLD << -0.28, -0.15, std::numeric_limits<ObjectiveVec::Scalar>::max();
     mcts_params.COOP_FACTOR = 0.0;
     mcts_params.DISCOUNT_FACTOR = 0.85;
     mcts_params.uct_statistic.EXPLORATION_CONSTANT = 0.7;
@@ -65,8 +63,6 @@ class ZipperTestEnvFactory : public ITestEnvFactory {
                                                                  crossing_params.state_x_length));
     labels.emplace_back(std::make_shared<EvaluatorLabelInRange>("merged_x", crossing_params.crossing_point,
                                                                 crossing_params.state_x_length));
-    //  env->label_evaluators_.emplace_back(
-    //      std::make_shared<EvaluatorLabelOnEgoLane>("on_ego_lane_x"));
     labels.emplace_back(std::make_shared<EvaluatorLabelInDirectFront>("in_direct_front_x"));
 
     auto env = std::make_shared<CrossingTestEnv<Stat>>(mcts_params, crossing_params, automata, labels);

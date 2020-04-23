@@ -22,7 +22,6 @@
 #include "test/crossing_test/label_evaluator/evaluator_label_goal_reached.h"
 #include "test/crossing_test/label_evaluator/evaluator_label_other_goal_reached.h"
 #include "test/crossing_test/label_evaluator/evaluator_label_other_near.h"
-#include "test/crossing_test/label_evaluator/evaluator_label_speed.h"
 #include "test/crossing_test/tests/util.h"
 #include "test/crossing_test/viewer.h"
 

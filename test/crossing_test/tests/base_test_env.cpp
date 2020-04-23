@@ -4,9 +4,6 @@
 //
 
 #include "test/crossing_test/tests/base_test_env.h"
-#include "test/crossing_test/label_evaluator/evaluator_label_ego_range.h"
-#include "test/crossing_test/label_evaluator/evaluator_label_other_range.h"
-
 #include <utility>
 
 BaseTestEnv::BaseTestEnv(
@@ -36,9 +33,6 @@ std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> BaseTestEnv::make_defaul
     const CrossingStateParameter &params) {
   std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> labels;
   labels.emplace_back(std::make_shared<EvaluatorLabelCollision>("collision", params.crossing_point));
-  labels.emplace_back(std::make_shared<EvaluatorLabelEgoRange>("crossed", params.crossing_point + 1, 1000));
-  labels.emplace_back(std::make_shared<EvaluatorLabelOtherRange>("other_crossed", params.crossing_point + 1, 1000));
-  labels.emplace_back(std::make_shared<EvaluatorLabelOtherNear>("other_near"));
   return labels;
 }
 RuleStateMap BaseTestEnv::get_automata_vec() const {

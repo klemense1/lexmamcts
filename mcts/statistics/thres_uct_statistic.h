@@ -59,12 +59,6 @@ class ThresUCTStatistic : public UctStatistic<ThresUCTStatistic> {
   }
 
   ActionIdx get_best_action() {
-    Eigen::MatrixXf mat(this->mcts_parameters_.REWARD_VEC_SIZE,
-                        ucb_statistics_.size());
-    for (ActionIdx i = 0; i < static_cast<ActionIdx>(mat.cols()); ++i) {
-      mat.col(i) = ucb_statistics_.find(i)->second.action_value_;
-    }
-
     Reward thr = mcts_parameters_.thres_uct_statistic_.THRESHOLD;
     DVLOG(2) << "Thresholds:" << thr.transpose();
     auto max = std::max_element(ucb_statistics_.begin(), ucb_statistics_.end(),

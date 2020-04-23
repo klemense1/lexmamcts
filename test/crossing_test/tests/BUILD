@@ -67,40 +67,6 @@ py_test(
     ],
 )
 
-cc_test(
-    name = "crossing_state_test",
-    srcs = [
-        "crossing_state_test.cpp",
-    ],
-    copts = ["-Iexternal/gtest/include"],
-    deps = [
-        ":crossing_test_env",
-        ":util",
-        "//mcts",
-        "//test/crossing_test:crossing_state",
-        "//test/crossing_test/factories",
-        "@com_github_gflags_gflags//:gflags",
-        "@com_github_google_glog//:glog",
-        "@gtest//:main",
-        "@spot",
-    ],
-)
-
-cc_binary(
-    name = "full_expand",
-    srcs = [
-        "full_expand.cpp",
-    ],
-    deps = [
-        ":crossing_test_env",
-        ":util",
-        "//mcts",
-        "//test/crossing_test:crossing_state",
-        "//test/crossing_test/factories",
-        "@com_github_google_glog//:glog",
-    ],
-)
-
 cc_binary(
     name = "convergence_comparison",
     srcs = [
@@ -111,22 +77,6 @@ cc_binary(
         ":util",
         "//mcts",
         "//test/crossing_test:crossing_state",
-        "//test/crossing_test/factories",
-        "@com_github_google_glog//:glog",
-    ],
-)
-
-cc_binary(
-    name = "testbench",
-    srcs = [
-        "testbench.cpp",
-    ],
-    deps = [
-        ":test_runner",
-        ":util",
-        "//mcts",
-        "//test/crossing_test:crossing_state",
-        "//test/crossing_test:state_file_writer",
         "//test/crossing_test/factories",
         "@com_github_google_glog//:glog",
     ],
@@ -145,61 +95,6 @@ cc_binary(
         "//test/crossing_test:state_file_writer",
         "//test/crossing_test/factories",
         "@com_github_google_glog//:glog",
-    ],
-)
-
-cc_binary(
-    name = "zipper_merge",
-    srcs = [
-        "zipper_merge_test.cpp",
-    ],
-    copts = ["-Iexternal/gtest/include"],
-    deps = [
-        ":crossing_test_env",
-        ":util",
-        "//mcts",
-        "//test/crossing_test:crossing_state",
-        "//test/crossing_test:state_file_writer",
-        "//test/crossing_test/factories",
-        "@com_github_gflags_gflags//:gflags",
-        "@com_github_google_glog//:glog",
-        "@gtest//:main",
-    ],
-)
-
-cc_binary(
-    name = "coop_factor",
-    srcs = [
-        "coop_factor_test.cpp",
-    ],
-    copts = ["-Iexternal/gtest/include"],
-    deps = [
-        ":crossing_test_env",
-        ":test_runner",
-        ":util",
-        "//mcts",
-        "//test/crossing_test:crossing_state",
-        "//test/crossing_test:state_file_writer",
-        "//test/crossing_test/factories",
-        "@com_github_gflags_gflags//:gflags",
-        "@com_github_google_glog//:glog",
-        "@gtest//:main",
-    ],
-)
-
-cc_test(
-    name = "minimum_violation",
-    srcs = ["minimum_violation_test.cpp"],
-    copts = ["-Iexternal/gtest/include"],
-    deps = [
-        ":crossing_test_env",
-        ":test_runner",
-        ":util",
-        "//mcts",
-        "//test/crossing_test:crossing_state",
-        "//test/crossing_test/factories",
-        "@com_github_google_glog//:glog",
-        "@gtest//:main",
     ],
 )
 

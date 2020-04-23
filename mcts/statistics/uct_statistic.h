@@ -186,7 +186,6 @@ class UctStatistic
     size_t i = 0;
     for (const auto &stat : ucb_statistics) {
       action_val_mat.col(i) = stat.second.action_value_.template cast<double>();
-      ;
       ++i;
     }
     double max_coeff = action_val_mat.row(action_val_mat.rows() - 1).maxCoeff();
