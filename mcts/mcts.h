@@ -96,7 +96,7 @@ void Mcts<S, SE, SO, H>::search(const S &current_state, unsigned int max_search_
     iterate(root_);
     num_iterations += 1;
 #ifdef DUMP_Q_VAL
-    if(num_iterations % 50 == 0) {
+    if(num_iterations % 1 == 0) {
       ofs << num_iterations << "\t";
       for(auto const& pair : root_->get_ego_int_node().get_expected_rewards()) {
         ofs << pair.second.transpose().format(fmt) << "\t";

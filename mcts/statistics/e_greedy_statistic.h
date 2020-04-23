@@ -24,10 +24,9 @@ class EGreedyStatistic : public UctStatistic<EGreedyStatistic> {
                                std::vector<int> &unexpanded_actions,
                                unsigned int iteration) {
     ActionIdx selected_action;
-    const double current_epsilon = std::max(
-        mcts_parameters_.e_greedy_uct_statistic_.MINIMUM_EPSILON,
-        mcts_parameters_.e_greedy_uct_statistic_.EPSILON *
-            std::pow(mcts_parameters_.e_greedy_uct_statistic_.EPSILON_DECAY,
+    const double c = 10.0;
+    const double d = 0.12;
+    const double current_epsilon = std::min(1.0, c /( d * d *
                      static_cast<double>(iteration)));
     if (unexpanded_actions.empty()) {
       std::uniform_real_distribution<double> uniform_norm(0.0, 1.0);

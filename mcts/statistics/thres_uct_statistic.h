@@ -36,6 +36,7 @@ class ThresUCTStatistic : public UctStatistic<ThresUCTStatistic> {
       auto lower = mcts_parameters_.uct_statistic.LOWER_BOUND.cast<double>();
       auto upper = mcts_parameters_.uct_statistic.UPPER_BOUND.cast<double>();
       Eigen::VectorXd normalized_thresholds = (thres - lower).cwiseQuotient(upper-lower);
+      normalized_thresholds(normalized_thresholds.rows() - 1) = std::numeric_limits<double>::max();
       calculate_ucb_values(ucb_statistics_, values);
       selected_action = std::distance(
           values.begin(), std::max_element(values.begin(), values.end(),

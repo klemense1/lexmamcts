@@ -21,7 +21,8 @@ class ZipperTestEnvFactory : public ITestEnvFactory {
  public:
   ZipperTestEnvFactory(float slack_factor = 0.2f)
       : thres_(std::move(ObjectiveVec::Zero(3))), slack_factor_(slack_factor) {
-    thres_ << -0.28, -0.15, std::numeric_limits<ObjectiveVec::Scalar>::max();
+//    thres_ << -0.79, -0.68, std::numeric_limits<ObjectiveVec::Scalar>::max();
+      thres_ << -0.37, -0.37, std::numeric_limits<ObjectiveVec::Scalar>::max();
   }
   ZipperTestEnvFactory(const ObjectiveVec &thres, float slack_factor) : thres_(thres), slack_factor_(slack_factor) {}
   std::shared_ptr<BaseTestEnv> make_test_env() override {
@@ -36,17 +37,19 @@ class ZipperTestEnvFactory : public ITestEnvFactory {
     mcts_params.uct_statistic.LOWER_BOUND << -1.0f, -1.0f, -100.0f;
     mcts_params.uct_statistic.UPPER_BOUND << 0.0f, 0.0f, 0.0f;
     mcts_params.COOP_FACTOR = 0.0;
-    mcts_params.DISCOUNT_FACTOR = 0.85;
-    mcts_params.uct_statistic.EXPLORATION_CONSTANT = 0.7;
+    mcts_params.DISCOUNT_FACTOR = 0.95;
     mcts_params.random_heuristic.MAX_SEARCH_TIME_RANDOM_HEURISTIC = std::numeric_limits<double>::infinity();
-    mcts_params.e_greedy_uct_statistic_.EPSILON = 0.2;
+    mcts_params.e_greedy_uct_statistic_.EPSILON = 1.0;
+    mcts_params.e_greedy_uct_statistic_.EPSILON_DECAY = 0.9999;
+    mcts_params.e_greedy_uct_statistic_.MINIMUM_EPSILON = 0.01;
+    mcts_params.uct_statistic.EXPLORATION_CONSTANT << 0.8, 0.8, 0.8;
 
     CrossingStateParameter crossing_params = make_default_crossing_state_parameters();
     crossing_params.num_other_agents = 2;
     crossing_params.ego_goal_reached_position = 1000;
     crossing_params.state_x_length = 1000;
     crossing_params.crossing_point = 8;
-    crossing_params.terminal_depth_ = 12;
+    crossing_params.terminal_depth_ = 8;
     crossing_params.merge = true;
     crossing_params.acceleration_weight = 1.5f;
     crossing_params.speed_deviation_weight = 5.0f;
@@ -70,8 +73,8 @@ class ZipperTestEnvFactory : public ITestEnvFactory {
     agent_states[0].id = 0;
     agent_states[1].id = 1;
     agent_states[2].id = 2;
-    agent_states[0].x_pos = crossing_params.crossing_point - 5;
-    agent_states[1].x_pos = crossing_params.crossing_point - 3;
+    agent_states[0].x_pos = crossing_params.crossing_point - 6;
+    agent_states[1].x_pos = crossing_params.crossing_point - 2;
     agent_states[2].x_pos = crossing_params.crossing_point - 8;
     agent_states[1].lane = agent_states[0].lane;
     agent_states[1].init_lane = agent_states[0].init_lane;

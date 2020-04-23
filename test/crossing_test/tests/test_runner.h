@@ -24,54 +24,27 @@ using mcts::JointReward;
 
 class TestRunner {
  public:
-  struct MeanVar {
-    MeanVar() : mean_(0.0), m_2_(0), n_(0) {}
-    friend ostream &operator<<(ostream &os, const MeanVar &var);
-    double mean_;
-    double m_2_;
-    int n_;
-    void add_value(double value) {
-      ++n_;
-      double delta = value - mean_;
-      mean_ += delta / n_;
-      double delta2 = value - mean_;
-      m_2_ += delta * delta2;
-    }
-    inline double get_variance() const { return m_2_ / static_cast<double>(n_); }
-    inline double get_confidence_radius() const {
-      const double std_dev = std::sqrt(get_variance());
-      if (n_ > 1) {
-        boost::math::students_t dist(n_ - 1);
-        // 95% confidence interval
-        double t = quantile(complement(dist, 0.05 / 2.0));
-        return t * std_dev / sqrt(static_cast<double>(n_));
-      } else {
-        return 0.0;
-      }
-    }
-  };
 
-  struct Metrics {
-    Metrics() :  n(0), collisions(0), violations(0){};
-    friend ostream &operator<<(ostream &os, const Metrics &metrics);
+  struct Result {
+    Result() :  collision(false), violation(false){};
+    friend ostream &operator<<(ostream &os, const Result &result);
     static ostream &write_header(ostream &os);
-    MeanVar pos_;
-    MeanVar value_;
-    MeanVar step_cost_;
-    int n;
-    int collisions;
-    int violations;
+    int pos;
+    float value;
+    bool collision;
+    bool violation;
+   private:
+    static inline const char* BoolToString(bool b) {
+      return b ? "true" : "false";
+    }
   };
 
   TestRunner() : factory_(nullptr), q_val_fname_("/tmp/q_val.dat") {};
   explicit TestRunner(ITestEnvFactory *factory) : factory_(factory), q_val_fname_("/tmp/q_val.dat") {};
-  virtual void run_test(size_t num_iter, int max_steps = 40);
-  double calculate_vector_utility(const Reward &candidate) const;
-  Metrics calculate_metric();
+  virtual Result run_test(size_t num_iter, int max_steps = 40);
   const std::shared_ptr<BaseTestEnv> &get_latest_test_env() const;
   Eigen::VectorXi get_state_vector() const;
-  const Metrics &get_metrics() const { return metrics_; }
-
+  void set_q_val_fname(const std::string &q_val_fname);
 
  protected:
   std::shared_ptr<ITestEnvFactory> factory_;
@@ -79,11 +52,7 @@ class TestRunner {
  private:
   void print_labels();
   void print_rule_states();
-  Metrics metrics_;
   std::string q_val_fname_;
-
- public:
-  void set_q_val_fname(const std::string &q_val_fname);
 };
 
 #endif //MAMCTS_TEST_CROSSING_TEST_TESTS_TEST_RUNNER_H_
