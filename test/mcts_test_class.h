@@ -27,7 +27,7 @@ MctsParameters make_default_mcts_parameters() {
   param.uct_statistic.PROGRESSIVE_WIDENING_ENABLED = false;
   param.uct_statistic.PROGRESSIVE_WIDENING_ALPHA = 0.5;
 
-  param.uct_statistic.EXPLORATION_CONSTANT = 0.7;
+  param.uct_statistic.EXPLORATION_CONSTANT = Eigen::VectorXd::Constant(param.REWARD_VEC_SIZE, 0.7);
   param.uct_statistic.LOWER_BOUND = ObjectiveVec::Zero(param.REWARD_VEC_SIZE);
   param.uct_statistic.LOWER_BOUND << -1010.0f;
   param.uct_statistic.UPPER_BOUND = ObjectiveVec::Zero(param.REWARD_VEC_SIZE);

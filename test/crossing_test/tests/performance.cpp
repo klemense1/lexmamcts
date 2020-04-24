@@ -20,7 +20,7 @@ int main(int argc, char **argv) {
   // Use true randomness
   mcts::RandomGenerator::random_generator_ = std::mt19937(std::random_device()());
 //  auto test_runner = std::make_unique<TestRunner>(new CrossingTestEnvFactory<ThresUCTStatistic>());
-      auto test_runner = std::make_unique<TestRunner>(new ZipperTestEnvFactory<ThresUCTStatistic>(0, <#initializer #>));
+      auto test_runner = std::make_unique<TestRunner>(new ZipperTestEnvFactory<ThresUCTStatistic>());
   test_runner->run_test(10000, 1);
   shutdown("/tmp/crossing_performance.prof");
   return 0;
