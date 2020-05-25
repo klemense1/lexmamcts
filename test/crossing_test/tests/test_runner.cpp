@@ -8,14 +8,14 @@
 
 using mcts::evaluation::QValWriter;
 
-TestRunner::Result TestRunner::run_test(size_t num_iter, int max_steps) {
+TestRunner::Result TestRunner::RunTest(size_t num_iter, int max_steps) {
   // Always recreate test environment to isolate test iterations
   latest_test_env_ = factory_->make_test_env();
   int steps = 0;
   std::vector<Reward> step_reward(
       latest_test_env_->crossing_state_parameter_.num_other_agents + 1);
   // Store initial state in history
-  latest_test_env_->state_history_.emplace_back(get_state_vector().transpose());
+  latest_test_env_->state_history_.emplace_back(GetStateVector().transpose());
   QValWriter qw(
       latest_test_env_->mcts_parameters_.thres_uct_statistic_.THRESHOLD,
       q_val_fname_,
@@ -30,11 +30,10 @@ TestRunner::Result TestRunner::run_test(size_t num_iter, int max_steps) {
     VLOG(1) << "Iteration: " << steps
             << ", Next state: " << latest_test_env_->state->sprintf()
             << ", Ego step reward: " << step_reward[0].transpose();
-    print_labels();
-    print_rule_states();
+    PrintLabels();
+    PrintRuleStates();
     latest_test_env_->rewards += step_reward;
-    latest_test_env_->state_history_.emplace_back(
-        get_state_vector().transpose());
+    latest_test_env_->state_history_.emplace_back(GetStateVector().transpose());
     ++steps;
   }
   latest_test_env_->rewards += latest_test_env_->state->get_final_reward();
@@ -47,7 +46,7 @@ TestRunner::Result TestRunner::run_test(size_t num_iter, int max_steps) {
   r.value = cumulated_ego_reward(cumulated_ego_reward.size() - 1);
   return r;
 }
-Eigen::VectorXi TestRunner::get_state_vector() const {
+Eigen::VectorXi TestRunner::GetStateVector() const {
   auto agent_states = latest_test_env_->state->get_agent_states();
   Eigen::VectorXi state = Eigen::VectorXi::Zero(agent_states.size());
   for (size_t i = 0; i < agent_states.size(); ++i) {
@@ -62,23 +61,23 @@ ostream &operator<<(ostream &os, const TestRunner::Result &result) {
      << TestRunner::Result::BoolToString(result.violation);
   return os;
 }
-ostream &TestRunner::Result::write_header(ostream &os) {
+ostream &TestRunner::Result::WriteHeader(ostream &os) {
   os << "Traveled distance\tBase reward\tCollision\tRule violation";
   return os;
 }
-void TestRunner::print_labels() {
+void TestRunner::PrintLabels() {
   for (const auto &label : latest_test_env_->state->get_agent_labels(0)) {
     VLOG(1) << label.first.get_label_str() << " : " << label.second;
   }
 }
-void TestRunner::print_rule_states() {
+void TestRunner::PrintRuleStates() {
   for (const auto &rs : latest_test_env_->state->get_rule_state_map()[0]) {
     VLOG(1) << rs.second;
   }
 }
-const std::shared_ptr<BaseTestEnv> &TestRunner::get_latest_test_env() const {
+const std::shared_ptr<BaseTestEnv> &TestRunner::GetLatestTestEnv() const {
   return latest_test_env_;
 }
-void TestRunner::set_q_val_fname(const std::string &q_val_fname) {
+void TestRunner::SetQValFname(const std::string &q_val_fname) {
   q_val_fname_ = q_val_fname;
 }

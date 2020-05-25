@@ -12,7 +12,7 @@
 
 using namespace mcts;
 
-MctsParameters make_default_mcts_parameters() {
+MctsParameters MakeDefaultMctsParameters() {
   MctsParameters param;
 
   param.REWARD_VEC_SIZE = 2;
@@ -47,7 +47,7 @@ class DeepSeaTest : public ::testing::Test {
     sea_map_.emplace_back(MODSMapElement{8, 74.0f});
     sea_map_.emplace_back(MODSMapElement{10, 124.0f});
     init_pos << 0, 0;
-    mcts_parameters_ = make_default_mcts_parameters();
+    mcts_parameters_ = MakeDefaultMctsParameters();
     mcts_parameters_.REWARD_VEC_SIZE = 2;
     mcts_parameters_.uct_statistic.LOWER_BOUND = ObjectiveVec::Zero(2);
     mcts_parameters_.uct_statistic.UPPER_BOUND = ObjectiveVec::Zero(2);

@@ -20,7 +20,6 @@
 #include "test/crossing_test/label_evaluator/evaluator_label_collision.h"
 #include "test/crossing_test/label_evaluator/evaluator_label_goal_reached.h"
 #include "test/crossing_test/label_evaluator/evaluator_label_other_goal_reached.h"
-#include "test/crossing_test/label_evaluator/evaluator_label_other_near.h"
 #include "test/crossing_test/tests/util.h"
 
 using namespace mcts;
@@ -29,7 +28,7 @@ using RuleMonitorSPtr = RuleMonitor::RuleMonitorSPtr;
 class BaseTestEnv {
  public:
   explicit BaseTestEnv(
-      MctsParameters mcts_parameters = make_default_mcts_parameters(),
+      MctsParameters mcts_parameters = MakeDefaultMctsParameters(),
       CrossingStateParameter crossing_state_parameter =
           make_default_crossing_state_parameters(),
       std::vector<std::map<Rule, RuleMonitorSPtr>> automata =

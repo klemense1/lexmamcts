@@ -31,7 +31,7 @@ class ZipperTestEnvFactory : public ITestEnvFactory {
         "-> !in_direct_front_x#0)";
     //        "G((!merged_e & !merged_x#0) -> in_direct_front_x#0) -> G(merged_e -> !in_direct_front_x#0)";
 
-    auto mcts_params = make_default_mcts_parameters();
+    auto mcts_params = MakeDefaultMctsParameters();
     mcts_params.thres_uct_statistic_.THRESHOLD = thres_;
     mcts_params.slack_uct_statistic_.SLACK_FACTOR = slack_factor_;
     mcts_params.uct_statistic.LOWER_BOUND << -1.0f, -1.0f, -100.0f;

@@ -5,7 +5,7 @@
 
 #include "util.h"
 
-Eigen::MatrixXf rewards_to_mat(std::vector<Reward> const &rewards) {
+Eigen::MatrixXf RewardsToMat(std::vector<Reward> const &rewards) {
   Eigen::MatrixXf mat(rewards[0].rows(), rewards.size());
   for (size_t i = 0; i < rewards.size(); ++i) {
     mat.col(i) = rewards[i];
@@ -13,7 +13,7 @@ Eigen::MatrixXf rewards_to_mat(std::vector<Reward> const &rewards) {
   return mat;
 }
 
-MctsParameters make_default_mcts_parameters() {
+MctsParameters MakeDefaultMctsParameters() {
   MctsParameters param;
 
   param.REWARD_VEC_SIZE = 3;
@@ -22,9 +22,6 @@ MctsParameters make_default_mcts_parameters() {
   param.random_heuristic.MAX_NUMBER_OF_ITERATIONS = 30;
   param.COOP_FACTOR = 0.0;
   param.DISCOUNT_FACTOR = 0.9;
-
-  param.uct_statistic.PROGRESSIVE_WIDENING_ENABLED = false;
-  param.uct_statistic.PROGRESSIVE_WIDENING_ALPHA = 0.5;
 
   param.uct_statistic.EXPLORATION_CONSTANT = Eigen::VectorXd::Zero(param.REWARD_VEC_SIZE);
   param.uct_statistic.EXPLORATION_CONSTANT << 0.8, 0.8, 8.0;

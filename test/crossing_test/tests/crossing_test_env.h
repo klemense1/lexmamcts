@@ -17,7 +17,7 @@ template<class Stats = UctStatistic<>, class Heuristic = RandomHeuristic>
 class CrossingTestEnv : public BaseTestEnv {
  public:
   explicit CrossingTestEnv(
-      MctsParameters mcts_parameters = make_default_mcts_parameters(),
+      MctsParameters mcts_parameters = MakeDefaultMctsParameters(),
       CrossingStateParameter crossing_state_parameter = make_default_crossing_state_parameters(),
       std::vector<std::map<Rule, RuleMonitorSPtr>> automata =
           BaseTestEnv::make_default_automata(

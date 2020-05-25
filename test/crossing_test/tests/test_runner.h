@@ -28,7 +28,7 @@ class TestRunner {
   struct Result {
     Result() :  collision(false), violation(false){};
     friend ostream &operator<<(ostream &os, const Result &result);
-    static ostream &write_header(ostream &os);
+    static ostream &WriteHeader(ostream &os);
     int pos;
     float value;
     bool collision;
@@ -41,17 +41,16 @@ class TestRunner {
 
   TestRunner() : factory_(nullptr), q_val_fname_("/tmp/q_val.dat") {};
   explicit TestRunner(ITestEnvFactory *factory) : factory_(factory), q_val_fname_("/tmp/q_val.dat") {};
-  virtual Result run_test(size_t num_iter, int max_steps = 40);
-  const std::shared_ptr<BaseTestEnv> &get_latest_test_env() const;
-  Eigen::VectorXi get_state_vector() const;
-  void set_q_val_fname(const std::string &q_val_fname);
+  Result RunTest(size_t num_iter, int max_steps = 40);
+  const std::shared_ptr<BaseTestEnv> &GetLatestTestEnv() const;
+  Eigen::VectorXi GetStateVector() const;
+  void SetQValFname(const std::string &q_val_fname);
 
- protected:
+ private:
+  void PrintLabels();
+  void PrintRuleStates();
   std::shared_ptr<ITestEnvFactory> factory_;
   std::shared_ptr<BaseTestEnv> latest_test_env_;
- private:
-  void print_labels();
-  void print_rule_states();
   std::string q_val_fname_;
 };
 

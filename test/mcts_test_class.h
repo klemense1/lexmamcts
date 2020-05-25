@@ -14,7 +14,7 @@
 
 using namespace mcts;
 using namespace std;
-MctsParameters make_default_mcts_parameters() {
+MctsParameters MakeDefaultMctsParameters() {
   MctsParameters param;
 
   param.REWARD_VEC_SIZE = 1;
@@ -64,7 +64,8 @@ public:
             const AgentIdx num_agents = start_node->state_->get_agent_idx().size();
 
 
-            std::vector<UctStatistic<>> expected_statistics(num_agents, UctStatistic<>(start_node->get_state()->get_num_actions(0), make_default_mcts_parameters()));
+            std::vector<UctStatistic<>> expected_statistics(num_agents, UctStatistic<>(start_node->get_state()->get_num_actions(0),
+                               MakeDefaultMctsParameters()));
 
             // ----- RECURSIVE ESTIMATION OF QVALUES AND COUNTS downwards tree -----------------------
             for(auto it = start_node->children_.begin(); it != start_node->children_.end(); ++it) {
