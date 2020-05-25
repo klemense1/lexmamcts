@@ -11,6 +11,8 @@
 extern std::string Q_VAL_DUMPFILE;
 #endif
 
+#define PLAN_DEBUG_INFO
+
 #include "stage_node.h"
 #include "heuristic.h"
 #include <chrono>  // for high_resolution_clock
@@ -42,18 +44,20 @@ class Mcts {
 
   ~Mcts() {}
 
-  void search(const S &current_state, unsigned int max_search_time_ms, unsigned int max_iterations);
-  int numIterations();
-  std::string nodeInfo();
-  JointAction returnBestAction();
-  void printTreeToDotFile(std::string filename = "tree");
+  void Search(const S &current_state, unsigned int max_search_time_ms, unsigned int max_iterations);
+  int NumIterations();
+  std::string NodeInfo();
+  JointAction ReturnBestAction();
+  void PrintTreeToDotFile(std::string filename = "tree");
 
-  void set_heuristic_function(const H &heuristic) { heuristic_ = heuristic; }
-  const StageNodeSPtr &get_root() const;
+  void SetHeuristicFunction(const H &heuristic) { heuristic_ = heuristic; }
+  const StageNodeSPtr &GetRoot() const;
 
  private:
 
-  void iterate(const StageNodeSPtr &root_node);
+  void Iterate(const StageNodeSPtr &root_node);
+
+  std::string Print(const StageNodeSPtr &root_node) const;
 
   StageNodeSPtr root_;
 
@@ -61,28 +65,26 @@ class Mcts {
 
   H heuristic_;
 
-  std::string sprintf(const StageNodeSPtr &root_node) const;
-
   MctsParameters const mcts_parameters_;
 
   MCTS_TEST
 };
 
 template<class S, class SE, class SO, class H>
-void Mcts<S, SE, SO, H>::search(const S &current_state, unsigned int max_search_time_ms, unsigned int max_iterations) {
+void Mcts<S, SE, SO, H>::Search(const S &current_state, unsigned int max_search_time_ms, unsigned int max_iterations) {
   EASY_FUNCTION();
   namespace chr = std::chrono;
   DLOG(INFO) << "Max search samples: " << max_iterations;
   auto start = std::chrono::high_resolution_clock::now();
 
-  StageNode<S, SE, SO, H>::reset_counter();
+  StageNode<S, SE, SO, H>::ResetCounter();
 
 #ifdef PLAN_DEBUG_INFO
-  LOG(INFO) << "starting state: " << current_state.sprintf();
+  LOG(INFO) << "starting state: " << current_state.PrintState();
 #endif
-  LOG_IF(FATAL, current_state.is_terminal()) << "Cannot search from terminal state! Aborting!";
+  LOG_IF(FATAL, current_state.IsTerminal()) << "Cannot search from terminal state! Aborting!";
   root_ = std::make_shared<StageNode<S, SE, SO, H>, StageNodeSPtr, std::shared_ptr<S>, const JointAction &,
-                           const unsigned int &>(nullptr, current_state.clone(), JointAction(), 0, mcts_parameters_);
+                           const unsigned int &>(nullptr, current_state.Clone(), JointAction(), 0, mcts_parameters_);
 
   num_iterations = 0;
 #ifdef DUMP_Q_VAL
@@ -93,7 +95,7 @@ void Mcts<S, SE, SO, H>::search(const S &current_state, unsigned int max_search_
   while (
       std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count()
           < max_search_time_ms && num_iterations < max_iterations) {
-    iterate(root_);
+    Iterate(root_);
     num_iterations += 1;
 #ifdef DUMP_Q_VAL
     if(num_iterations % 1 == 0) {
@@ -108,11 +110,11 @@ void Mcts<S, SE, SO, H>::search(const S &current_state, unsigned int max_search_
 #ifdef DUMP_Q_VAL
   ofs.close();
 #endif
-  VLOG(1) << "Search time: " << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count() << " ms" << ", Samples: " << this->numIterations();
+  VLOG(1) << "Search time: " << std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - start).count() << " ms" << ", Samples: " << this->NumIterations();
 }
 
 template<class S, class SE, class SO, class H>
-void Mcts<S, SE, SO, H>::iterate(const StageNodeSPtr &root_node) {
+void Mcts<S, SE, SO, H>::Iterate(const StageNodeSPtr &root_node) {
   EASY_FUNCTION();
   StageNodeSPtr node = root_node;
   StageNodeSPtr node_p;
@@ -120,61 +122,61 @@ void Mcts<S, SE, SO, H>::iterate(const StageNodeSPtr &root_node) {
   // --------------Select & Expand  -----------------
   // We descend the tree for all joint actions already available -> last node is the newly expanded one
   EASY_BLOCK("selection");
-  while (node->select_or_expand(node, num_iterations));
+  while (node->SelectOrExpand(node, num_iterations));
   EASY_END_BLOCK;
   // -------------- Heuristic Update ----------------
   // Heuristic until terminal node
-  std::vector<SE> calculated_heuristic = heuristic_.get_heuristic_values(node);
+  std::vector<SE> calculated_heuristic = heuristic_.GetHeuristicValues(node);
   EASY_BLOCK("backpropagation");
-  node->update_statistics(calculated_heuristic);
+  node->UpdateStatistics(calculated_heuristic);
 
   // --------------- Backpropagation ----------------
   // Backpropagate starting from parent node of newly expanded node
-  node_p = node->get_parent().lock();
+  node_p = node->GetParent().lock();
   while (true) {
-    node_p->update_statistics(node);
-    if (node_p->is_root()) {
+    node_p->UpdateStatistics(node);
+    if (node_p->IsRoot()) {
       break;
     } else {
-      node = node->get_parent().lock();
-      node_p = node_p->get_parent().lock();
+      node = node->GetParent().lock();
+      node_p = node_p->GetParent().lock();
 
     }
   }
   EASY_END_BLOCK;
 
 #ifdef PLAN_DEBUG_INFO
-  sprintf(root_node);
+  Print(root_node);
 #endif
 }
 
 template<class S, class SE, class SO, class H>
-std::string Mcts<S, SE, SO, H>::sprintf(const StageNodeSPtr &root_node) const {
+std::string Mcts<S, SE, SO, H>::Print(const StageNodeSPtr &root_node) const {
   std::stringstream ss;
   return ss.str();
 }
 
 template<class S, class SE, class SO, class H>
-int Mcts<S, SE, SO, H>::numIterations() {
+int Mcts<S, SE, SO, H>::NumIterations() {
   return this->num_iterations;
 }
 
 template<class S, class SE, class SO, class H>
-std::string Mcts<S, SE, SO, H>::nodeInfo() {
-  return sprintf(root_);
+std::string Mcts<S, SE, SO, H>::NodeInfo() {
+  return Print(root_);
 }
 
 template<class S, class SE, class SO, class H>
-JointAction Mcts<S, SE, SO, H>::returnBestAction() {
-  return root_->get_best_action();
+JointAction Mcts<S, SE, SO, H>::ReturnBestAction() {
+  return root_->GetBestAction();
 }
 
 template<class S, class SE, class SO, class H>
-void Mcts<S, SE, SO, H>::printTreeToDotFile(std::string filename) {
-  root_->printTree(filename, 100);
+void Mcts<S, SE, SO, H>::PrintTreeToDotFile(std::string filename) {
+  root_->PrintTree(filename, 100);
 }
 template<class S, class SE, class SO, class H>
-const std::shared_ptr<StageNode<S, SE, SO, H>> &Mcts<S, SE, SO, H>::get_root() const {
+const std::shared_ptr<StageNode<S, SE, SO, H>> &Mcts<S, SE, SO, H>::GetRoot() const {
   return root_;
 }
 

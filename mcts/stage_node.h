@@ -82,27 +82,27 @@ class StageNode : public std::enable_shared_from_this<StageNode<S, SE, SO, H>> {
             const unsigned int &depth,
             MctsParameters const &mcts_parameters);
   ~StageNode();
-  bool select_or_expand(StageNodeSPtr &next_node, unsigned int iteration);
-  void update_statistics(const std::vector<SE> &heuristic_estimates);
-  void update_statistics(const StageNodeSPtr &changed_child_node);
-  bool each_agents_actions_expanded();
-  bool each_joint_action_expanded();
-  StageNodeSPtr get_shared();
-  const S *get_state() const { return state_.get(); }
-  StageNodeWPtr get_parent() { return parent_; }
-  bool is_root() const { return !parent_.lock(); }
-  JointAction get_best_action();
+  bool SelectOrExpand(StageNodeSPtr &next_node, unsigned int iteration);
+  void UpdateStatistics(const std::vector<SE> &heuristic_estimates);
+  void UpdateStatistics(const StageNodeSPtr &changed_child_node);
+  bool EachAgentsActionsExpanded();
+  bool EachJointActionExpanded();
+  StageNodeSPtr GetShared();
+  const S *GetState() const { return state_.get(); }
+  StageNodeWPtr GetParent() { return parent_; }
+  bool IsRoot() const { return !parent_.lock(); }
+  JointAction GetBestAction();
 
-  std::string sprintf() const;
-  void printTree(std::string filename, const unsigned int &max_depth = 5);
-  void printLayer(std::string filename, const unsigned int &max_depth);
-  const StageChildMap &get_children() const;
-  JointReward get_q_func(JointAction const &joint_action);
-  JointReward get_value();
-  const StageRewardMap &get_joint_rewards() const;
+  std::string PrintNode() const;
+  void PrintTree(std::string filename, const unsigned int &max_depth = 5);
+  void PrintLayer(std::string filename, const unsigned int &max_depth);
+  const StageChildMap &GetChildren() const;
+  JointReward GetQFunc(JointAction const &joint_action);
+  JointReward GetValue();
+  const StageRewardMap &GetJointRewards() const;
 
-  static void reset_counter();
-  const IntermediateNode < S, SE> &get_ego_int_node() const;
+  static void ResetCounter();
+  const IntermediateNode < S, SE> &GetEgoIntNode() const;
 
   MCTS_TEST
 };
@@ -119,21 +119,21 @@ StageNode<S, SE, SO, H>::StageNode(const StageNodeSPtr &parent,
     parent_(parent),
     children_(),
     joint_rewards_(),
-    ego_int_node_(*state_, S::ego_agent_idx, state_->get_num_actions(S::ego_agent_idx), mcts_parameters),
+    ego_int_node_(*state_, S::ego_agent_idx, state_->GetNumActions(S::ego_agent_idx), mcts_parameters),
     other_int_nodes_([this, mcts_parameters]() -> InterNodeVector {
       // Initialize the intermediate nodes of other agents
       InterNodeVector vec;
-      // vec.resize(state_.get_agent_idx().size()-1);
-      for (AgentIdx ai = S::ego_agent_idx + 1; ai < AgentIdx(state_->get_agent_idx().size()); ++ai) {
-        vec.emplace_back(*state_, ai, state_->get_num_actions(ai), mcts_parameters);
+      // vec.resize(state_.GetAgentIdx().size()-1);
+      for (AgentIdx ai = S::ego_agent_idx + 1; ai < AgentIdx(state_->GetAgentIdx().size()); ++ai) {
+        vec.emplace_back(*state_, ai, state_->GetNumActions(ai), mcts_parameters);
       }
       return vec;
     }()),
     joint_action_(joint_action),
     max_num_joint_actions_([this]() -> unsigned int {
-      ActionIdx num_actions(state_->get_num_actions(S::ego_agent_idx));
-      for (auto ai = S::ego_agent_idx + 1; ai < AgentIdx(state_->get_agent_idx().size()); ++ai) {
-        num_actions *= state_->get_num_actions(ai);
+      ActionIdx num_actions(state_->GetNumActions(S::ego_agent_idx));
+      for (auto ai = S::ego_agent_idx + 1; ai < AgentIdx(state_->GetAgentIdx().size()); ++ai) {
+        num_actions *= state_->GetNumActions(ai);
       }
       return num_actions;
     }()),
@@ -142,46 +142,47 @@ StageNode<S, SE, SO, H>::StageNode(const StageNodeSPtr &parent,
     mcts_parameters_(mcts_parameters) {};
 
 template<class S, class SE, class SO, class H>
-StageNode<S, SE, SO, H>::~StageNode() {
-}
+StageNode<S, SE, SO, H>::~StageNode() = default;
 
 template<class S, class SE, class SO, class H>
-StageNodeSPtr<S, SE, SO, H> StageNode<S, SE, SO, H>::get_shared() {
+StageNodeSPtr<S, SE, SO, H> StageNode<S, SE, SO, H>::GetShared() {
   return this->shared_from_this();
 }
 
 template<class S, class SE, class SO, class H>
-bool StageNode<S, SE, SO, H>::select_or_expand(StageNodeSPtr &next_node,
+bool StageNode<S, SE, SO, H>::SelectOrExpand(StageNodeSPtr &next_node,
                                                unsigned int iteration) {
+#ifdef PROFILING
   EASY_FUNCTION();
+#endif
   // helper function to fill rewards
-  auto fill_rewards = [this](const std::vector<Reward> &reward_list, const JointAction &ja) {
+  auto FillRewards = [this](const std::vector<Reward> &reward_list, const JointAction &ja) {
     Reward coop_sum = Reward::Zero(mcts_parameters_.REWARD_VEC_SIZE);
     coop_sum = std::accumulate(reward_list.begin(), reward_list.end(), coop_sum);
     coop_sum = coop_sum * mcts_parameters_.COOP_FACTOR;
-    ego_int_node_.collect_reward(
+    ego_int_node_.CollectReward(
         (coop_sum +
          (1 - mcts_parameters_.COOP_FACTOR) * reward_list[S::ego_agent_idx]),
         ja[S::ego_agent_idx]);
     for (auto it = other_int_nodes_.begin(); it != other_int_nodes_.end(); ++it) {
-      it->collect_reward((coop_sum + (1 - mcts_parameters_.COOP_FACTOR) *
-                                         reward_list[it->get_agent_idx()]),
-                         ja[it->get_agent_idx()]);
+      it->CollectReward((coop_sum + (1 - mcts_parameters_.COOP_FACTOR) *
+                                         reward_list[it->GetAgentIdx()]),
+                         ja[it->GetAgentIdx()]);
     }
   };
 
   // First check if state of node is terminal
-  if (this->get_state()->is_terminal()) {
-    next_node = get_shared();
+  if (this->GetState()->IsTerminal()) {
+    next_node = GetShared();
     return false;
   }
 
   // Let each agent select an action according to its statistic model -> yields joint_action
-  JointAction joint_action(state_->get_agent_idx().size());
-  joint_action[ego_int_node_.get_agent_idx()] =
-      ego_int_node_.choose_next_action(iteration);
+  JointAction joint_action(state_->GetAgentIdx().size());
+  joint_action[ego_int_node_.GetAgentIdx()] =
+      ego_int_node_.ChooseNextAction(iteration);
   for(auto& it : other_int_nodes_) {
-    joint_action[it.get_agent_idx()] = it.choose_next_action(iteration);
+    joint_action[it.GetAgentIdx()] = it.ChooseNextAction(iteration);
   }
 
   // Check if joint action was already expanded
@@ -190,18 +191,18 @@ bool StageNode<S, SE, SO, H>::select_or_expand(StageNodeSPtr &next_node,
     // SELECT EXISTING NODE
     EASY_EVENT("select");
     next_node = it->second;
-    fill_rewards(joint_rewards_[joint_action], joint_action);
+    FillRewards(joint_rewards_[joint_action], joint_action);
     ++joint_action_counter_[joint_action];
     return true;
   } else {   // EXPAND NEW NODE BASED ON NEW JOINT ACTION
     EASY_BLOCK("expand");
-    std::vector<Reward> rewards(state_->get_agent_idx().size(), Reward::Zero(mcts_parameters_.REWARD_VEC_SIZE));
+    std::vector<Reward> rewards(state_->GetAgentIdx().size(), Reward::Zero(mcts_parameters_.REWARD_VEC_SIZE));
     next_node = std::make_shared<StageNode<S, SE, SO, H>,
                                  StageNodeSPtr,
                                  std::shared_ptr<S>,
                                  const JointAction &,
-                                 const unsigned int &>(get_shared(),
-                                                       state_->execute(joint_action, rewards),
+                                 const unsigned int &>(GetShared(),
+                                                       state_->Execute(joint_action, rewards),
                                                        joint_action,
                                                        depth_ + 1,
                                                        mcts_parameters_);
@@ -209,13 +210,13 @@ bool StageNode<S, SE, SO, H>::select_or_expand(StageNodeSPtr &next_node,
     children_[joint_action] = next_node;
     joint_action_counter_[joint_action] = 0;
 #ifdef PLAN_DEBUG_INFO
-    //     std::cout << "expanded node state: " << state_->execute(joint_action, rewards)->sprintf();
+    //     std::cout << "expanded node state: " << state_->execute(joint_action, rewards)->PrintState();
 #endif
-    if (next_node->get_state()->is_terminal()) {
-      rewards += next_node->get_state()->get_final_reward();
+    if (next_node->GetState()->IsTerminal()) {
+      rewards += next_node->GetState()->GetFinalReward();
     }
     // collect intermediate rewards and selected action indexes
-    fill_rewards(rewards, joint_action);
+    FillRewards(rewards, joint_action);
     joint_rewards_[joint_action] = rewards;
 
     return false;
@@ -226,19 +227,19 @@ bool StageNode<S, SE, SO, H>::select_or_expand(StageNodeSPtr &next_node,
 template<class S, class SE, class SO, class H> unsigned int StageNode<S, SE, SO, H>::num_nodes_ = 0;
 
 template<class S, class SE, class SO, class H>
-void StageNode<S, SE, SO, H>::reset_counter() {
+void StageNode<S, SE, SO, H>::ResetCounter() {
   StageNode<S, SE, SO, H>::num_nodes_ = 0;
 }
 
 template<class S, class SE, class SO, class H>
-bool StageNode<S, SE, SO, H>::each_joint_action_expanded() {
+bool StageNode<S, SE, SO, H>::EachJointActionExpanded() {
   return children_.size() == max_num_joint_actions_;
 
 }
 
 template<class S, class SE, class SO, class H>
-bool StageNode<S, SE, SO, H>::each_agents_actions_expanded() {
-  if (!ego_int_node_.all_actions_expanded()) { return false; }
+bool StageNode<S, SE, SO, H>::EachAgentsActionsExpanded() {
+  if (!ego_int_node_.AllActionsExpanded()) { return false; }
 
   for (auto it = other_int_nodes_.begin(); it != other_int_nodes_.end(); ++it) {
     if (!*it->all_actions_expanded()) { return false; }
@@ -246,46 +247,46 @@ bool StageNode<S, SE, SO, H>::each_agents_actions_expanded() {
 }
 
 template<class S, class SE, class SO, class H>
-void StageNode<S, SE, SO, H>::update_statistics(const std::vector<SE> &heuristic_estimates) {
-  ego_int_node_.update_from_heuristic(heuristic_estimates[S::ego_agent_idx]);
+void StageNode<S, SE, SO, H>::UpdateStatistics(const std::vector<SE> &heuristic_estimates) {
+  ego_int_node_.UpdateFromHeuristic(heuristic_estimates[S::ego_agent_idx]);
   for (auto it = other_int_nodes_.begin(); it != other_int_nodes_.end(); ++it) {
-    it->update_from_heuristic(heuristic_estimates[it->get_agent_idx()]);
+    it->UpdateFromHeuristic(heuristic_estimates[it->GetAgentIdx()]);
   }
 }
 
 template<class S, class SE, class SO, class H>
-void StageNode<S, SE, SO, H>::update_statistics(const StageNodeSPtr &changed_child_node) {
-  ego_int_node_.update_statistic(changed_child_node->ego_int_node_);
+void StageNode<S, SE, SO, H>::UpdateStatistics(const StageNodeSPtr &changed_child_node) {
+  ego_int_node_.UpdateStatistic(changed_child_node->ego_int_node_);
   for (auto it = other_int_nodes_.begin(); it != other_int_nodes_.end(); ++it) {
-    it->update_statistic(changed_child_node->other_int_nodes_[it->get_agent_idx()
+    it->UpdateStatistic(changed_child_node->other_int_nodes_[it->GetAgentIdx()
         - 1]); // -1: Ego Agent is at zero, but not contained in other int nodes
   }
 }
 
 template<class S, class SE, class SO, class H>
-JointAction StageNode<S, SE, SO, H>::get_best_action() {
+JointAction StageNode<S, SE, SO, H>::GetBestAction() {
   JointAction best(other_int_nodes_.size() + 1);
-  best[0] = ego_int_node_.get_best_action();
+  best[0] = ego_int_node_.GetBestAction();
   int i = 1;
   for (auto &int_node : other_int_nodes_) {
-    best[i] = int_node.get_best_action();
+    best[i] = int_node.GetBestAction();
     ++i;
   }
   VLOG(1) << "Ego:" << std::endl;
-  for (ActionIdx i = 0; i < state_->get_num_actions(S::ego_agent_idx); ++i) {
-    VLOG(1) << ego_int_node_.print_edge_information(i);
+  for (ActionIdx i = 0; i < state_->GetNumActions(S::ego_agent_idx); ++i) {
+    VLOG(1) << ego_int_node_.PrintEdgeInformation(i);
   }
-  for(AgentIdx agent_idx = S::ego_agent_idx + 1; agent_idx < state_->get_agent_idx().size(); ++agent_idx) {
+  for(AgentIdx agent_idx = S::ego_agent_idx + 1; agent_idx < state_->GetAgentIdx().size(); ++agent_idx) {
     VLOG(1) << "Other " << static_cast<size_t>(agent_idx) << ":";
-    for (ActionIdx i = 0; i < state_->get_num_actions(agent_idx); ++i) {
-      VLOG(1) << other_int_nodes_[static_cast<size_t>(agent_idx) - 1].print_edge_information(i);
+    for (ActionIdx i = 0; i < state_->GetNumActions(agent_idx); ++i) {
+      VLOG(1) << other_int_nodes_[static_cast<size_t>(agent_idx) - 1].PrintEdgeInformation(i);
     }
   }
   return best;
 }
 
 template<class S, class SE, class SO, class H>
-std::string StageNode<S, SE, SO, H>::sprintf() const {
+std::string StageNode<S, SE, SO, H>::PrintNode() const {
   auto tabs = [](const unsigned int &depth) -> std::string {
     return std::string(depth, '\t');
   };
@@ -296,22 +297,22 @@ std::string StageNode<S, SE, SO, H>::sprintf() const {
   if (!joint_action_.empty()) {
     ss << ", Joint Action " << joint_action_;
   }
-  ss << ", " << state_->sprintf() << ", Stats: { (0) " << ego_int_node_.sprintf();
+  ss << ", " << state_->PrintState() << ", Stats: { (0) " << ego_int_node_.sprintf();
   for (int i = 0; i < other_int_nodes_.size(); ++i) {
-    ss << ", (" << i + 1 << ") " << other_int_nodes_[i].sprintf();
+    ss << ", (" << i + 1 << ") " << other_int_nodes_[i].PrintNode();
   }
   ss << "}" << std::endl;
 
   if (!children_.empty()) {
     for (auto it = children_.begin(); it != children_.end(); ++it)
-      ss << it->second->sprintf();
+      ss << it->second->PrintNode();
 
   }
   return ss.str();
 };
 
 template<class S, class SE, class SO, class H>
-void StageNode<S, SE, SO, H>::printTree(std::string filename, const unsigned int &max_depth) {
+void StageNode<S, SE, SO, H>::PrintTree(std::string filename, const unsigned int &max_depth) {
   std::ofstream outfile(filename + ".gv");
   outfile << "digraph G {" << std::endl;
   outfile << "label = \"MCTS with Exploration constant = " << mcts_parameters_.uct_statistic.EXPLORATION_CONSTANT
@@ -319,7 +320,7 @@ void StageNode<S, SE, SO, H>::printTree(std::string filename, const unsigned int
   outfile << "labelloc = \"t\";" << std::endl;
   outfile.close();
 
-  this->printLayer(filename, max_depth);
+  this->PrintLayer(filename, max_depth);
 
   outfile.open(filename + ".gv", std::ios::app);
   outfile << "}" << std::endl;
@@ -327,7 +328,7 @@ void StageNode<S, SE, SO, H>::printTree(std::string filename, const unsigned int
 };
 
 template<class S, class SE, class SO, class H>
-void StageNode<S, SE, SO, H>::printLayer(std::string filename, const unsigned int &max_depth) {
+void StageNode<S, SE, SO, H>::PrintLayer(std::string filename, const unsigned int &max_depth) {
   if (depth_ > max_depth) {
     return;
   }
@@ -336,31 +337,31 @@ void StageNode<S, SE, SO, H>::printLayer(std::string filename, const unsigned in
   logging.open(filename + ".gv", std::ios::app);
   // DRAW SUBGRAPH FOR THIS STAGE
   logging << "subgraph cluster_node_" << this->id_ << "{" << std::endl;
-  logging << "node" << this->id_ << "_" << int(ego_int_node_.get_agent_idx()) << "[label=\""
-          << ego_int_node_.print_node_information() << " \n Ag." << int(ego_int_node_.get_agent_idx()) << "\"]" << ";"
+  logging << "node" << this->id_ << "_" << int(ego_int_node_.GetAgentIdx()) << "[label=\""
+          << ego_int_node_.PrintNodeInformation() << " \n Ag." << int(ego_int_node_.GetAgentIdx()) << "\"]" << ";"
           << std::endl;
   for (auto other_agent_it = other_int_nodes_.begin(); other_agent_it != other_int_nodes_.end(); ++other_agent_it) {
-    logging << "node" << this->id_ << "_" << int(other_agent_it->get_agent_idx()) << "[label=\""
-            << other_agent_it->print_node_information() << " \n Ag." << int(other_agent_it->get_agent_idx()) << "\"]"
+    logging << "node" << this->id_ << "_" << int(other_agent_it->GetAgentIdx()) << "[label=\""
+            << other_agent_it->PrintNodeInformation() << " \n Ag." << int(other_agent_it->GetAgentIdx()) << "\"]"
             << ";" << std::endl;
   }
-  logging << "label= \"ID " << this->id_ << ", " << "terminal: " << state_->is_terminal() << "\";" << std::endl;
+  logging << "label= \"ID " << this->id_ << ", " << "terminal: " << state_->IsTerminal() << "\";" << std::endl;
   logging << "graph[style=dotted]; }" << std::endl;
 
   // DRAW ARROWS FOR EACH CHILD
   for (auto child_it = this->children_.begin(); child_it != this->children_.end(); ++child_it) {
-    child_it->second->printLayer(filename, max_depth);
+    child_it->second->PrintLayer(filename, max_depth);
 
     // ego intermediate node
-    logging << "node" << this->id_ << "_" << int(ego_int_node_.get_agent_idx()) << " -> " << "node"
-            << child_it->second->id_ << "_" << int(ego_int_node_.get_agent_idx()) << "[label=\""
-            << ego_int_node_.print_edge_information(ActionIdx(child_it->first[ego_int_node_.get_agent_idx()])) << "\"]"
+    logging << "node" << this->id_ << "_" << int(ego_int_node_.GetAgentIdx()) << " -> " << "node"
+            << child_it->second->id_ << "_" << int(ego_int_node_.GetAgentIdx()) << "[label=\""
+            << ego_int_node_.PrintEdgeInformation(ActionIdx(child_it->first[ego_int_node_.GetAgentIdx()])) << "\"]"
             << ";" << std::endl;
     // other intermediate nodes
     for (auto other_int_it = other_int_nodes_.begin(); other_int_it != other_int_nodes_.end(); ++other_int_it) {
-      logging << "node" << this->id_ << "_" << int(other_int_it->get_agent_idx()) << " -> " << "node"
-              << child_it->second->id_ << "_" << int(other_int_it->get_agent_idx()) << "[label=\""
-              << other_int_it->print_edge_information(ActionIdx(child_it->first[other_int_it->get_agent_idx()]))
+      logging << "node" << this->id_ << "_" << int(other_int_it->GetAgentIdx()) << " -> " << "node"
+              << child_it->second->id_ << "_" << int(other_int_it->GetAgentIdx()) << "[label=\""
+              << other_int_it->PrintEdgeInformation(ActionIdx(child_it->first[other_int_it->GetAgentIdx()]))
               << "\"]" << ";" << std::endl;
 
     }
@@ -371,11 +372,11 @@ const std::unordered_map<JointAction, std::shared_ptr<StageNode<S, SE, SO, H>>, 
     S,
     SE,
     SO,
-    H>::get_children() const {
+    H>::GetChildren() const {
   return children_;
 }
 template<class S, class SE, class SO, class H>
-JointReward StageNode<S, SE, SO, H>::get_q_func(JointAction const &joint_action) {
+JointReward StageNode<S, SE, SO, H>::GetQFunc(JointAction const &joint_action) {
   JointReward v(state_->get_agent_idx().size(), Reward::Zero(mcts_parameters_.REWARD_VEC_SIZE));
   ActionIdx action = joint_action.at(0);
   v.at(0) = ego_int_node_.get_expected_rewards().at(action);
@@ -386,7 +387,7 @@ JointReward StageNode<S, SE, SO, H>::get_q_func(JointAction const &joint_action)
   return v;
 }
 template<class S, class SE, class SO, class H>
-JointReward StageNode<S, SE, SO, H>::get_value() {
+JointReward StageNode<S, SE, SO, H>::GetValue() {
   JointReward v(other_int_nodes_.size() + 1);
   v.at(0) = dynamic_cast<SE &>(ego_int_node_).get_value();
   for (size_t i = 1; i < other_int_nodes_.size(); ++i) {
@@ -395,12 +396,12 @@ JointReward StageNode<S, SE, SO, H>::get_value() {
   return v;
 }
 template <class S, class SE, class SO, class H>
-const StageRewardMap &StageNode<S, SE, SO, H>::get_joint_rewards() const {
+const StageRewardMap &StageNode<S, SE, SO, H>::GetJointRewards() const {
   return joint_rewards_;
 }
 template <class S, class SE, class SO, class H>
     const IntermediateNode < S, SE>
-    &StageNode<S, SE, SO, H>::get_ego_int_node() const {
+    &StageNode<S, SE, SO, H>::GetEgoIntNode() const {
   return ego_int_node_;
 }
 

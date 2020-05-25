@@ -26,8 +26,8 @@ class CrossingStateEpisodeRunner : public CrossingTestEnv<UctStatistic<>> {
     std::vector<Reward> rewards(2);
 
     JointAction jointaction(this->state->get_agent_idx().size());
-    this->mcts.search(*(this->state), 5000, 1000);
-    jointaction = this->mcts.returnBestAction();
+    this->mcts.Search(*(this->state), 5000, 1000);
+    jointaction = this->mcts.ReturnBestAction();
     std::cout << "Step " << current_step_ << ", Action = " << jointaction << ", " << this->state->sprintf()
               << std::endl;
     this->state = this->state->execute(jointaction, rewards);

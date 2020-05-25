@@ -23,22 +23,22 @@ public:
 
     NodeStatistic(ActionIdx num_actions, MctsParameters const &mcts_parameters) : num_actions_(num_actions), mcts_parameters_(mcts_parameters) {}
     template <class S>
-    ActionIdx choose_next_action(const StateInterface<S>& state, std::vector<int>& unexpanded_actions, unsigned int iteration);
-    void update_statistic(const NodeStatistic<Implementation>& changed_child_statistic); // update statistic during backpropagation from child node
-    void update_from_heuristic(const NodeStatistic<Implementation>& heuristic_statistic); // update statistic during backpropagation from heuristic estimate
-    ActionIdx get_best_action();
+    ActionIdx ChooseNextAction(const StateInterface<S>& state, std::vector<int>& unexpanded_actions, unsigned int iteration);
+    void UpdateStatistic(const NodeStatistic<Implementation>& changed_child_statistic); // update statistic during backpropagation from child node
+    void UpdateFromHeuristic(const NodeStatistic<Implementation>& heuristic_statistic); // update statistic during backpropagation from heuristic estimate
+    ActionIdx GetBestAction();
 
-    void set_heuristic_estimate(const Reward& accum_rewards);
+    void SetHeuristicEstimate(const Reward& accum_rewards);
 
-    void collect_reward(const Reward& reward, const ActionIdx& action_idx);
+    void CollectReward(const Reward& reward, const ActionIdx& action_idx);
 
-    std::map<ActionIdx,Reward> get_expected_rewards() const;
+    std::map<ActionIdx,Reward> GetExpectedRewards() const;
 
-    std::string print_node_information() const;
-    std::string print_edge_information(const ActionIdx& action) const;
+    std::string PrintNodeInformation() const;
+    std::string PrintEdgeInformation(const ActionIdx& action) const;
 
-    Implementation& impl();
-    const Implementation& impl() const;
+    Implementation& Impl();
+    const Implementation& Impl() const;
 
 public:
     std::pair<ActionIdx, Reward> collected_reward_;
@@ -47,60 +47,60 @@ public:
 };
 
 template <class Implementation>
-Implementation& NodeStatistic<Implementation>::impl() {
+Implementation& NodeStatistic<Implementation>::Impl() {
     return *static_cast<Implementation*>(this);
 }
 
 
 template <class Implementation>
-const Implementation& NodeStatistic<Implementation>::impl() const {
+const Implementation& NodeStatistic<Implementation>::Impl() const {
     return *static_cast<const Implementation*>(this);
 }
 
 template <class Implementation>
 template <class S>
-ActionIdx NodeStatistic<Implementation>::choose_next_action(const StateInterface<S>& state, std::vector<int>& unexpanded_actions,
+ActionIdx NodeStatistic<Implementation>::ChooseNextAction(const StateInterface<S>& state, std::vector<int>& unexpanded_actions,
     unsigned int iteration)  {
-    return impl().choose_next_action(state, unexpanded_actions, iteration);
+    return Impl().choose_next_action(state, unexpanded_actions, iteration);
 }
 
 template <class Implementation>
-ActionIdx NodeStatistic<Implementation>::get_best_action()  {
-    return impl().get_best_action();
+ActionIdx NodeStatistic<Implementation>::GetBestAction()  {
+    return Impl().get_best_action();
 }
 
 template <class Implementation>
-std::string NodeStatistic<Implementation>::print_node_information() const {
-    return impl().print_node_information();
+std::string NodeStatistic<Implementation>::PrintNodeInformation() const {
+    return Impl().print_node_information();
 }
 
 template <class Implementation>
-std::string NodeStatistic<Implementation>::print_edge_information(const ActionIdx& action) const {
-    return impl().print_edge_information();
+std::string NodeStatistic<Implementation>::PrintEdgeInformation(const ActionIdx& action) const {
+    return Impl().print_edge_information();
 }
 
 template <class Implementation>
-void NodeStatistic<Implementation>::update_statistic(const NodeStatistic<Implementation> &changed_child_statistic) {
-    return impl().update_statistic(changed_child_statistic);
+void NodeStatistic<Implementation>::UpdateStatistic(const NodeStatistic<Implementation> &changed_child_statistic) {
+    return Impl().update_statistic(changed_child_statistic);
 }
 
 template <class Implementation>
-void NodeStatistic<Implementation>::update_from_heuristic(const NodeStatistic<Implementation>& heuristic_statistic) {
-    return impl().update_from_heuristic(heuristic_statistic);
+void NodeStatistic<Implementation>::UpdateFromHeuristic(const NodeStatistic<Implementation>& heuristic_statistic) {
+    return Impl().update_from_heuristic(heuristic_statistic);
 }
 
 template <class Implementation>
-void NodeStatistic<Implementation>::collect_reward(const mcts::Reward &reward, const ActionIdx& action_idx) {
+void NodeStatistic<Implementation>::CollectReward(const mcts::Reward &reward, const ActionIdx& action_idx) {
     collected_reward_= std::pair<ActionIdx, Reward>(action_idx, reward);
 }
 
 template <class Implementation>
-void NodeStatistic<Implementation>::set_heuristic_estimate(const Reward& accum_rewards) {
-    return impl().set_heuristic_estimate(accum_rewards);
+void NodeStatistic<Implementation>::SetHeuristicEstimate(const Reward& accum_rewards) {
+    return Impl().set_heuristic_estimate(accum_rewards);
 }
 template<class Implementation>
-std::map<ActionIdx,Reward> NodeStatistic<Implementation>::get_expected_rewards() const {
-  return impl().get_expected_rewards();
+std::map<ActionIdx,Reward> NodeStatistic<Implementation>::GetExpectedRewards() const {
+  return Impl().get_expected_rewards();
 }
 
 } // namespace mcts

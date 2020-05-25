@@ -27,12 +27,12 @@ class SlackUCTStatistic : public UctStatistic<SlackUCTStatistic> {
                     MctsParameters const &mcts_parameters)
       : UctStatistic<SlackUCTStatistic>(num_actions, mcts_parameters) {}
 
-  ActionIdx get_best_action() {
+  ActionIdx GetBestAction() {
     ObjectiveVec slack;
     std::vector<ObjectiveVec> qval;
     std::transform(ucb_statistics_.begin(), ucb_statistics_.end(), std::back_inserter(qval),
                    [](const ActionUCBMap::value_type &elem) { return elem.second.action_value_; });
-    calculate_slack_values(qval, &slack);
+    CalculateSlackValues(qval, &slack);
     ThresholdComparator<ObjectiveVec> comp(slack);
     VLOG(1) << "Slack: " << slack;
     auto max = std::max_element(ucb_statistics_.begin(), ucb_statistics_.end(),
@@ -50,7 +50,7 @@ class SlackUCTStatistic : public UctStatistic<SlackUCTStatistic> {
   }
 
   template <class S>
-  ActionIdx choose_next_action(const S &state,
+  ActionIdx ChooseNextAction(const S &state,
                                std::vector<int> &unexpanded_actions,
                                unsigned int iteration) {
     ActionIdx selected_action;
@@ -58,8 +58,8 @@ class SlackUCTStatistic : public UctStatistic<SlackUCTStatistic> {
       std::uniform_real_distribution<double> uniform_norm(0.0, 1.0);
       std::vector<Eigen::VectorXd> values;
       Eigen::VectorXd slack;
-      calculate_ucb_values(ucb_statistics_, values);
-      calculate_slack_values(values, &slack);
+      CalculateUcbValues(ucb_statistics_, values);
+      CalculateSlackValues(values, &slack);
       selected_action = std::distance(
           values.begin(), std::max_element(values.begin(), values.end(),
                                            ThresholdComparator<Eigen::VectorXd>(
@@ -83,7 +83,7 @@ class SlackUCTStatistic : public UctStatistic<SlackUCTStatistic> {
 
  protected:
   template <class T>
-  void calculate_slack_values(const std::vector<T> &qval, T *values) const {
+  void CalculateSlackValues(const std::vector<T> &qval, T *values) const {
     values->resize(qval.size());
     *values = T::Constant(mcts_parameters_.REWARD_VEC_SIZE, -std::numeric_limits<typename T::Scalar>::infinity());
     for (ActionIdx idx = 0; idx < qval.size(); ++idx) {

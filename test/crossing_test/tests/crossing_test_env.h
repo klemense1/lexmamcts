@@ -29,14 +29,14 @@ class CrossingTestEnv : public BaseTestEnv {
                                                                                label_evaluators),
                                                                    mcts(mcts_parameters_) {}
   JointAction search(size_t num_iterations) override {
-    mcts.search(*(this->state), std::numeric_limits<unsigned int>::max(),
+    mcts.Search(*(this->state), std::numeric_limits<unsigned int>::max(),
                 num_iterations);
-    this->set_jt(mcts.returnBestAction());
+    this->set_jt(mcts.ReturnBestAction());
     VLOG(1) << "Best action: " << this->get_jt();
     return this->get_jt();
   }
   std::map<unsigned long, Eigen::VectorXf> get_ego_qval() override {
-    return mcts.get_root()->get_ego_int_node().get_expected_rewards();
+    return mcts.GetRoot()->get_ego_int_node().get_expected_rewards();
   }
   Mcts<CrossingState, Stats, Stats, Heuristic> mcts;
 };

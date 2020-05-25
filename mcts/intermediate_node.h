@@ -33,17 +33,17 @@ class IntermediateNode : public Stats {
   IntermediateNode(const StateInterface<S> &state,
                    AgentIdx agent_idx,
                    ActionIdx num_actions,
-                   MctsParameters mcts_parameters);
+                   const MctsParameters& mcts_parameters);
 
   ~IntermediateNode();
 
-  ActionIdx choose_next_action(unsigned int iteration);
+  ActionIdx ChooseNextAction(unsigned int iteration);
 
-  bool all_actions_expanded();
+  bool AllActionsExpanded();
 
-  AgentIdx get_agent_idx() const;
+  AgentIdx GetAgentIdx() const;
 
-        MCTS_TEST
+  MCTS_TEST
 
 };
 
@@ -54,7 +54,7 @@ template<class S, class Stats>
 IntermediateNode<S, Stats>::IntermediateNode(const StateInterface<S> &state,
                                              AgentIdx agent_idx,
                                              ActionIdx num_actions,
-                                             MctsParameters mcts_parameters) :
+                                             const MctsParameters& mcts_parameters) :
     Stats(num_actions, mcts_parameters),
     unexpanded_actions_(num_actions),
     agent_idx_(agent_idx),
@@ -64,21 +64,21 @@ IntermediateNode<S, Stats>::IntermediateNode(const StateInterface<S> &state,
 }
 
 template<class S, class Stats>
-IntermediateNode<S, Stats>::~IntermediateNode() {}
+IntermediateNode<S, Stats>::~IntermediateNode() = default;
 
 template<class S, class Stats>
-ActionIdx IntermediateNode<S, Stats>::choose_next_action(
+ActionIdx IntermediateNode<S, Stats>::ChooseNextAction(
     unsigned int iteration) {
-        return Stats::choose_next_action(state_, unexpanded_actions_, iteration);
+        return Stats::ChooseNextAction(state_, unexpanded_actions_, iteration);
 }
 
 template<class S, class Stats>
-bool IntermediateNode<S, Stats>::all_actions_expanded() {
+bool IntermediateNode<S, Stats>::AllActionsExpanded() {
   return unexpanded_actions_.empty();
 }
 
 template<class S, class Stats>
-inline AgentIdx IntermediateNode<S, Stats>::get_agent_idx() const { return agent_idx_;}
+inline AgentIdx IntermediateNode<S, Stats>::GetAgentIdx() const { return agent_idx_;}
 
 } // namespace mcts
 

@@ -13,6 +13,7 @@
 #include <iostream>
 #include <type_traits>
 #include "mcts/mcts.h"
+#include "mcts/statistics/lexicographical_comperator.h"
 
 namespace mcts {
 
@@ -44,20 +45,6 @@ class UctStatistic
  public:
   MCTS_TEST
 
-  struct LexicographicalComperator {
-    const double eps_ = 1e-5;
-    template <class T>
-    bool operator()(const T &a, const T &b) const {
-      return std::lexicographical_compare(
-          a.begin(), a.end(), b.begin(), b.end(),
-          [this](const typename T::Scalar &a, const typename T::Scalar &b) {
-            return (b - a) > ((std::fabs(a) < std::fabs(b) ? std::fabs(b)
-                                                           : std::fabs(a)) *
-                              eps_);
-          });
-    }
-  };
-
   UctStatistic(ActionIdx num_actions, MctsParameters const &mcts_parameters)
       : ParentType(num_actions, mcts_parameters),
         value_(ObjectiveVec::Zero(mcts_parameters.REWARD_VEC_SIZE)),
@@ -74,13 +61,13 @@ class UctStatistic
   ~UctStatistic(){};
 
   template <class S>
-  ActionIdx choose_next_action(const S &state,
+  ActionIdx ChooseNextAction(const S &state,
                                std::vector<int> &unexpanded_actions,
                                unsigned int iteration) {
-    if (unexpanded_actions.empty() || pw_limit_reached(unexpanded_actions)) {
+    if (unexpanded_actions.empty()) {
       // Select an action based on the UCB formula
       std::vector<Eigen::VectorXd> values;
-      calculate_ucb_values(ucb_statistics_, values);
+      CalculateUcbValues(ucb_statistics_, values);
       // find largest index
       ActionIdx selected_action = std::distance(
           values.begin(), std::max_element(values.begin(), values.end(),
@@ -97,7 +84,7 @@ class UctStatistic
     }
   }
 
-  ActionIdx get_best_action() {
+  ActionIdx GetBestAction() {
     // Lexicographical ordering of the UCT value vectors
     LexicographicalComperator lex_comp;
     auto max = std::max_element(ucb_statistics_.begin(), ucb_statistics_.end(),
@@ -115,8 +102,8 @@ class UctStatistic
     return max->first;
   }
 
-  void update_from_heuristic(const ParentType &heuristic_statistic) {
-    const ThisType &heuristic_statistic_impl = heuristic_statistic.impl();
+  void UpdateFromHeuristic(const ParentType &heuristic_statistic) {
+    const ThisType &heuristic_statistic_impl = heuristic_statistic.Impl();
     value_ = heuristic_statistic_impl.value_;
     latest_return_ = value_;
     MCTS_EXPECT_TRUE(total_node_visits_ ==
@@ -124,8 +111,8 @@ class UctStatistic
     total_node_visits_ += 1;
   }
 
-  void update_statistic(const ParentType &changed_child_statistic) {
-    const ThisType &changed_uct_statistic = changed_child_statistic.impl();
+  void UpdateStatistic(const ParentType &changed_child_statistic) {
+    const ThisType &changed_uct_statistic = changed_child_statistic.Impl();
 
     // Action Value update step
     auto ucb_pair = ucb_statistics_.find(
@@ -146,19 +133,19 @@ class UctStatistic
     value_ = value_ + (latest_return_ - value_) / total_node_visits_;
   }
 
-  void set_heuristic_estimate(const Reward &accum_rewards) {
+  void SetHeuristicEstimate(const Reward &accum_rewards) {
     value_ = accum_rewards;
   }
 
  public:
-  std::string print_node_information() const {
+  std::string PrintNodeInformation() const {
     std::stringstream ss;
     ss << std::setprecision(2) << "V=" << value_
        << ", N=" << total_node_visits_;
     return ss.str();
   }
 
-  std::string print_edge_information(const ActionIdx &action) const {
+  std::string PrintEdgeInformation(const ActionIdx &action) const {
     std::stringstream ss;
     auto action_it = ucb_statistics_.find(action);
     if (action_it != ucb_statistics_.end()) {
@@ -168,17 +155,17 @@ class UctStatistic
     return ss.str();
   }
 
-  std::map<ActionIdx, Reward> get_expected_rewards() const {
+  std::map<ActionIdx, Reward> GetExpectedRewards() const {
     std::map<ActionIdx, Reward> v;
     for (auto const &pair : ucb_statistics_) {
       v[pair.first] = pair.second.action_value_;
     }
     return v;
   }
-  const ObjectiveVec get_value() const { return value_; }
+  ObjectiveVec GetValue() const { return value_; }
 
  protected:
-  void calculate_ucb_values(const ActionUCBMap &ucb_statistics,
+  void CalculateUcbValues(const ActionUCBMap &ucb_statistics,
                             std::vector<Eigen::VectorXd> &values) const {
     values.resize(ucb_statistics.size());
     Eigen::MatrixXd action_val_mat(this->mcts_parameters_.REWARD_VEC_SIZE,
@@ -209,15 +196,6 @@ class UctStatistic
               .cwiseQuotient(scale);
       values[idx] = normalized_mean + exploration_term;
     }
-  }
-
-  inline bool pw_limit_reached(
-      const std::vector<int> &unexpanded_actions) const {
-    return ((ucb_statistics_.size() - unexpanded_actions.size()) >
-            std::floor(std::pow(total_node_visits_ + 1,
-                                this->mcts_parameters_.uct_statistic
-                                    .PROGRESSIVE_WIDENING_ALPHA))) &&
-           this->mcts_parameters_.uct_statistic.PROGRESSIVE_WIDENING_ENABLED;
   }
 
   ObjectiveVec value_;

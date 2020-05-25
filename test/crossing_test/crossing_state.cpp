@@ -10,7 +10,6 @@
 #include "mcts/mcts.h"
 #include "test/crossing_test/crossing_state.hpp"
 #include "test/crossing_test/label_evaluator/evaluator_label_collision.h"
-#include "test/crossing_test/viewer.h"
 
 CrossingState::CrossingState(RuleStateMap rule_state_map,
                              std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> label_evaluator,

@@ -74,21 +74,21 @@ template<typename Implementation>
 class StateInterface {
 public:
 
-    std::shared_ptr<Implementation> execute(const JointAction &joint_action, std::vector<Reward>& rewards) const;
+    std::shared_ptr<Implementation> Execute(const JointAction &joint_action, std::vector<Reward>& rewards) const;
 
-    std::vector<Reward> get_final_reward() const;
+    std::vector<Reward> GetFinalReward() const;
 
-    std::shared_ptr<Implementation> clone() const;
+    std::shared_ptr<Implementation> Clone() const;
 
-    ActionIdx get_num_actions(AgentIdx agent_idx) const;
+    ActionIdx GetNumActions(AgentIdx agent_idx) const;
 
-    bool is_terminal() const;
+    bool IsTerminal() const;
 
-    const std::vector<AgentIdx> get_agent_idx() const;
+    const std::vector<AgentIdx> GetAgentIdx() const;
 
     static const AgentIdx ego_agent_idx;
 
-    std::string sprintf() const;
+    std::string PrintState() const;
 
     virtual ~StateInterface() {};
 
@@ -100,39 +100,39 @@ private:
 };
 
 template<typename Implementation>
-inline std::shared_ptr<Implementation> StateInterface<Implementation>::execute(const JointAction &joint_action, std::vector<Reward>& rewards) const {
-   return impl().execute(joint_action, rewards);
+inline std::shared_ptr<Implementation> StateInterface<Implementation>::Execute(const JointAction &joint_action, std::vector<Reward>& rewards) const {
+   return impl().Execute(joint_action, rewards);
 }
 
 template<typename Implementation>
-inline std::shared_ptr<Implementation> StateInterface<Implementation>::clone() const {
- return impl().clone();
+inline std::shared_ptr<Implementation> StateInterface<Implementation>::Clone() const {
+ return impl().Clone();
 }
 
 template<typename Implementation>
-inline ActionIdx StateInterface<Implementation>::get_num_actions(AgentIdx agent_idx) const {
-    return impl().get_num_actions(agent_idx);
+inline ActionIdx StateInterface<Implementation>::GetNumActions(AgentIdx agent_idx) const {
+    return impl().GetNumActions(agent_idx);
 }
 
 template<typename Implementation>
-inline bool StateInterface<Implementation>::is_terminal() const {
-    return impl().is_terminal();
+inline bool StateInterface<Implementation>::IsTerminal() const {
+    return impl().IsTerminal();
 }
 
 template<typename Implementation>
-inline const std::vector<AgentIdx> StateInterface<Implementation>::get_agent_idx() const {
-    return impl().get_agent_idx();
+inline const std::vector<AgentIdx> StateInterface<Implementation>::GetAgentIdx() const {
+    return impl().GetAgentIdx();
 }
 
 
 template<typename Implementation>
-inline std::string StateInterface<Implementation>::sprintf() const {
-    return impl().sprintf();
+inline std::string StateInterface<Implementation>::PrintState() const {
+    return impl().PrintState();
 }
 
 template<typename Implementation>
-inline std::vector<Reward> StateInterface<Implementation>::get_final_reward() const {
-    return impl().get_final_reward();
+inline std::vector<Reward> StateInterface<Implementation>::GetFinalReward() const {
+    return impl().GetFinalReward();
 }
 
 

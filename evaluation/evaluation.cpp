@@ -64,10 +64,14 @@ int QValWriter::FindLexMax(const std::map<unsigned long, Eigen::VectorXf>& actio
   }
   return decision_level;
 }
-}  // namespace evaluation
-}  // namespace mcts
+
+#ifdef PROFILING
 void setup() { EASY_PROFILER_ENABLE; }
 void shutdown(char* file_dump_name) {
   auto blocks_written = profiler::dumpBlocksToFile(file_dump_name);
   LOG(INFO) << "Easy profiler blocks written: " << blocks_written;
 }
+#endif
+
+}  // namespace evaluation
+}  // namespace mcts

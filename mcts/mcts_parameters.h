@@ -22,8 +22,6 @@ struct MctsParameters {
     friend std::ostream& operator<<(std::ostream& os,
                                     const UctStatistic& statistic);
     Eigen::VectorXd EXPLORATION_CONSTANT;
-    bool PROGRESSIVE_WIDENING_ENABLED;
-    double PROGRESSIVE_WIDENING_ALPHA;
     ObjectiveVec LOWER_BOUND;
     ObjectiveVec UPPER_BOUND;
   };

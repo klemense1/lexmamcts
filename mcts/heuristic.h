@@ -24,41 +24,41 @@ public:
   Heuristic(MctsParameters const &mcts_parameters) : mcts_parameters_(mcts_parameters) {};
 
   template<class S, class SE, class SO, class H>
-  std::vector<SE> get_heuristic_values(const std::shared_ptr<StageNode<S, SE, SO, H>> &node);
+  std::vector<SE> GetHeuristicValues(const std::shared_ptr<StageNode<S, SE, SO, H>> &node);
 
-  std::string sprintf() const;
+  std::string PrintState() const;
 
 protected:
   MctsParameters mcts_parameters_;
 
 private:
 
-  Implementation &impl();
+  Implementation &Impl();
 
-  Implementation &impl() const;
+  Implementation &Impl() const;
 };
 
 
 template<class Implementation>
-Implementation &Heuristic<Implementation>::impl() {
+Implementation &Heuristic<Implementation>::Impl() {
   return *static_cast<Implementation *>(this);
 }
 
 
 template<class Implementation>
-Implementation &Heuristic<Implementation>::impl() const {
+Implementation &Heuristic<Implementation>::Impl() const {
   return *static_cast<const Implementation *>(this);
 }
 
 template<class Implementation>
 template<class S, class SE, class SO, class H>
-std::vector<SE> Heuristic<Implementation>::get_heuristic_values(const std::shared_ptr<StageNode<S, SE, SO, H>> &node) {
-  return impl().get_heuristic_values(node);
+std::vector<SE> Heuristic<Implementation>::GetHeuristicValues(const std::shared_ptr<StageNode<S, SE, SO, H>> &node) {
+  return Impl().get_heuristic_values(node);
 }
 
 template<class Implementation>
-std::string Heuristic<Implementation>::sprintf() const {
-  return impl().sprintf();
+std::string Heuristic<Implementation>::PrintState() const {
+  return Impl().sprintf();
 }
 
 } // namespace mcts

@@ -25,7 +25,7 @@ class ThresUCTStatistic : public UctStatistic<ThresUCTStatistic> {
       : UctStatistic<ThresUCTStatistic>(num_actions, mcts_parameters) {}
 
   template <class S>
-  ActionIdx choose_next_action(const S &state,
+  ActionIdx ChooseNextAction(const S &state,
                                std::vector<int> &unexpanded_actions,
                                unsigned int iteration) {
     ActionIdx selected_action;
@@ -37,7 +37,7 @@ class ThresUCTStatistic : public UctStatistic<ThresUCTStatistic> {
       auto upper = mcts_parameters_.uct_statistic.UPPER_BOUND.cast<double>();
       Eigen::VectorXd normalized_thresholds = (thres - lower).cwiseQuotient(upper-lower);
       normalized_thresholds(normalized_thresholds.rows() - 1) = std::numeric_limits<double>::max();
-      calculate_ucb_values(ucb_statistics_, values);
+      CalculateUcbValues(ucb_statistics_, values);
       selected_action = std::distance(
           values.begin(), std::max_element(values.begin(), values.end(),
                                            ThresholdComparator<Eigen::VectorXd>(
@@ -59,7 +59,7 @@ class ThresUCTStatistic : public UctStatistic<ThresUCTStatistic> {
     return selected_action;
   }
 
-  ActionIdx get_best_action() {
+  ActionIdx GetBestAction() {
     Reward thr = mcts_parameters_.thres_uct_statistic_.THRESHOLD;
     DVLOG(2) << "Thresholds:" << thr.transpose();
     auto max = std::max_element(ucb_statistics_.begin(), ucb_statistics_.end(),

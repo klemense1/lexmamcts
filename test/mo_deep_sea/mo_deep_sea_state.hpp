@@ -22,14 +22,15 @@ typedef std::vector<MODSMapElement> SeaMap;
 class MoDeepSeaState : public mcts::StateInterface<MoDeepSeaState> {
  public:
   MoDeepSeaState(const std::vector<MODSMapElement> &sea_map, const Eigen::Vector2i &ego_pos, int step_counter = 0);
-  virtual std::shared_ptr<MoDeepSeaState> execute(const JointAction &joint_action, std::vector<Reward> &rewards) const;
-  virtual std::shared_ptr<MoDeepSeaState> clone() const;
-  virtual ActionIdx get_num_actions(AgentIdx agent_idx) const;
-  virtual bool is_terminal() const;
-  virtual const std::vector<AgentIdx> get_agent_idx() const;
-  virtual std::string sprintf() const;
-  virtual ~MoDeepSeaState();
-  const Eigen::Vector2i &get_ego_pos() const;
+  virtual std::shared_ptr<MoDeepSeaState> Execute(const JointAction &joint_action, std::vector<Reward> &rewards) const;
+  virtual std::shared_ptr<MoDeepSeaState> Clone() const;
+  virtual ActionIdx GetNumActions(AgentIdx agent_idx) const;
+  virtual bool IsTerminal() const;
+  virtual const std::vector<AgentIdx> GetAgentIdx() const;
+  virtual std::string PrintState() const;
+  virtual ~MoDeepSeaState() = default;
+  const Eigen::Vector2i &GetEgoPos() const;
+  std::vector<Reward> GetFinalReward() const;
  private:
   SeaMap sea_map;
   Eigen::Vector2i ego_pos;

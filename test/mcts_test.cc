@@ -26,8 +26,8 @@ TEST(test_mcts, verify_uct )
     RandomGenerator::random_generator_ = std::mt19937(1000);
     Mcts<SimpleState, UctStatistic<>, UctStatistic<>, RandomHeuristic> mcts(make_default_mcts_parameters());
     SimpleState state(4);
-    
-    mcts.search(state, 50000, 2000);
+
+    mcts.Search(state, 50000, 2000);
 
     MctsTest test;
     test.verify_uct(mcts,1);
@@ -40,9 +40,9 @@ TEST(test_mcts, generate_dot_file )
     RandomGenerator::random_generator_ = std::mt19937(1000);
     Mcts<SimpleState, UctStatistic<>, UctStatistic<>, RandomHeuristic> mcts(make_default_mcts_parameters());
     SimpleState state(4);
-    
-    mcts.search(state, 50000, 20);
-    mcts.printTreeToDotFile("test_tree");
+
+    mcts.Search(state, 50000, 20);
+    mcts.PrintTreeToDotFile("test_tree");
 }
 
 

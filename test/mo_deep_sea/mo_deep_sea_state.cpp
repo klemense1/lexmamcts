@@ -3,9 +3,14 @@
 //
 
 #include "test/mo_deep_sea/mo_deep_sea_state.hpp"
-std::shared_ptr<MoDeepSeaState> MoDeepSeaState::execute(const JointAction &joint_action,
+
+MoDeepSeaState::MoDeepSeaState(const std::vector<MODSMapElement> &sea_map,
+                               const Eigen::Vector2i &ego_pos,
+                               int step_counter) : sea_map(sea_map), ego_pos(ego_pos), step_counter(step_counter) {}
+
+std::shared_ptr<MoDeepSeaState> MoDeepSeaState::Execute(const JointAction &joint_action,
                                                         std::vector<Reward> &rewards) const {
-  assert(!is_terminal());
+  assert(!IsTerminal());
   int num_cols = sea_map.size() - 1;
   Eigen::Vector2i tmp_pos = ego_pos + MODSActions[joint_action[0]];
   Eigen::Vector2i new_pos;
@@ -13,28 +18,28 @@ std::shared_ptr<MoDeepSeaState> MoDeepSeaState::execute(const JointAction &joint
   new_pos << std::min(std::max(tmp_pos(0), 0), sea_map[clamped_col].row),
       clamped_col;
   std::shared_ptr<MoDeepSeaState> new_state = std::make_shared<MoDeepSeaState>(sea_map, new_pos, step_counter + 1);
-  rewards.resize(2);
-  if (new_state->is_terminal()) {
-    rewards[0] << sea_map[new_pos(1)].reward, -step_counter;
+  rewards.resize(1);
+  if (new_state->IsTerminal()) {
+    rewards[0] << sea_map[new_pos(1)].reward, 0.0f;
   } else {
-    rewards[0] << 0.0f, 0.0f;
+    rewards[0] << 0.0f, -1.0f;
   }
   return new_state;
 }
-std::shared_ptr<MoDeepSeaState> MoDeepSeaState::clone() const {
+std::shared_ptr<MoDeepSeaState> MoDeepSeaState::Clone() const {
   return std::make_shared<MoDeepSeaState>(*this);
 }
-ActionIdx MoDeepSeaState::get_num_actions(AgentIdx agent_idx) const {
+ActionIdx MoDeepSeaState::GetNumActions(AgentIdx agent_idx) const {
   // Up, Down, Left, Right
   return 4;
 }
-bool MoDeepSeaState::is_terminal() const {
+bool MoDeepSeaState::IsTerminal() const {
   return (ego_pos(0) >= sea_map[ego_pos(1)].row || step_counter >= 100);
 }
-const std::vector<AgentIdx> MoDeepSeaState::get_agent_idx() const {
+const std::vector<AgentIdx> MoDeepSeaState::GetAgentIdx() const {
   return std::vector<AgentIdx>{0};
 }
-std::string MoDeepSeaState::sprintf() const {
+std::string MoDeepSeaState::PrintState() const {
   int num_cols = sea_map.size();
   int num_rows = std::max_element(sea_map.begin(), sea_map.end(), [](MODSMapElement a, MODSMapElement b) -> bool {
     return (a.row < b.row);
@@ -46,7 +51,10 @@ std::string MoDeepSeaState::sprintf() const {
   for (int row = 0; row < num_rows; row++) {
     out << "|";
     for (int col = 0; col < num_cols; col++) {
-      if (row < sea_map[col].row) {
+      if(row == ego_pos(0) && col == ego_pos(1)) {
+        out << " O ";
+      }
+      else if (row < sea_map[col].row) {
         out << "   ";
       } else if (row == sea_map[col].row) {
         out << std::setw(3) << sea_map[col].reward;
@@ -64,12 +72,10 @@ std::string MoDeepSeaState::sprintf() const {
   out << "\n";
   return out.str();
 }
-MoDeepSeaState::~MoDeepSeaState() {
-
-}
-MoDeepSeaState::MoDeepSeaState(const std::vector<MODSMapElement> &sea_map,
-                               const Eigen::Vector2i &ego_pos,
-                               int step_counter) : sea_map(sea_map), ego_pos(ego_pos), step_counter(step_counter) {}
-const Eigen::Vector2i &MoDeepSeaState::get_ego_pos() const {
+const Eigen::Vector2i &MoDeepSeaState::GetEgoPos() const {
   return ego_pos;
+}
+
+std::vector<Reward> MoDeepSeaState::GetFinalReward() const {
+  return {Reward::Zero(2)};
 }

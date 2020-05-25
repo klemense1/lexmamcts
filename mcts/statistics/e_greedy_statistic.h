@@ -20,7 +20,7 @@ class EGreedyStatistic : public UctStatistic<EGreedyStatistic> {
       : UctStatistic<EGreedyStatistic>(num_actions, mcts_parameters) {}
 
   template <class S>
-  ActionIdx choose_next_action(const S &state,
+  ActionIdx ChooseNextAction(const S &state,
                                std::vector<int> &unexpanded_actions,
                                unsigned int iteration) {
     ActionIdx selected_action;
@@ -31,7 +31,7 @@ class EGreedyStatistic : public UctStatistic<EGreedyStatistic> {
     if (unexpanded_actions.empty()) {
       std::uniform_real_distribution<double> uniform_norm(0.0, 1.0);
       std::vector<Eigen::VectorXd> values;
-      selected_action = get_best_action();
+      selected_action = GetBestAction();
       const double p = uniform_norm(random_generator_);
       if (p < current_epsilon && num_actions_ >= 2) {
         std::uniform_int_distribution<ActionIdx> uniform_action(
@@ -51,7 +51,7 @@ class EGreedyStatistic : public UctStatistic<EGreedyStatistic> {
     return selected_action;
   }
 
-  ActionIdx get_best_action() {
+  ActionIdx GetBestAction() {
     Reward thr = mcts_parameters_.thres_uct_statistic_.THRESHOLD;
     DVLOG(2) << "Thresholds:" << thr.transpose();
     auto max = std::max_element(

@@ -24,9 +24,6 @@ std::ostream& operator<<(std::ostream& os, const MctsParameters& parameters) {
 std::ostream& operator<<(std::ostream& os,
                          const MctsParameters::UctStatistic& statistic) {
   os << "EXPLORATION_CONSTANT: " << statistic.EXPLORATION_CONSTANT
-     << " PROGRESSIVE_WIDENING_ENABLED: "
-     << statistic.PROGRESSIVE_WIDENING_ENABLED
-     << " PROGRESSIVE_WIDENING_ALPHA: " << statistic.PROGRESSIVE_WIDENING_ALPHA
      << " LOWER_BOUND: " << statistic.LOWER_BOUND
      << " UPPER_BOUND: " << statistic.UPPER_BOUND;
   return os;
