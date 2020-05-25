@@ -8,8 +8,6 @@
 
 #include "ltl/rule_monitor.h"
 
-using ltl::RewardPriority;
-
 struct CrossingStateParameter {
   unsigned int num_other_agents;
   int state_x_length;
@@ -34,6 +32,6 @@ struct CrossingStateParameter {
   bool merge;
 };
 
-CrossingStateParameter make_default_crossing_state_parameters();
+CrossingStateParameter MakeDefaultCrossingStateParameters();
 
 #endif  // TEST_CROSSING_TEST_CROSSING_STATE_PARAMETER_H_

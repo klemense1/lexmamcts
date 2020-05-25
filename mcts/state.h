@@ -76,7 +76,7 @@ public:
 
     std::shared_ptr<Implementation> Execute(const JointAction &joint_action, std::vector<Reward>& rewards) const;
 
-    std::vector<Reward> GetFinalReward() const;
+    std::vector<Reward> GetTerminalReward() const;
 
     std::shared_ptr<Implementation> Clone() const;
 
@@ -131,8 +131,8 @@ inline std::string StateInterface<Implementation>::PrintState() const {
 }
 
 template<typename Implementation>
-inline std::vector<Reward> StateInterface<Implementation>::GetFinalReward() const {
-    return impl().GetFinalReward();
+inline std::vector<Reward> StateInterface<Implementation>::GetTerminalReward() const {
+    return impl().GetTerminalReward();
 }
 
 

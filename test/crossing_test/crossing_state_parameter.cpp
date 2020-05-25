@@ -6,7 +6,7 @@
 #include "test/crossing_test/crossing_state_parameter.h"
 #include "test/crossing_test/common.hpp"
 
-CrossingStateParameter make_default_crossing_state_parameters() {
+CrossingStateParameter MakeDefaultCrossingStateParameters() {
   CrossingStateParameter p;
   p.num_other_agents = 1;
   p.state_x_length = 100;

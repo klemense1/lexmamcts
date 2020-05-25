@@ -10,7 +10,7 @@ using mcts::evaluation::QValWriter;
 
 TestRunner::Result TestRunner::RunTest(size_t num_iter, int max_steps) {
   // Always recreate test environment to isolate test iterations
-  latest_test_env_ = factory_->make_test_env();
+  latest_test_env_ = factory_->MakeTestEnv();
   int steps = 0;
   std::vector<Reward> step_reward(
       latest_test_env_->crossing_state_parameter_.num_other_agents + 1);
@@ -20,15 +20,14 @@ TestRunner::Result TestRunner::RunTest(size_t num_iter, int max_steps) {
       latest_test_env_->mcts_parameters_.thres_uct_statistic_.THRESHOLD,
       q_val_fname_,
       latest_test_env_->crossing_state_parameter_.action_map.size());
-  while (!latest_test_env_->state->is_terminal() && steps < max_steps) {
-    latest_test_env_->search(num_iter);
-    qw.WriteQVal(latest_test_env_->get_ego_qval(),
-                 latest_test_env_->get_jt()[0]);
-    latest_test_env_->state = latest_test_env_->state->execute(
-        latest_test_env_->get_jt(), step_reward);
-    latest_test_env_->state->reset_depth();
+  while (!latest_test_env_->state->IsTerminal() && steps < max_steps) {
+    latest_test_env_->Search(num_iter);
+    qw.WriteQVal(latest_test_env_->GetEgoQval(), latest_test_env_->GetJt()[0]);
+    latest_test_env_->state = latest_test_env_->state->Execute(
+        latest_test_env_->GetJt(), step_reward);
+    latest_test_env_->state->ResetDepth();
     VLOG(1) << "Iteration: " << steps
-            << ", Next state: " << latest_test_env_->state->sprintf()
+            << ", Next state: " << latest_test_env_->state->PrintState()
             << ", Ego step reward: " << step_reward[0].transpose();
     PrintLabels();
     PrintRuleStates();
@@ -36,7 +35,7 @@ TestRunner::Result TestRunner::RunTest(size_t num_iter, int max_steps) {
     latest_test_env_->state_history_.emplace_back(GetStateVector().transpose());
     ++steps;
   }
-  latest_test_env_->rewards += latest_test_env_->state->get_final_reward();
+  latest_test_env_->rewards += latest_test_env_->state->GetTerminalReward();
   LOG(INFO) << "History:" << latest_test_env_->state_history_;
   auto cumulated_ego_reward = latest_test_env_->rewards[0];
   Result r;
@@ -47,7 +46,7 @@ TestRunner::Result TestRunner::RunTest(size_t num_iter, int max_steps) {
   return r;
 }
 Eigen::VectorXi TestRunner::GetStateVector() const {
-  auto agent_states = latest_test_env_->state->get_agent_states();
+  auto agent_states = latest_test_env_->state->GetAgentStates();
   Eigen::VectorXi state = Eigen::VectorXi::Zero(agent_states.size());
   for (size_t i = 0; i < agent_states.size(); ++i) {
     state(i) = agent_states[i].x_pos;
@@ -66,12 +65,12 @@ ostream &TestRunner::Result::WriteHeader(ostream &os) {
   return os;
 }
 void TestRunner::PrintLabels() {
-  for (const auto &label : latest_test_env_->state->get_agent_labels(0)) {
-    VLOG(1) << label.first.get_label_str() << " : " << label.second;
+  for (const auto &label : latest_test_env_->state->GetAgentLabels(0)) {
+    VLOG(1) << label.first.GetLabelStr() << " : " << label.second;
   }
 }
 void TestRunner::PrintRuleStates() {
-  for (const auto &rs : latest_test_env_->state->get_rule_state_map()[0]) {
+  for (const auto &rs : latest_test_env_->state->GetRuleStateMap()[0]) {
     VLOG(1) << rs.second;
   }
 }

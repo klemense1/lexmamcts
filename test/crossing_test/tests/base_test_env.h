@@ -18,8 +18,6 @@
 #include "test/crossing_test/crossing_state.hpp"
 #include "test/crossing_test/label_evaluator/evaluator_label_at_position.h"
 #include "test/crossing_test/label_evaluator/evaluator_label_collision.h"
-#include "test/crossing_test/label_evaluator/evaluator_label_goal_reached.h"
-#include "test/crossing_test/label_evaluator/evaluator_label_other_goal_reached.h"
 #include "test/crossing_test/tests/util.h"
 
 using namespace mcts;
@@ -30,25 +28,26 @@ class BaseTestEnv {
   explicit BaseTestEnv(
       MctsParameters mcts_parameters = MakeDefaultMctsParameters(),
       CrossingStateParameter crossing_state_parameter =
-          make_default_crossing_state_parameters(),
+          MakeDefaultCrossingStateParameters(),
       std::vector<std::map<Rule, RuleMonitorSPtr>> automata =
-          make_default_automata(
-              make_default_crossing_state_parameters().num_other_agents + 1),
+          MakeDefaultAutomata(
+              MakeDefaultCrossingStateParameters().num_other_agents + 1),
       std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> label_evaluators =
-          make_default_labels(make_default_crossing_state_parameters()));
+          MakeDefaultLabels(MakeDefaultCrossingStateParameters()));
   ~BaseTestEnv();
 
-  static std::vector<std::map<Rule, RuleMonitorSPtr>> make_default_automata(size_t num_agents);
+  static std::vector<std::map<Rule, RuleMonitorSPtr>> MakeDefaultAutomata(size_t num_agents);
 
-  static std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> make_default_labels(
+  static std::vector<std::shared_ptr<EvaluatorLabelBase<World>>>
+  MakeDefaultLabels(
       const CrossingStateParameter &params);
 
-  virtual JointAction search(size_t num_iterations) = 0;
+  virtual JointAction Search(size_t num_iterations) = 0;
 
-  virtual std::map<unsigned long, Eigen::VectorXf> get_ego_qval() = 0;
-  const JointAction &get_jt() const;
-  void set_jt(const JointAction &jt);
-  const std::deque<JointAction> &get_action_history() const;
+  virtual std::map<unsigned long, Eigen::VectorXf> GetEgoQval() = 0;
+  const JointAction &GetJt() const;
+  void SetJt(const JointAction &jt);
+  const std::deque<JointAction> &GetActionHistory() const;
 
   const MctsParameters mcts_parameters_;
   const CrossingStateParameter crossing_state_parameter_;
@@ -60,10 +59,10 @@ class BaseTestEnv {
  protected:
   std::vector<std::map<Rule, RuleMonitorSPtr>> automata_;
 
-  RuleStateMap get_automata_vec() const;
+  RuleStateMap GetAutomataVec() const;
 
  private:
-  void create_state();
+  void CreateState();
 
   JointAction jt_;
   std::deque<JointAction> action_history_;

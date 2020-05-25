@@ -13,7 +13,7 @@
 #include <string>
 #include <vector>
 
-#include "ltl/evaluator_label_base.h"
+#include "label_evaluator/evaluator_label_base.h"
 #include "ltl/rule_monitor.h"
 #include "test/crossing_test/common.hpp"
 #include "test/crossing_test/crossing_state_parameter.h"
@@ -31,6 +31,8 @@ typedef std::vector<std::multimap<Rule, RuleState>> RuleStateMap;
 // actions, they get nearer to the terminal state
 class CrossingState : public mcts::StateInterface<CrossingState> {
  public:
+  typedef Actions ActionType;
+
   CrossingState(
       RuleStateMap rule_state_map,
       std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> label_evaluator,
@@ -42,57 +44,45 @@ class CrossingState : public mcts::StateInterface<CrossingState> {
       std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> label_evaluator,
       const CrossingStateParameter &parameters, int depth,
       const std::vector<bool> &terminal_agents);
-  ~CrossingState() {}
+  ~CrossingState() = default;
 
-  std::shared_ptr<CrossingState> clone() const;
+  std::shared_ptr<CrossingState> Clone() const;
 
-  std::shared_ptr<CrossingState> execute(const JointAction &joint_action,
+  std::shared_ptr<CrossingState> Execute(const JointAction &joint_action,
                                          std::vector<Reward> &rewards) const;
 
-  std::vector<Reward> get_final_reward() const;
+  std::vector<Reward> GetTerminalReward() const;
 
   template <typename ActionType = Actions>
-  ActionType get_last_action(const AgentIdx &agent_idx) const;
+  ActionType GetLastAction(const AgentIdx &agent_idx) const;
 
-  ActionIdx get_num_actions(AgentIdx agent_idx) const;
+  ActionIdx GetNumActions(AgentIdx agent_idx) const;
 
-  bool is_terminal() const;
+  bool IsTerminal() const;
 
-  const std::vector<AgentIdx> get_agent_idx() const;
+  const std::vector<AgentIdx> GetAgentIdx() const;
 
-  bool ego_goal_reached() const;
+  bool EgoGoalReached() const;
 
-  typedef Actions ActionType;
+  int GetEgoPos() const;
 
-  int get_ego_pos() const;
+  const std::vector<AgentState> &GetAgentStates() const;
 
-  const std::vector<AgentState> &get_agent_states() const;
+  const RuleStateMap &GetRuleStateMap() const;
 
-  const RuleStateMap &get_rule_state_map() const;
+  void ResetDepth();
 
-  void draw(Viewer *viewer) const;
+  std::string PrintState() const;
 
-  void reset_depth();
+  const CrossingStateParameter &GetParameters() const;
 
-  void update_rule_belief();
-
-  void reset_violations();
-
-  inline int distance_to_ego(const AgentIdx &other_agent_idx) const {
-    return agent_states_[ego_agent_idx].x_pos -
-           agent_states_[other_agent_idx + 1].x_pos;
-  }
-
-  std::string sprintf() const;
-  const CrossingStateParameter &get_parameters() const;
-
-  EvaluationMap get_agent_labels(AgentIdx agent_idx) const;
+  EvaluationMap GetAgentLabels(AgentIdx agent_idx) const;
 
  private:
-  std::vector<AgentState> step(const JointAction &joint_action) const;
-  Reward get_action_cost(ActionIdx action, AgentIdx agent_idx) const;
-  Reward get_shaping_reward(const AgentState &agent_state) const;
-  void fix_collision_positions(std::vector<AgentState> *agent_states) const;
+  std::vector<AgentState> Step(const JointAction &joint_action) const;
+  Reward GetActionCost(ActionIdx action, AgentIdx agent_idx) const;
+  Reward GetShapingReward(const AgentState &agent_state) const;
+  void FixCollisionPositions(std::vector<AgentState> *agent_states) const;
   std::vector<AgentState> agent_states_;
   bool terminal_;
   RuleStateMap rule_state_map_;

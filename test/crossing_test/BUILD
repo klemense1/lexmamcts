@@ -31,7 +31,7 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         ":common",
-        "//ltl:rule_monitor",
+        "@rule_monitor_project//ltl:rule_monitor",
         "//mcts",
         "//test/crossing_test/label_evaluator:label_evaluators",
         "@com_github_google_glog//:glog",

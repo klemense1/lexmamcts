@@ -59,7 +59,7 @@ public:
 
     }
 
-    accum_rewards += state->GetFinalReward();
+    accum_rewards += state->GetTerminalReward();
 
     Reward coop_sum = Reward::Zero(mcts_parameters_.REWARD_VEC_SIZE);
     coop_sum = std::accumulate(accum_rewards.begin(), accum_rewards.end(), coop_sum);

@@ -76,6 +76,6 @@ const Eigen::Vector2i &MoDeepSeaState::GetEgoPos() const {
   return ego_pos;
 }
 
-std::vector<Reward> MoDeepSeaState::GetFinalReward() const {
+std::vector<Reward> MoDeepSeaState::GetTerminalReward() const {
   return {Reward::Zero(2)};
 }

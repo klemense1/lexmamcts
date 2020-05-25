@@ -18,24 +18,24 @@ BaseTestEnv::BaseTestEnv(
               Reward::Zero(mcts_parameters.REWARD_VEC_SIZE)),
       automata_(std::move(automata)),
       jt_(2, static_cast<int>(Actions::FORWARD)) {
-  create_state();
+  CreateState();
 }
-std::vector<std::map<Rule, RuleMonitorSPtr>> BaseTestEnv::make_default_automata(size_t num_agents) {
+std::vector<std::map<Rule, RuleMonitorSPtr>> BaseTestEnv::MakeDefaultAutomata(size_t num_agents) {
   std::vector<std::map<Rule, RuleMonitorSPtr>> automata(num_agents);
-  automata[0].insert({Rule::NO_COLLISION, RuleMonitor::make_rule("G !collision", -1.0f, 0)});
+  automata[0].insert({Rule::NO_COLLISION, RuleMonitor::MakeRule("G !collision", -1.0f, 0)});
   // Same default rules for all agents
   for (size_t i = 1; i < automata.size(); ++i) {
     automata[i] = automata[0];
   }
   return automata;
 }
-std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> BaseTestEnv::make_default_labels(
+std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> BaseTestEnv::MakeDefaultLabels(
     const CrossingStateParameter &params) {
   std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> labels;
   labels.emplace_back(std::make_shared<EvaluatorLabelCollision>("collision", params.crossing_point));
   return labels;
 }
-RuleStateMap BaseTestEnv::get_automata_vec() const {
+RuleStateMap BaseTestEnv::GetAutomataVec() const {
   RuleStateMap aut_v(automata_.size());
   std::vector<int> agent_ids(automata_.size(), 0);
   std::iota(agent_ids.begin(), agent_ids.end(), 0);
@@ -46,7 +46,7 @@ RuleStateMap BaseTestEnv::get_automata_vec() const {
     others.erase(others.begin() + i);
     for (const auto &it : automata_[i]) {
       VLOG(1) << *(it.second);
-      auto rule_states = it.second->make_rule_state(others, {});
+      auto rule_states = it.second->MakeRuleState(others, {});
       for (const auto &rs : rule_states) {
         aut_v[i].insert({it.first, rs});
       }
@@ -54,15 +54,15 @@ RuleStateMap BaseTestEnv::get_automata_vec() const {
   }
   return aut_v;
 }
-void BaseTestEnv::create_state() {
-  RuleStateMap aut_v = get_automata_vec();
+void BaseTestEnv::CreateState() {
+  RuleStateMap aut_v = GetAutomataVec();
   state = std::make_shared<CrossingState>(aut_v, label_evaluators_,
                                           crossing_state_parameter_);
 }
-void BaseTestEnv::set_jt(const JointAction &jt) {
+void BaseTestEnv::SetJt(const JointAction &jt) {
   jt_ = jt;
   action_history_.emplace_back(jt);
 }
-const std::deque<JointAction> &BaseTestEnv::get_action_history() const { return action_history_; }
-const JointAction &BaseTestEnv::get_jt() const { return jt_; }
+const std::deque<JointAction> &BaseTestEnv::GetActionHistory() const { return action_history_; }
+const JointAction &BaseTestEnv::GetJt() const { return jt_; }
 BaseTestEnv::~BaseTestEnv() {}

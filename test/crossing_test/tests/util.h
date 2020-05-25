@@ -13,6 +13,7 @@
 
 using mcts::MctsParameters;
 using mcts::Reward;
+using mcts::ObjectiveVec;
 
 Eigen::MatrixXf RewardsToMat(std::vector<Reward> const &rewards);
 MctsParameters MakeDefaultMctsParameters();

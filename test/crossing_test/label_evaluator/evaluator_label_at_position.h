@@ -6,8 +6,8 @@
 #define MAMCTS_TEST_CROSSING_TEST_EVALUATOR_LABEL_AT_POSITION_H_
 
 #include <string>
-#include "ltl/evaluator_label_base.h"
 #include "test/crossing_test/common.hpp"
+#include "test/crossing_test/label_evaluator/evaluator_label_base.h"
 
 class EvaluatorLabelAtPosition : public EvaluatorLabelBase<World> {
  public:

@@ -49,7 +49,7 @@ class StageNode : public std::enable_shared_from_this<StageNode<S, SE, SO, H>> {
   using StageNodeWPtr = std::weak_ptr<StageNode<S, SE, SO, H>>;
   typedef std::unordered_map<JointAction, StageNodeSPtr, container_hash<JointAction>> StageChildMap;
   //< remembers joint rewards
-  //of state execute to avoid rerunning execute during node selection
+  //of state execute to avoid rerunning Execute during node selection
 
   // Environment State
   std::shared_ptr<S> state_;
@@ -210,10 +210,10 @@ bool StageNode<S, SE, SO, H>::SelectOrExpand(StageNodeSPtr &next_node,
     children_[joint_action] = next_node;
     joint_action_counter_[joint_action] = 0;
 #ifdef PLAN_DEBUG_INFO
-    //     std::cout << "expanded node state: " << state_->execute(joint_action, rewards)->PrintState();
+    //     std::cout << "expanded node state: " << state_->Execute(joint_action, rewards)->PrintState();
 #endif
     if (next_node->GetState()->IsTerminal()) {
-      rewards += next_node->GetState()->GetFinalReward();
+      rewards += next_node->GetState()->GetTerminalReward();
     }
     // collect intermediate rewards and selected action indexes
     FillRewards(rewards, joint_action);

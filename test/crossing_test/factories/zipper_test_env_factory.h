@@ -20,15 +20,14 @@ template <class Stat>
 class ZipperTestEnvFactory : public ITestEnvFactory {
  public:
   ZipperTestEnvFactory(float slack_factor = 0.2f)
-      : thres_(std::move(ObjectiveVec::Zero(3))), slack_factor_(slack_factor) {
+      : thres_(ObjectiveVec::Zero(3)), slack_factor_(slack_factor) {
       thres_ << -0.37, -0.37, std::numeric_limits<ObjectiveVec::Scalar>::max();
   }
   ZipperTestEnvFactory(const ObjectiveVec &thres, float slack_factor) : thres_(thres), slack_factor_(slack_factor) {}
-  std::shared_ptr<BaseTestEnv> make_test_env() override {
+  std::shared_ptr<BaseTestEnv> MakeTestEnv() override {
     const std::string zip_formula =
         "(in_direct_front_x#0 & !merged_e & (in_direct_front_x#0 | merged_x#0) U merged_e) -> G(merged_e & merged_x#0 "
         "-> !in_direct_front_x#0)";
-    //        "G((!merged_e & !merged_x#0) -> in_direct_front_x#0) -> G(merged_e -> !in_direct_front_x#0)";
 
     auto mcts_params = MakeDefaultMctsParameters();
     mcts_params.thres_uct_statistic_.THRESHOLD = thres_;
@@ -43,7 +42,8 @@ class ZipperTestEnvFactory : public ITestEnvFactory {
     mcts_params.e_greedy_uct_statistic_.MINIMUM_EPSILON = 0.01;
     mcts_params.uct_statistic.EXPLORATION_CONSTANT << 0.8, 0.8, 0.8;
 
-    CrossingStateParameter crossing_params = make_default_crossing_state_parameters();
+    CrossingStateParameter crossing_params =
+        MakeDefaultCrossingStateParameters();
     crossing_params.num_other_agents = 2;
     crossing_params.ego_goal_reached_position = 1000;
     crossing_params.state_x_length = 1000;
@@ -54,11 +54,12 @@ class ZipperTestEnvFactory : public ITestEnvFactory {
     crossing_params.speed_deviation_weight = 5.0f;
     crossing_params.action_map.erase(crossing_params.action_map.begin() + 2);
 
-    auto automata = BaseTestEnv::make_default_automata(crossing_params.num_other_agents + 1);
+    auto automata =
+        BaseTestEnv::MakeDefaultAutomata(crossing_params.num_other_agents + 1);
     for (auto &aut : automata) {
-      aut.insert({Rule::ZIP, RuleMonitor::make_rule(zip_formula, -1, 1)});
+      aut.insert({Rule::ZIP, RuleMonitor::MakeRule(zip_formula, -1, 1)});
     }
-    auto labels = BaseTestEnv::make_default_labels(crossing_params);
+    auto labels = BaseTestEnv::MakeDefaultLabels(crossing_params);
     labels.clear();
     labels.emplace_back(std::make_shared<EvaluatorLabelCollision>("collision", crossing_params.crossing_point));
     labels.emplace_back(std::make_shared<EvaluatorLabelEgoRange>("merged_e", crossing_params.crossing_point,
@@ -68,7 +69,7 @@ class ZipperTestEnvFactory : public ITestEnvFactory {
     labels.emplace_back(std::make_shared<EvaluatorLabelInDirectFront>("in_direct_front_x"));
 
     auto env = std::make_shared<CrossingTestEnv<Stat>>(mcts_params, crossing_params, automata, labels);
-    auto agent_states = env->state->get_agent_states();
+    auto agent_states = env->state->GetAgentStates();
     agent_states[0].id = 0;
     agent_states[1].id = 1;
     agent_states[2].id = 2;
@@ -78,7 +79,7 @@ class ZipperTestEnvFactory : public ITestEnvFactory {
     agent_states[1].lane = agent_states[0].lane;
     agent_states[1].init_lane = agent_states[0].init_lane;
 
-    env->state = std::make_shared<CrossingState>(agent_states, false, env->state->get_rule_state_map(),
+    env->state = std::make_shared<CrossingState>(agent_states, false, env->state->GetRuleStateMap(),
                                                  env->label_evaluators_, env->crossing_state_parameter_, 0,
                                                  std::vector<bool>(agent_states.size(), false));
     return env;

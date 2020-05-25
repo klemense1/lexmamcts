@@ -12,7 +12,7 @@
 
 class ITestEnvFactory {
  public:
-  virtual std::shared_ptr<BaseTestEnv> make_test_env() = 0;
+  virtual std::shared_ptr<BaseTestEnv> MakeTestEnv() = 0;
 };
 
 #endif //MAMCTS_TEST_CROSSING_TEST_TESTS_TEST_ENV_FACTORY_H_

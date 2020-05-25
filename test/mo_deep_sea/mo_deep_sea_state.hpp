@@ -30,7 +30,7 @@ class MoDeepSeaState : public mcts::StateInterface<MoDeepSeaState> {
   virtual std::string PrintState() const;
   virtual ~MoDeepSeaState() = default;
   const Eigen::Vector2i &GetEgoPos() const;
-  std::vector<Reward> GetFinalReward() const;
+  std::vector<Reward> GetTerminalReward() const;
  private:
   SeaMap sea_map;
   Eigen::Vector2i ego_pos;

@@ -24,13 +24,7 @@ enum class Actions {
 
 enum Rule {
   NO_COLLISION = 0,
-  REACH_GOAL,
-  NO_SPEEDING,
-  GIVE_WAY,
-  LEAVE_INTERSECTION,
-  REACH_GOAL_FIRST,
   ZIP,
-  OBSTACLE,
   NUM,
 };
 
