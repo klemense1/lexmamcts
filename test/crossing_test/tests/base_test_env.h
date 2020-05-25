@@ -13,7 +13,6 @@
 
 #include "mcts/mcts.h"
 #include "mcts/random_generator.h"
-#include "mcts/statistics/pareto_uct_statistic.h"
 #include "mcts/statistics/slack_uct_statistic.h"
 #include "test/crossing_test/common.hpp"
 #include "test/crossing_test/crossing_state.hpp"
