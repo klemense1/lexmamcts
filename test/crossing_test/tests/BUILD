@@ -4,7 +4,6 @@ cc_library(
         "util.cpp",
     ],
     hdrs = [
-        "crossing_state_episode_runner.h",
         "util.h",
     ],
     visibility = ["//visibility:public"],
@@ -52,56 +51,9 @@ cc_library(
 )
 
 cc_binary(
-    name = "convergence_comparison",
-    srcs = [
-        "convergence_comparison.cpp",
-    ],
-    deps = [
-        ":test_runner",
-        ":util",
-        "//mcts",
-        "//test/crossing_test:crossing_state",
-        "//test/crossing_test/factories",
-        "@com_github_google_glog//:glog",
-    ],
-)
-
-cc_binary(
     name = "threshold_comparison",
     srcs = [
         "threshold_comparison.cpp",
-    ],
-    deps = [
-        ":test_runner",
-        ":util",
-        "//mcts",
-        "//test/crossing_test:crossing_state",
-        "//test/crossing_test:state_file_writer",
-        "//test/crossing_test/factories",
-        "@com_github_google_glog//:glog",
-    ],
-)
-
-cc_binary(
-    name = "performance",
-    srcs = [
-        "performance.cpp",
-    ],
-    deps = [
-        ":test_runner",
-        ":util",
-        "//evaluation",
-        "//mcts",
-        "//test/crossing_test:crossing_state",
-        "//test/crossing_test/factories",
-        "@com_github_google_glog//:glog",
-    ],
-)
-
-cc_binary(
-    name = "pareto_convergence",
-    srcs = [
-        "pareto_convergence.cpp",
     ],
     deps = [
         ":test_runner",

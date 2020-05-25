@@ -21,7 +21,6 @@ class ZipperTestEnvFactory : public ITestEnvFactory {
  public:
   ZipperTestEnvFactory(float slack_factor = 0.2f)
       : thres_(std::move(ObjectiveVec::Zero(3))), slack_factor_(slack_factor) {
-//    thres_ << -0.79, -0.68, std::numeric_limits<ObjectiveVec::Scalar>::max();
       thres_ << -0.37, -0.37, std::numeric_limits<ObjectiveVec::Scalar>::max();
   }
   ZipperTestEnvFactory(const ObjectiveVec &thres, float slack_factor) : thres_(thres), slack_factor_(slack_factor) {}
