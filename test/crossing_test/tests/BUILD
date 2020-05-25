@@ -51,22 +51,6 @@ cc_library(
     ],
 )
 
-cc_library(
-    name = "crossing_state_episode_runner",
-    hdrs = ["crossing_state_episode_runner.h"],
-    deps = [":crossing_test_env"],
-)
-
-py_test(
-    name = "py_crossing_state_test",
-    srcs = ["py_crossing_state_test.py"],
-    data = ["//python/bindings:mamcts.so"],
-    imports = ["../../python/bindings"],
-    deps = [
-        "//test/crossing_test:pyviewer",
-    ],
-)
-
 cc_binary(
     name = "convergence_comparison",
     srcs = [
