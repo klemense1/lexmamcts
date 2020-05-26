@@ -24,6 +24,7 @@ class EGreedyStatistic : public UctStatistic<EGreedyStatistic> {
                                std::vector<int> &unexpanded_actions,
                                unsigned int iteration) {
     ActionIdx selected_action;
+    // TODO(@cirrostratus1): Parameters
     const double c = 10.0;
     const double d = 0.12;
     const double current_epsilon = std::min(1.0, c /( d * d *

@@ -24,9 +24,6 @@ MctsParameters MakeDefaultMctsParameters() {
   param.COOP_FACTOR = 0.0;
   param.DISCOUNT_FACTOR = 0.9;
 
-  param.uct_statistic.PROGRESSIVE_WIDENING_ENABLED = false;
-  param.uct_statistic.PROGRESSIVE_WIDENING_ALPHA = 0.5;
-
   param.uct_statistic.EXPLORATION_CONSTANT = Eigen::VectorXd::Constant(param.REWARD_VEC_SIZE, 0.7);
   param.uct_statistic.LOWER_BOUND = ObjectiveVec::Zero(param.REWARD_VEC_SIZE);
   param.uct_statistic.LOWER_BOUND << -1010.0f;
@@ -61,10 +58,10 @@ public:
             }
 
 
-            const AgentIdx num_agents = start_node->state_->get_agent_idx().size();
+            const AgentIdx num_agents = start_node->state_->GetAgentIdx().size();
 
 
-            std::vector<UctStatistic<>> expected_statistics(num_agents, UctStatistic<>(start_node->get_state()->get_num_actions(0),
+            std::vector<UctStatistic<>> expected_statistics(num_agents, UctStatistic<>(start_node->GetState()->GetNumActions(0),
                                MakeDefaultMctsParameters()));
 
             // ----- RECURSIVE ESTIMATION OF QVALUES AND COUNTS downwards tree -----------------------
@@ -84,10 +81,10 @@ public:
                 auto& child = it->second;
                 std::vector<Reward> rewards;
                 auto& joint_action = child->joint_action_;
-                auto new_state =  start_node->state_->execute(joint_action, rewards);
+                auto new_state =  start_node->state_->Execute(joint_action, rewards);
 
                 // ---------------------- Expected statistics calculation --------------------------
-                bool is_first_child_and_not_parent_root = (it == start_node->children_.begin()) && (!start_node->is_root());
+                bool is_first_child_and_not_parent_root = (it == start_node->children_.begin()) && (!start_node->IsRoot());
                 expected_statistics = expected_total_node_visits(it->second->ego_int_node_, S::ego_agent_idx, is_first_child_and_not_parent_root, expected_statistics);
                 expected_statistics = expected_action_count(it->second->ego_int_node_, S::ego_agent_idx, joint_action, is_first_child_and_not_parent_root, expected_statistics);
                 expected_statistics = expected_action_value(it->second->ego_int_node_, start_node->ego_int_node_,
@@ -97,10 +94,10 @@ public:
                 for (uint i = 0; i < child->other_int_nodes_.size(); ++i)  {
                     const auto child_int_node = child->other_int_nodes_[i];
                     const auto parent_int_node = start_node->other_int_nodes_[i];
-                    expected_statistics = expected_total_node_visits(child_int_node, child_int_node.get_agent_idx(), is_first_child_and_not_parent_root, expected_statistics);
-                    expected_statistics = expected_action_count(child_int_node, child_int_node.get_agent_idx(),joint_action, is_first_child_and_not_parent_root, expected_statistics );
-                    expected_statistics = expected_action_value(child_int_node, parent_int_node, child_int_node.get_agent_idx(), joint_action, rewards, expected_statistics,
-                                            action_occurence(start_node,joint_action[child_int_node.get_agent_idx()] , child_int_node.get_agent_idx()));
+                    expected_statistics = expected_total_node_visits(child_int_node, child_int_node.GetAgentIdx(), is_first_child_and_not_parent_root, expected_statistics);
+                    expected_statistics = expected_action_count(child_int_node, child_int_node.GetAgentIdx(),joint_action, is_first_child_and_not_parent_root, expected_statistics );
+                    expected_statistics = expected_action_value(child_int_node, parent_int_node, child_int_node.GetAgentIdx(), joint_action, rewards, expected_statistics,
+                                            action_occurence(start_node,joint_action[child_int_node.GetAgentIdx()] , child_int_node.GetAgentIdx()));
                 }
             }
 
@@ -175,12 +172,12 @@ private:
     void compare_expected_existing(const std::vector<UctStatistic<>>& expected_statistics,  const IntermediateNode<S,Stats>& inter_node,
                                    unsigned id, unsigned depth) {
         // Compare node visits
-        const AgentIdx agent_idx = inter_node.get_agent_idx();
+        const AgentIdx agent_idx = inter_node.GetAgentIdx();
         auto recursive_node_visit = expected_statistics[agent_idx].total_node_visits_;
         auto existing_node_visit = inter_node.total_node_visits_;
         EXPECT_EQ(existing_node_visit, recursive_node_visit) << "Unexpected recursive node visits for node " << id << " at depth " << depth << " for agent " << (int)agent_idx;
 
-        ASSERT_EQ(inter_node.state_.get_num_actions(agent_idx),AgentIdx(inter_node.ucb_statistics_.size())) << "Internode state and statistic are of unequal length";
+        ASSERT_EQ(inter_node.state_.GetNumActions(agent_idx),AgentIdx(inter_node.ucb_statistics_.size())) << "Internode state and statistic are of unequal length";
         for (auto action_it = inter_node.ucb_statistics_.begin(); action_it != inter_node.ucb_statistics_.end(); ++action_it)
         {   
             ActionIdx action_idx = action_it->first;

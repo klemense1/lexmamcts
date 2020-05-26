@@ -18,12 +18,12 @@ public:
     SimpleState(int length) : state_length_(length), winning_state_length_(10), loosing_state_length_(-1) {};
     ~SimpleState() {};
 
-    std::shared_ptr<SimpleState> clone() const
+    std::shared_ptr<SimpleState> Clone() const
     {
         return std::make_shared<SimpleState>(*this);
     }
 
-    std::shared_ptr<SimpleState> execute(const JointAction& joint_action, std::vector<Reward>& rewards ) const {
+    std::shared_ptr<SimpleState> Execute(const JointAction& joint_action, std::vector<Reward>& rewards ) const {
         // normally we map each single action value in joint action with a map to the floating point action. Here, not required
         rewards.resize(2);
         rewards[0](0) = 0; rewards[1](0) = 0;
@@ -54,19 +54,19 @@ public:
 
     }
 
-    ActionIdx get_num_actions(AgentIdx agent_idx) const {
+    ActionIdx GetNumActions(AgentIdx agent_idx) const {
         return 2;
     }
 
-    bool is_terminal() const {
+    bool IsTerminal() const {
         return state_length_ >= winning_state_length_ || state_length_ <= loosing_state_length_;
     }
 
-    const std::vector<AgentIdx> get_agent_idx() const {
+    const std::vector<AgentIdx> GetAgentIdx() const {
         return std::vector<AgentIdx>{0,1};
     }
 
-    std::string sprintf() const
+    std::string PrintState() const
     {
         std::stringstream ss;
         ss << "SimpleState (state_length: " << state_length_ << ")";

@@ -8,7 +8,7 @@ cc_library(
     ],
 )
 
-cc_binary(
+cc_test(
     name = "mo_deep_sea_test",
     srcs = [
         "mo_deep_sea_test.cpp",

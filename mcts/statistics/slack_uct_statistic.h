@@ -10,7 +10,6 @@
 #include <utility>
 #include <vector>
 
-#include "boost/math/distributions/students_t.hpp"
 #include "glog/logging.h"
 
 #include "mcts/statistics/uct_statistic.h"
