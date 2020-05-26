@@ -1,15 +1,14 @@
-// Copyright (c) 2019 Julian Bernhard
+// Copyright (c) 2020 Klemens Esterle, Luis Gressenbuch, Julian Bernhard
 //
 // This work is licensed under the terms of the MIT license.
 // For a copy, see <https://opensource.org/licenses/MIT>.
-// ========================================================
 
+#include <algorithm>
 #include <tuple>
 #include <utility>
 
 #include "gridworld/grid_world_state.hpp"
 #include "gridworld/label_evaluator/evaluator_label_collision.h"
-#include "mcts/mcts.h"
 
 GridWorldState::GridWorldState(
     RuleStateMap rule_state_map,
@@ -129,7 +128,7 @@ std::vector<AgentState> GridWorldState::Step(
   return next_agent_states;
 }
 Reward GridWorldState::GetActionCost(ActionIdx action,
-                                    AgentIdx agent_idx) const {
+                                     AgentIdx agent_idx) const {
   Reward reward = Reward::Zero(parameters_.reward_vec_size);
   reward(reward.rows() - 1) += -std::abs(parameters_.action_map[action] -
                                          static_cast<int>(Actions::FORWARD)) *

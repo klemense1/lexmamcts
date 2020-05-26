@@ -1,9 +1,13 @@
+// Copyright (c) 2020 Klemens Esterle, Luis Gressenbuch
 //
-// Created by Luis Gressenbuch on 17.01.20.
-// Copyright (c) 2020 Luis Gressenbuch. All rights reserved.
-//
+// This work is licensed under the terms of the MIT license.
+// For a copy, see <https://opensource.org/licenses/MIT>.
 
-#include "evaluator_label_multi_agent.h"
+#include "gridworld/label_evaluator/evaluator_label_multi_agent.h"
+
+#include <utility>
+#include <vector>
+
 EvaluatorLabelMultiAgent::EvaluatorLabelMultiAgent(const std::string& label_str)
     : EvaluatorLabelBase(label_str) {}
 std::vector<std::pair<ltl::Label, bool>> EvaluatorLabelMultiAgent::evaluate(

@@ -1,9 +1,12 @@
+// Copyright (c) 2020 Klemens Esterle, Luis Gressenbuch
 //
-// Created by Luis Gressenbuch on 15.11.19.
-// Copyright (c) 2019 Luis Gressenbuch. All rights reserved.
-//
+// This work is licensed under the terms of the MIT license.
+// For a copy, see <https://opensource.org/licenses/MIT>.
 
-#include "evaluator_label_at_position.h"
+#include "gridworld/label_evaluator/evaluator_label_at_position.h"
+
+#include <utility>
+#include <vector>
 
 EvaluatorLabelAtPosition::EvaluatorLabelAtPosition(const std::string &label_str,
                                                    const int position)
@@ -15,10 +18,12 @@ std::vector<std::pair<ltl::Label, bool>> EvaluatorLabelAtPosition::evaluate(
            ((state.first.x_pos - static_cast<int>(state.first.last_action)) <
                 position_ &&
             state.first.x_pos >= position_) ||
-            // Were right, now left of position
-               ((state.first.x_pos - static_cast<int>(state.first.last_action)) >
-                   position_ &&
-                   state.first.x_pos <= position_) ||
+               // Were right, now left of position
+               ((state.first.x_pos -
+                 static_cast<int>(state.first.last_action)) > position_ &&
+                state.first.x_pos <= position_) ||
                state.first.x_pos == position_}};
 }
-void EvaluatorLabelAtPosition::set_position(int position) { position_ = position; }
+void EvaluatorLabelAtPosition::set_position(int position) {
+  position_ = position;
+}

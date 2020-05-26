@@ -1,17 +1,20 @@
+// Copyright (c) 2020 Klemens Esterle, Luis Gressenbuch
 //
-// Created by Luis Gressenbuch on 02.01.20.
-// Copyright (c) 2020 Luis Gressenbuch. All rights reserved.
-//
+// This work is licensed under the terms of the MIT license.
+// For a copy, see <https://opensource.org/licenses/MIT>.
 
 #include "gridworld/tests/base_test_env.h"
-#include <utility>
+
+#include <limits>
+
 #include "gridworld/label_evaluator/evaluator_label_ego_range.h"
 #include "gridworld/label_evaluator/evaluator_label_in_direct_front.h"
 #include "gridworld/label_evaluator/evaluator_label_in_range.h"
 
-const char* BaseTestEnv::ZIP_FORMULA = "(in_direct_front_x#0 & !merged_e & (in_direct_front_x#0 | merged_x#0) U "
-                                                                        "merged_e) -> G(merged_e & merged_x#0 "
-                                                                        "-> !in_direct_front_x#0)";
+const char *BaseTestEnv::ZIP_FORMULA =
+    "(in_direct_front_x#0 & !merged_e & (in_direct_front_x#0 | merged_x#0) U "
+    "merged_e) -> G(merged_e & merged_x#0 "
+    "-> !in_direct_front_x#0)";
 
 BaseTestEnv::BaseTestEnv(const ObjectiveVec &thres)
     : mcts_parameters(MakeMctsParameters()),
@@ -98,8 +101,8 @@ std::vector<std::map<Rule, RuleMonitorSPtr>> BaseTestEnv::MakeAutomata(
   }
   return automata;
 }
-std::vector<std::shared_ptr<EvaluatorLabelBase<World>>>
-BaseTestEnv::MakeLabels(const GridWorldStateParameter &params) {
+std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> BaseTestEnv::MakeLabels(
+    const GridWorldStateParameter &params) {
   std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> labels;
   labels.emplace_back(std::make_shared<EvaluatorLabelCollision>(
       "collision", params.merging_point));

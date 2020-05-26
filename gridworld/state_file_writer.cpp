@@ -1,12 +1,12 @@
+// Copyright (c) 2020 Klemens Esterle, Luis Gressenbuch
 //
-// Created by Luis Gressenbuch on 02.01.20.
-// Copyright (c) 2020 Luis Gressenbuch. All rights reserved.
-//
+// This work is licensed under the terms of the MIT license.
+// For a copy, see <https://opensource.org/licenses/MIT>.
 
-#include "state_file_writer.h"
+#include "gridworld/state_file_writer.h"
 
 void StateFileWriter::write_multi_timestep(
-    const std::vector<Eigen::MatrixXi>& states) {
+    const std::vector<Eigen::MatrixXi> &states) {
   for (const auto &t : states) {
     ofstream_ << timestamp_++;
     for (const auto &agent_state : t.row(0)) {

@@ -1,43 +1,46 @@
+// Copyright (c) 2020 Klemens Esterle, Luis Gressenbuch
 //
-// Created by Luis Gressenbuch on 15.11.19.
-// Copyright (c) 2019 Luis Gressenbuch. All rights reserved.
-//
+// This work is licensed under the terms of the MIT license.
+// For a copy, see <https://opensource.org/licenses/MIT>.
 
 #ifndef MAMCTS_TEST_CROSSING_TEST_TESTS_TEST_RUNNER_H_
 #define MAMCTS_TEST_CROSSING_TEST_TESTS_TEST_RUNNER_H_
 
+#include <memory>
 #include <ostream>
+#include <string>
 #include <utility>
 #include "glog/logging.h"
 
 #include "gridworld/tests/grid_world_env.h"
 
-using std::vector;
-using std::ostream;
-using std::ofstream;
-using std::stringstream;
-using Eigen::MatrixXf;
 using Eigen::ArrayXi;
+using Eigen::MatrixXf;
 using mcts::JointReward;
+using std::ofstream;
+using std::ostream;
+using std::stringstream;
+using std::vector;
 
 class TestRunner {
  public:
-
   struct Result {
-    Result() :  collision(false), violation(false){};
+    Result() : collision(false), violation(false) {}
     friend ostream &operator<<(ostream &os, const Result &result);
     static ostream &WriteHeader(ostream &os);
     int pos;
     float value;
     bool collision;
     bool violation;
+
    private:
-    static inline const char* BoolToString(bool b) {
+    static inline const char *BoolToString(bool b) {
       return b ? "true" : "false";
     }
   };
 
-  explicit TestRunner(std::shared_ptr<BaseTestEnv> test_env) : latest_test_env_(std::move(test_env)), q_val_fname_("/tmp/q_val.dat") {};
+  explicit TestRunner(std::shared_ptr<BaseTestEnv> test_env)
+      : latest_test_env_(std::move(test_env)), q_val_fname_("/tmp/q_val.dat") {}
   Result RunTest(size_t num_iter, int max_steps = 40);
   const std::shared_ptr<BaseTestEnv> &GetLatestTestEnv() const;
   Eigen::VectorXi GetStateVector() const;
@@ -50,4 +53,4 @@ class TestRunner {
   std::string q_val_fname_;
 };
 
-#endif //MAMCTS_TEST_CROSSING_TEST_TESTS_TEST_RUNNER_H_
+#endif  // MAMCTS_TEST_CROSSING_TEST_TESTS_TEST_RUNNER_H_

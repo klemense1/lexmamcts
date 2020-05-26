@@ -1,4 +1,4 @@
-// Copyright (c) 2019 fortiss GmbH
+// Copyright (c) 2020 Klemens Esterle, Luis Gressenbuch, Julian Bernhard
 //
 // This work is licensed under the terms of the MIT license.
 // For a copy, see <https://opensource.org/licenses/MIT>.
@@ -43,7 +43,7 @@ class GridWorldState : public mcts::StateInterface<GridWorldState> {
   std::shared_ptr<GridWorldState> Clone() const;
 
   std::shared_ptr<GridWorldState> Execute(const JointAction &joint_action,
-                                         std::vector<Reward> &rewards) const;
+                                          std::vector<Reward> &rewards) const;
 
   std::vector<Reward> GetTerminalReward() const;
 

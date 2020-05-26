@@ -1,7 +1,7 @@
+// Copyright (c) 2020 Klemens Esterle, Luis Gressenbuch
 //
-// Created by Luis Gressenbuch on 02.01.20.
-// Copyright (c) 2020 Luis Gressenbuch. All rights reserved.
-//
+// This work is licensed under the terms of the MIT license.
+// For a copy, see <https://opensource.org/licenses/MIT>.
 
 #ifndef TEST_CROSSING_TEST_TESTS_BASE_TEST_ENV_H_
 #define TEST_CROSSING_TEST_TESTS_BASE_TEST_ENV_H_
@@ -30,7 +30,8 @@ class BaseTestEnv {
   static GridWorldStateParameter MakeGridWorldStateParameters();
   static std::vector<std::map<Rule, RuleMonitorSPtr>> MakeAutomata(
       size_t num_agents);
-  static std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> MakeLabels(const GridWorldStateParameter &params);
+  static std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> MakeLabels(
+      const GridWorldStateParameter &params);
 
   virtual JointAction Search(size_t num_iterations) = 0;
   virtual std::map<unsigned long, Eigen::VectorXf> GetEgoQval() = 0;
@@ -47,7 +48,7 @@ class BaseTestEnv {
   std::shared_ptr<GridWorldState> state;
 
   static const int NUM_AGENTS = 3;
-  static const char*ZIP_FORMULA;
+  static const char *ZIP_FORMULA;
 
  protected:
   RuleStateMap GetAutomataVec() const;

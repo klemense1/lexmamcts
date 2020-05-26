@@ -1,11 +1,15 @@
+// Copyright (c) 2020 Klemens Esterle, Luis Gressenbuch
 //
-// Created by luis on 15.10.19.
-//
+// This work is licensed under the terms of the MIT license.
+// For a copy, see <https://opensource.org/licenses/MIT>.
 
 #ifndef MAMCTS_TEST_CROSSING_TEST_EVALUATOR_LABEL_AT_POSITION_H_
 #define MAMCTS_TEST_CROSSING_TEST_EVALUATOR_LABEL_AT_POSITION_H_
 
 #include <string>
+#include <utility>
+#include <vector>
+
 #include "gridworld/common.hpp"
 #include "gridworld/label_evaluator/evaluator_label_base.h"
 
@@ -20,4 +24,4 @@ class EvaluatorLabelAtPosition : public EvaluatorLabelBase<World> {
   int position_;
 };
 
-#endif //MAMCTS_TEST_CROSSING_TEST_EVALUATOR_LABEL_AT_POSITION_H_
+#endif  // MAMCTS_TEST_CROSSING_TEST_EVALUATOR_LABEL_AT_POSITION_H_

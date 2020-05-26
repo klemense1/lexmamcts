@@ -1,4 +1,4 @@
-// Copyright (c) 2019 fortiss GmbH
+// Copyright (c) 2020 Klemens Esterle, Luis Gressenbuch
 //
 // This work is licensed under the terms of the MIT license.
 // For a copy, see <https://opensource.org/licenses/MIT>.
@@ -14,12 +14,7 @@
 
 using mcts::ActionIdx;
 
-enum class Actions {
-  WAIT = 0,
-  FORWARD = 1,
-  BACKWARD = -1,
-  NUM = 4
-};
+enum class Actions { WAIT = 0, FORWARD = 1, BACKWARD = -1, NUM = 4 };
 
 enum Rule {
   NO_COLLISION = 0,

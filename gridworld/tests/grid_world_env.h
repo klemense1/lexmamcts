@@ -1,11 +1,13 @@
+// Copyright (c) 2020 Klemens Esterle, Luis Gressenbuch
 //
-// Created by Luis Gressenbuch on 04.11.19.
-// Copyright (c) 2019 Luis Gressenbuch. All rights reserved.
-//
+// This work is licensed under the terms of the MIT license.
+// For a copy, see <https://opensource.org/licenses/MIT>.
 
 #ifndef MAMCTS_TEST_CROSSING_TEST_CROSSING_TEST_ENV_H_
 #define MAMCTS_TEST_CROSSING_TEST_CROSSING_TEST_ENV_H_
 
+#include <limits>
+#include <map>
 #include <utility>
 
 #include "gridworld/tests/base_test_env.h"

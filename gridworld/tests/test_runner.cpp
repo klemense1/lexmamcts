@@ -1,10 +1,14 @@
+// Copyright (c) 2020 Klemens Esterle, Luis Gressenbuch
 //
-// Created by Luis Gressenbuch on 15.11.19.
-// Copyright (c) 2019 Luis Gressenbuch. All rights reserved.
-//
+// This work is licensed under the terms of the MIT license.
+// For a copy, see <https://opensource.org/licenses/MIT>.
 
-#include "test_runner.h"
+#include <memory>
+#include <string>
+#include <vector>
+
 #include "evaluation/evaluation.h"
+#include "gridworld/tests/test_runner.h"
 
 using mcts::evaluation::QValWriter;
 
