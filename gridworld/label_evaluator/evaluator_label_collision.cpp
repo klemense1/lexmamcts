@@ -4,7 +4,7 @@
 //
 
 #include "evaluator_label_collision.h"
-#include "crossing_test/label_evaluator/evaluator_label_at_position.h"
+#include "gridworld/label_evaluator/evaluator_label_at_position.h"
 
 bool check_collision(const AgentState &a, const AgentState &b) {
   int o_prev = b.x_pos - b.last_action;
@@ -23,18 +23,18 @@ bool check_collision(const AgentState &a, const AgentState &b) {
   return ((b.lane == a.lane) && (is_overlapping || (a.x_pos == b.x_pos)));
 }
 
-EvaluatorLabelCollision::EvaluatorLabelCollision(const std::string &label_str, const int crossing_point)
-    : EvaluatorLabelBase(label_str), crossing_point_(crossing_point) {}
+EvaluatorLabelCollision::EvaluatorLabelCollision(const std::string &label_str, const int merging_point)
+    : EvaluatorLabelBase(label_str), merging_point_(merging_point) {}
 std::vector<std::pair<ltl::Label, bool>> EvaluatorLabelCollision::evaluate(const World &state) const {
   // Check if intervals (ego.x_pos - ego.last_action, ego.x_pos] and (other.x_pos - other.last_action, other.x_pos]
   // overlap.
-  EvaluatorLabelAtPosition at_xing("at_crossing", crossing_point_);
-  bool ego_at_xing = at_xing.evaluate(state)[0].second;
+  EvaluatorLabelAtPosition at_merge("at_merge", merging_point_);
+  bool ego_at_xing = at_merge.evaluate(state)[0].second;
   World other_world(state.first, std::vector<AgentState>());
   bool result = false;
   for (const auto &agent : state.second) {
     other_world.first = agent;
-    bool agent_at_xing = at_xing.evaluate(other_world)[0].second;
+    bool agent_at_xing = at_merge.evaluate(other_world)[0].second;
     result = (ego_at_xing && agent_at_xing) || check_collision(state.first, agent);
     if(result) {
       break;

@@ -19,20 +19,20 @@ cc_library(
 )
 
 cc_library(
-    name = "crossing_state",
+    name = "grid_world_state",
     srcs = [
-        "crossing_state.cpp",
+        "grid_world_state.cpp",
     ],
     hdrs = [
-        "crossing_state.hpp",
-        "crossing_state_parameter.h",
+        "grid_world_state.hpp",
+        "grid_world_state_parameter.h",
     ],
     visibility = ["//visibility:public"],
     deps = [
         ":common",
         "@rule_monitor_project//ltl:rule_monitor",
         "//mcts",
-        "//crossing_test/label_evaluator:label_evaluators",
+        "//gridworld/label_evaluator:label_evaluators",
         "@com_github_google_glog//:glog",
     ],
 )

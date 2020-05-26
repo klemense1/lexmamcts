@@ -3,8 +3,8 @@
 // This work is licensed under the terms of the MIT license.
 // For a copy, see <https://opensource.org/licenses/MIT>.
 
-#ifndef TEST_CROSSING_TEST_COMMON_HPP_
-#define TEST_CROSSING_TEST_COMMON_HPP_
+#ifndef GRIDWORLD_COMMON_HPP_
+#define GRIDWORLD_COMMON_HPP_
 
 #include <map>
 #include <utility>
@@ -12,12 +12,11 @@
 
 #include "mcts/state.h"
 
-using namespace mcts;
+using mcts::AgentIdx;
 
 enum class Actions {
   WAIT = 0,
   FORWARD = 1,
-  FASTFORWARD = 2,
   BACKWARD = -1,
   NUM = 4
 };
@@ -31,15 +30,13 @@ enum Rule {
 const std::map<ActionIdx, Actions> idx_to_action = {
     {0, Actions::FORWARD},
     {1, Actions::WAIT},
-    {2, Actions::FASTFORWARD},
-    {3, Actions::BACKWARD},
+    {2, Actions::BACKWARD},
 };
 
 const std::map<Actions, ActionIdx> action_to_idx = {
     {Actions::FORWARD, 0},
     {Actions::WAIT, 1},
-    {Actions::FASTFORWARD, 2},
-    {Actions::BACKWARD, 3},
+    {Actions::BACKWARD, 2},
 };
 
 static inline Actions aconv(const ActionIdx &action) {
@@ -77,4 +74,4 @@ typedef struct AgentState {
 
 typedef std::pair<AgentState, std::vector<AgentState>> World;
 
-#endif  // TEST_CROSSING_TEST_COMMON_HPP_
+#endif  // GRIDWORLD_COMMON_HPP_

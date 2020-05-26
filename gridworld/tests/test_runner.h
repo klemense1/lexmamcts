@@ -10,7 +10,7 @@
 #include <utility>
 #include "glog/logging.h"
 
-#include "crossing_test/tests/crossing_test_env.h"
+#include "gridworld/tests/grid_world_env.h"
 
 using std::vector;
 using std::ostream;

@@ -13,42 +13,36 @@
 #include <string>
 #include <vector>
 
-#include "crossing_test/common.hpp"
-#include "crossing_test/crossing_state_parameter.h"
-#include "crossing_test/label_evaluator/evaluator_label_base.h"
+#include "gridworld/common.hpp"
+#include "gridworld/grid_world_state_parameter.h"
+#include "gridworld/label_evaluator/evaluator_label_base.h"
 #include "ltl/rule_monitor.h"
 
 using namespace mcts;
 using namespace ltl;
 
-namespace mcts {
-class Viewer;
-}
-
 typedef std::vector<std::multimap<Rule, RuleState>> RuleStateMap;
 
-// A simple environment with a 1D state, only if both agents select different
-// actions, they get nearer to the terminal state
-class CrossingState : public mcts::StateInterface<CrossingState> {
+class GridWorldState : public mcts::StateInterface<GridWorldState> {
  public:
   typedef Actions ActionType;
 
-  CrossingState(
+  GridWorldState(
       RuleStateMap rule_state_map,
       std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> label_evaluator,
-      const CrossingStateParameter &parameters);
+      const GridWorldStateParameter &parameters);
 
-  CrossingState(
+  GridWorldState(
       std::vector<AgentState> agent_states, const bool terminal,
       RuleStateMap rule_state_map,
       std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> label_evaluator,
-      const CrossingStateParameter &parameters, int depth,
+      const GridWorldStateParameter &parameters, int depth,
       const std::vector<bool> &terminal_agents);
-  ~CrossingState() = default;
+  ~GridWorldState() = default;
 
-  std::shared_ptr<CrossingState> Clone() const;
+  std::shared_ptr<GridWorldState> Clone() const;
 
-  std::shared_ptr<CrossingState> Execute(const JointAction &joint_action,
+  std::shared_ptr<GridWorldState> Execute(const JointAction &joint_action,
                                          std::vector<Reward> &rewards) const;
 
   std::vector<Reward> GetTerminalReward() const;
@@ -74,7 +68,7 @@ class CrossingState : public mcts::StateInterface<CrossingState> {
 
   std::string PrintState() const;
 
-  const CrossingStateParameter &GetParameters() const;
+  const GridWorldStateParameter &GetParameters() const;
 
   EvaluationMap GetAgentLabels(AgentIdx agent_idx) const;
 
@@ -88,7 +82,7 @@ class CrossingState : public mcts::StateInterface<CrossingState> {
   RuleStateMap rule_state_map_;
   std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> label_evaluator_;
   int depth_;
-  CrossingStateParameter parameters_;
+  GridWorldStateParameter parameters_;
   std::vector<bool> terminal_agents_;
 };
 

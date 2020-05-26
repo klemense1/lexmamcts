@@ -8,7 +8,7 @@
 
 #include <utility>
 
-#include "crossing_test/tests/base_test_env.h"
+#include "gridworld/tests/base_test_env.h"
 #include "mcts/heuristics/random_heuristic.h"
 #include "mcts/mcts.h"
 #include "mcts/statistics/uct_statistic.h"
@@ -28,7 +28,7 @@ class CrossingTestEnv : public BaseTestEnv {
   std::map<unsigned long, Eigen::VectorXf> GetEgoQval() override {
     return mcts.GetRoot()->GetEgoIntNode().GetExpectedRewards();
   }
-  Mcts<CrossingState, Stats, Stats, Heuristic> mcts;
+  Mcts<GridWorldState, Stats, Stats, Heuristic> mcts;
 };
 
 #endif  // MAMCTS_TEST_CROSSING_TEST_CROSSING_TEST_ENV_H_

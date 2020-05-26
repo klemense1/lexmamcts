@@ -6,8 +6,8 @@ cc_library(
     deps = [
         "//evaluation",
         "//mcts",
-        "//crossing_test/tests:crossing_test_env",
-        "//crossing_test:crossing_state",
+        "//gridworld/tests:grid_world_env",
+        "//gridworld:grid_world_state",
         "@boost//:math",
         "@boost//:multiprecision",
         "@com_github_google_glog//:glog",
@@ -15,18 +15,18 @@ cc_library(
 )
 
 cc_library(
-    name = "crossing_test_env",
+    name = "grid_world_env",
     srcs = [
         "base_test_env.cpp",
     ],
     hdrs = [
         "base_test_env.h",
-        "crossing_test_env.h",
+        "grid_world_env.h",
     ],
     visibility = ["//visibility:public"],
     deps = [
         "//mcts",
-        "//crossing_test:crossing_state",
+        "//gridworld:grid_world_state",
         "@com_github_eigen_eigen//:eigen",
         "@com_github_google_glog//:glog",
     ],
@@ -40,8 +40,8 @@ cc_binary(
     deps = [
         ":test_runner",
         "//mcts",
-        "//crossing_test:crossing_state",
-        "//crossing_test:state_file_writer",
+        "//gridworld:grid_world_state",
+        "//gridworld:state_file_writer",
         "@com_github_google_glog//:glog",
     ],
 )

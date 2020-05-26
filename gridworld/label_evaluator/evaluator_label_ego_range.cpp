@@ -3,7 +3,7 @@
 // Copyright (c) 2019 Luis Gressenbuch. All rights reserved.
 //
 
-#include "crossing_test/label_evaluator/evaluator_label_ego_range.h"
+#include "gridworld/label_evaluator/evaluator_label_ego_range.h"
 
 EvaluatorLabelEgoRange::EvaluatorLabelEgoRange(const std::string& label_str,
                                                int start, int end)

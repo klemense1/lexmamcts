@@ -12,13 +12,13 @@ TestRunner::Result TestRunner::RunTest(size_t num_iter, int max_steps) {
   // Always recreate test environment to isolate test iterations
   int steps = 0;
   std::vector<Reward> step_reward(
-      latest_test_env_->crossing_state_parameter_.num_other_agents + 1);
+      latest_test_env_->grid_world_state_parameter_.num_other_agents + 1);
   // Store initial state in history
   latest_test_env_->state_history_.emplace_back(GetStateVector().transpose());
   QValWriter qw(
       latest_test_env_->mcts_parameters_.thres_uct_statistic_.THRESHOLD,
       q_val_fname_,
-      latest_test_env_->crossing_state_parameter_.action_map.size());
+      latest_test_env_->grid_world_state_parameter_.action_map.size());
   while (!latest_test_env_->state->IsTerminal() && steps < max_steps) {
     latest_test_env_->Search(num_iter);
     qw.WriteQVal(latest_test_env_->GetEgoQval(), latest_test_env_->GetJt()[0]);

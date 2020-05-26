@@ -6,7 +6,7 @@
 #ifndef TEST_CROSSING_TEST_LABEL_EVALUATOR_EVALUATOR_LABEL_IN_DIRECT_FRONT_H_
 #define TEST_CROSSING_TEST_LABEL_EVALUATOR_EVALUATOR_LABEL_IN_DIRECT_FRONT_H_
 
-#include "crossing_test/label_evaluator/evaluator_label_multi_agent.h"
+#include "gridworld/label_evaluator/evaluator_label_multi_agent.h"
 
 class EvaluatorLabelInDirectFront : public EvaluatorLabelMultiAgent {
  public:

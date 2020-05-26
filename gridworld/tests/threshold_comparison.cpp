@@ -5,8 +5,8 @@
 
 #include <vector>
 
-#include "crossing_test/state_file_writer.h"
-#include "crossing_test/tests/test_runner.h"
+#include "gridworld/state_file_writer.h"
+#include "gridworld/tests/test_runner.h"
 #include "mcts/statistics/e_greedy_statistic.h"
 #include "mcts/statistics/thres_uct_statistic.h"
 

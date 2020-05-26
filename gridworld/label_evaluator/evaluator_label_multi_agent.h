@@ -7,8 +7,8 @@
 #define TEST_CROSSING_TEST_LABEL_EVALUATOR_EVALUATOR_LABEL_MULTI_AGENT_H_
 
 #include <string>
-#include "crossing_test/common.hpp"
-#include "crossing_test/label_evaluator/evaluator_label_base.h"
+#include "gridworld/common.hpp"
+#include "gridworld/label_evaluator/evaluator_label_base.h"
 
 class EvaluatorLabelMultiAgent : public EvaluatorLabelBase<World> {
  public:

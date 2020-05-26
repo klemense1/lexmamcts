@@ -3,36 +3,36 @@
 // Copyright (c) 2020 Luis Gressenbuch. All rights reserved.
 //
 
-#include "crossing_test/tests/base_test_env.h"
+#include "gridworld/tests/base_test_env.h"
 #include <utility>
-#include "crossing_test/label_evaluator/evaluator_label_ego_range.h"
-#include "crossing_test/label_evaluator/evaluator_label_in_direct_front.h"
-#include "crossing_test/label_evaluator/evaluator_label_in_range.h"
+#include "gridworld/label_evaluator/evaluator_label_ego_range.h"
+#include "gridworld/label_evaluator/evaluator_label_in_direct_front.h"
+#include "gridworld/label_evaluator/evaluator_label_in_range.h"
 
 BaseTestEnv::BaseTestEnv(const ObjectiveVec &thres)
-    : mcts_parameters_(MakeDefaultMctsParameters()),
-      crossing_state_parameter_(MakeDefaultCrossingStateParameters()),
-      label_evaluators_(MakeDefaultLabels(crossing_state_parameter_)),
-      rewards(crossing_state_parameter_.num_other_agents + 1,
+    : mcts_parameters_(MakeMctsParameters()),
+      grid_world_state_parameter_(MakeGridWorldStateParameters()),
+      label_evaluators_(MakeLabels(grid_world_state_parameter_)),
+      rewards(grid_world_state_parameter_.num_other_agents + 1,
               Reward::Zero(mcts_parameters_.REWARD_VEC_SIZE)),
-      automata_(MakeDefaultAutomata(3)),
+      automata_(MakeAutomata(3)),
       jt_(3, static_cast<int>(Actions::FORWARD)) {
   RuleStateMap aut_v = GetAutomataVec();
   std::vector<AgentState> agent_states;
   agent_states[0].id = 0;
   agent_states[1].id = 1;
   agent_states[2].id = 2;
-  agent_states[0].x_pos = crossing_state_parameter_.crossing_point - 6;
-  agent_states[1].x_pos = crossing_state_parameter_.crossing_point - 2;
-  agent_states[2].x_pos = crossing_state_parameter_.crossing_point - 8;
+  agent_states[0].x_pos = grid_world_state_parameter_.merging_point - 6;
+  agent_states[1].x_pos = grid_world_state_parameter_.merging_point - 2;
+  agent_states[2].x_pos = grid_world_state_parameter_.merging_point - 8;
   agent_states[1].lane = agent_states[0].lane;
   agent_states[1].init_lane = agent_states[0].init_lane;
 
-  state = std::make_shared<CrossingState>(
-      agent_states, false, aut_v, label_evaluators_, crossing_state_parameter_,
+  state = std::make_shared<GridWorldState>(
+      agent_states, false, aut_v, label_evaluators_, grid_world_state_parameter_,
       0, std::vector<bool>(agent_states.size(), false));
 }
-MctsParameters BaseTestEnv::MakeDefaultMctsParameters() {
+MctsParameters BaseTestEnv::MakeMctsParameters() {
   MctsParameters param;
 
   param.REWARD_VEC_SIZE = 3;
@@ -63,8 +63,8 @@ MctsParameters BaseTestEnv::MakeDefaultMctsParameters() {
 
   return param;
 }
-CrossingStateParameter BaseTestEnv::MakeDefaultCrossingStateParameters() {
-  CrossingStateParameter p;
+GridWorldStateParameter BaseTestEnv::MakeGridWorldStateParameters() {
+  GridWorldStateParameter p;
   p.reward_vec_size = 3;
 
   p.potential_weight = 0.0f;
@@ -75,13 +75,13 @@ CrossingStateParameter BaseTestEnv::MakeDefaultCrossingStateParameters() {
   p.num_other_agents = 2;
   p.ego_goal_reached_position = 1000;
   p.state_x_length = 1000;
-  p.crossing_point = 8;
+  p.merging_point = 8;
   p.terminal_depth_ = 8;
   p.merge = true;
   p.acceleration_weight = 1.5f;
   p.speed_deviation_weight = 5.0f;
 }
-std::vector<std::map<Rule, RuleMonitorSPtr>> BaseTestEnv::MakeDefaultAutomata(
+std::vector<std::map<Rule, RuleMonitorSPtr>> BaseTestEnv::MakeAutomata(
     size_t num_agents) {
   const std::string zip_formula =
       "(in_direct_front_x#0 & !merged_e & (in_direct_front_x#0 | merged_x#0) U "
@@ -98,14 +98,14 @@ std::vector<std::map<Rule, RuleMonitorSPtr>> BaseTestEnv::MakeDefaultAutomata(
   return automata;
 }
 std::vector<std::shared_ptr<EvaluatorLabelBase<World>>>
-BaseTestEnv::MakeDefaultLabels(const CrossingStateParameter &params) {
+BaseTestEnv::MakeLabels(const GridWorldStateParameter &params) {
   std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> labels;
   labels.emplace_back(std::make_shared<EvaluatorLabelCollision>(
-      "collision", params.crossing_point));
+      "collision", params.merging_point));
   labels.emplace_back(std::make_shared<EvaluatorLabelEgoRange>(
-      "merged_e", params.crossing_point, params.state_x_length));
+      "merged_e", params.merging_point, params.state_x_length));
   labels.emplace_back(std::make_shared<EvaluatorLabelInRange>(
-      "merged_x", params.crossing_point, params.state_x_length));
+      "merged_x", params.merging_point, params.state_x_length));
   labels.emplace_back(
       std::make_shared<EvaluatorLabelInDirectFront>("in_direct_front_x"));
   return labels;

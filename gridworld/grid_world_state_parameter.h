@@ -3,17 +3,19 @@
 // This work is licensed under the terms of the MIT license.
 // For a copy, see <https://opensource.org/licenses/MIT>.
 
-#ifndef TEST_CROSSING_TEST_CROSSING_STATE_PARAMETER_H_
-#define TEST_CROSSING_TEST_CROSSING_STATE_PARAMETER_H_
+#ifndef GRIDWORLD_GRID_WORLD_STATE_PARAMETER_H_
+#define GRIDWORLD_GRID_WORLD_STATE_PARAMETER_H_
+
+#include <vector>
 
 #include "ltl/rule_monitor.h"
 
-struct CrossingStateParameter {
+struct GridWorldStateParameter {
   unsigned int num_other_agents;
   int state_x_length;
   int ego_goal_reached_position;
   int terminal_depth_;
-  int crossing_point;
+  int merging_point;
 
   float speed_deviation_weight;
   float acceleration_weight;
@@ -26,6 +28,4 @@ struct CrossingStateParameter {
   bool merge;
 };
 
-CrossingStateParameter MakeDefaultCrossingStateParameters();
-
-#endif  // TEST_CROSSING_TEST_CROSSING_STATE_PARAMETER_H_
+#endif  // GRIDWORLD_GRID_WORLD_STATE_PARAMETER_H_

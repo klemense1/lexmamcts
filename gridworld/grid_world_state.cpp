@@ -7,14 +7,14 @@
 #include <tuple>
 #include <utility>
 
-#include "crossing_test/crossing_state.hpp"
-#include "crossing_test/label_evaluator/evaluator_label_collision.h"
+#include "gridworld/grid_world_state.hpp"
+#include "gridworld/label_evaluator/evaluator_label_collision.h"
 #include "mcts/mcts.h"
 
-CrossingState::CrossingState(
+GridWorldState::GridWorldState(
     RuleStateMap rule_state_map,
     std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> label_evaluator,
-    const CrossingStateParameter &parameters)
+    const GridWorldStateParameter &parameters)
     : agent_states_(parameters.num_other_agents + 1),
       terminal_(false),
       rule_state_map_(std::move(rule_state_map)),
@@ -27,11 +27,11 @@ CrossingState::CrossingState(
   }
 }
 
-CrossingState::CrossingState(
+GridWorldState::GridWorldState(
     std::vector<AgentState> agent_states, const bool terminal,
     RuleStateMap rule_state_map,
     std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> label_evaluator,
-    const CrossingStateParameter &parameters, int depth,
+    const GridWorldStateParameter &parameters, int depth,
     const std::vector<bool> &terminal_agents)
     : agent_states_(std::move(agent_states)),
       terminal_(terminal),
@@ -41,7 +41,7 @@ CrossingState::CrossingState(
       parameters_(parameters),
       terminal_agents_(terminal_agents) {}
 
-std::shared_ptr<CrossingState> CrossingState::Execute(
+std::shared_ptr<GridWorldState> GridWorldState::Execute(
     const JointAction &joint_action, std::vector<Reward> &rewards) const {
 #ifdef PROFILING
   EASY_FUNCTION();
@@ -92,11 +92,11 @@ std::shared_ptr<CrossingState> CrossingState::Execute(
                                 (depth_ + 1 >= parameters_.terminal_depth_);
     labels.clear();
   }  // End for each agent
-  return std::make_shared<CrossingState>(
+  return std::make_shared<GridWorldState>(
       next_agent_states, agent_terminal[0], next_automata, label_evaluator_,
       parameters_, depth_ + 1, agent_terminal);
 }
-std::vector<AgentState> CrossingState::Step(
+std::vector<AgentState> GridWorldState::Step(
     const JointAction &joint_action) const {
 #ifdef PROFILING
   EASY_FUNCTION();
@@ -110,11 +110,11 @@ std::vector<AgentState> CrossingState::Step(
       int new_x =
           old_state.x_pos + this->parameters_.action_map[joint_action[i]];
       int new_lane = old_state.lane;
-      if (parameters_.merge && new_x >= parameters_.crossing_point) {
+      if (parameters_.merge && new_x >= parameters_.merging_point) {
         // If merging is activated, merge all agents to the same lane in and
-        // after crossing point.
+        // after merging point.
         new_lane = 0;
-      } else if (parameters_.merge && new_x < parameters_.crossing_point) {
+      } else if (parameters_.merge && new_x < parameters_.merging_point) {
         // When driving backwards, restore the initial lane
         new_lane = old_state.init_lane;
       }
@@ -130,7 +130,7 @@ std::vector<AgentState> CrossingState::Step(
   }
   return next_agent_states;
 }
-Reward CrossingState::GetActionCost(ActionIdx action,
+Reward GridWorldState::GetActionCost(ActionIdx action,
                                     AgentIdx agent_idx) const {
   Reward reward = Reward::Zero(parameters_.reward_vec_size);
   reward(reward.rows() - 1) += -std::abs(parameters_.action_map[action] -
@@ -143,7 +143,7 @@ Reward CrossingState::GetActionCost(ActionIdx action,
       parameters_.acceleration_weight;
   return reward;
 }
-Reward CrossingState::GetShapingReward(const AgentState &agent_state) const {
+Reward GridWorldState::GetShapingReward(const AgentState &agent_state) const {
   Reward reward = Reward::Zero(parameters_.reward_vec_size);
   // Potential for goal distance
   reward(reward.rows() - 1) +=
@@ -151,7 +151,7 @@ Reward CrossingState::GetShapingReward(const AgentState &agent_state) const {
       std::abs(parameters_.ego_goal_reached_position - agent_state.x_pos);
   return reward;
 }
-std::vector<Reward> CrossingState::GetTerminalReward() const {
+std::vector<Reward> GridWorldState::GetTerminalReward() const {
   std::vector<Reward> rewards(agent_states_.size(),
                               Reward::Zero(parameters_.reward_vec_size));
   for (size_t agent_idx = 0; agent_idx < rewards.size(); ++agent_idx) {
@@ -163,19 +163,19 @@ std::vector<Reward> CrossingState::GetTerminalReward() const {
   }
   return rewards;
 }
-bool CrossingState::IsTerminal() const { return terminal_; }
-ActionIdx CrossingState::GetNumActions(AgentIdx agent_idx) const {
+bool GridWorldState::IsTerminal() const { return terminal_; }
+ActionIdx GridWorldState::GetNumActions(AgentIdx agent_idx) const {
   if (terminal_agents_[agent_idx]) {
     return static_cast<ActionIdx>(1);
   }
   return static_cast<ActionIdx>(parameters_.action_map.size());
 }
-const std::vector<AgentIdx> CrossingState::GetAgentIdx() const {
+const std::vector<AgentIdx> GridWorldState::GetAgentIdx() const {
   std::vector<AgentIdx> agent_idx(parameters_.num_other_agents + 1);
   std::iota(agent_idx.begin(), agent_idx.end(), 0);
   return agent_idx;  // adapt to number of agents
 }
-std::string CrossingState::PrintState() const {
+std::string GridWorldState::PrintState() const {
   std::stringstream ss;
   ss << "Ego: x=" << agent_states_[ego_agent_idx].x_pos;
   for (size_t i = 1; i < agent_states_.size(); ++i) {
@@ -184,31 +184,31 @@ std::string CrossingState::PrintState() const {
   ss << std::endl;
   return ss.str();
 }
-bool CrossingState::EgoGoalReached() const {
+bool GridWorldState::EgoGoalReached() const {
   return agent_states_[ego_agent_idx].x_pos >=
          parameters_.ego_goal_reached_position;
 }
-void CrossingState::ResetDepth() { depth_ = 0; }
-const std::vector<AgentState> &CrossingState::GetAgentStates() const {
+void GridWorldState::ResetDepth() { depth_ = 0; }
+const std::vector<AgentState> &GridWorldState::GetAgentStates() const {
   return agent_states_;
 }
-int CrossingState::GetEgoPos() const {
+int GridWorldState::GetEgoPos() const {
   return agent_states_[ego_agent_idx].x_pos;
 }
 template <typename ActionType>
-ActionType CrossingState::GetLastAction(const AgentIdx &agent_idx) const {
+ActionType GridWorldState::GetLastAction(const AgentIdx &agent_idx) const {
   return static_cast<ActionType>(agent_states_[agent_idx].last_action);
 }
-std::shared_ptr<CrossingState> CrossingState::Clone() const {
-  return std::make_shared<CrossingState>(*this);
+std::shared_ptr<GridWorldState> GridWorldState::Clone() const {
+  return std::make_shared<GridWorldState>(*this);
 }
-const CrossingStateParameter &CrossingState::GetParameters() const {
+const GridWorldStateParameter &GridWorldState::GetParameters() const {
   return parameters_;
 }
-const RuleStateMap &CrossingState::GetRuleStateMap() const {
+const RuleStateMap &GridWorldState::GetRuleStateMap() const {
   return rule_state_map_;
 }
-EvaluationMap CrossingState::GetAgentLabels(AgentIdx agent_idx) const {
+EvaluationMap GridWorldState::GetAgentLabels(AgentIdx agent_idx) const {
   EvaluationMap labels;
   std::vector<AgentState> next_other_agents(agent_states_);
   next_other_agents.erase(next_other_agents.begin() + agent_idx);
@@ -221,7 +221,7 @@ EvaluationMap CrossingState::GetAgentLabels(AgentIdx agent_idx) const {
   }
   return labels;
 }
-void CrossingState::SetCollisionPositions(
+void GridWorldState::SetCollisionPositions(
     std::vector<AgentState> *agent_states) const {
   for (auto it_begin = agent_states->begin(); it_begin != agent_states->end();
        ++it_begin) {

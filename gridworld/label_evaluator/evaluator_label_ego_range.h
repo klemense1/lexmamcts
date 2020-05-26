@@ -8,8 +8,8 @@
 
 #include <string>
 
-#include "crossing_test/common.hpp"
-#include "crossing_test/label_evaluator/evaluator_label_base.h"
+#include "gridworld/common.hpp"
+#include "gridworld/label_evaluator/evaluator_label_base.h"
 
 class EvaluatorLabelEgoRange : public EvaluatorLabelBase<World> {
  public:

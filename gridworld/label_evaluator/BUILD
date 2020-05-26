@@ -6,7 +6,7 @@ cc_library(
     ]),
     visibility = ["//visibility:public"],
     deps = [
-        "//crossing_test:common",
+        "//gridworld:common",
         "@rule_monitor_project//ltl:rule_monitor",
     ],
 )
