@@ -389,9 +389,9 @@ JointReward StageNode<S, SE, SO, H>::GetQFunc(JointAction const &joint_action) {
 template<class S, class SE, class SO, class H>
 JointReward StageNode<S, SE, SO, H>::GetValue() {
   JointReward v(other_int_nodes_.size() + 1);
-  v.at(0) = dynamic_cast<SE &>(ego_int_node_).get_value();
+  v.at(0) = dynamic_cast<SE &>(ego_int_node_).GetValue();
   for (size_t i = 1; i < other_int_nodes_.size(); ++i) {
-    v.at(i) = dynamic_cast<SO &>(other_int_nodes_.at(i)).get_value();
+    v.at(i) = dynamic_cast<SO &>(other_int_nodes_.at(i)).GetValue();
   }
   return v;
 }
