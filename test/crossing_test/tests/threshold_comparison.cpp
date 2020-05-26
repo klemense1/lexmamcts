@@ -7,7 +7,6 @@
 
 #include "mcts/statistics/thres_uct_statistic.h"
 #include "mcts/statistics/e_greedy_statistic.h"
-#include "test/crossing_test/factories/zipper_test_env_factory.h"
 #include "test/crossing_test/state_file_writer.h"
 #include "test/crossing_test/tests/test_runner.h"
 
@@ -15,7 +14,7 @@ void run(const ObjectiveVec& thres, int test_no) {
   char fname[100];
   sprintf(fname, "/home/luis/Documents/thesis/data/threshold_compare/threshold_compare_%d.dat", test_no);
   StateFileWriter sfw(3, std::string(fname));
-  auto test_runner = std::make_unique<TestRunner>(new ZipperTestEnvFactory<ThresUCTStatistic>(thres, 0.0));
+  auto test_runner = std::make_unique<TestRunner>(std::make_shared<CrossingTestEnv<ThresUCTStatistic>>(thres));
   sprintf(fname, "/home/luis/Documents/thesis/data/threshold_compare/threshold_compare_q_val_%d.dat", test_no);
   test_runner->SetQValFname(std::string(fname));
   auto res = test_runner->RunTest(5000, 16);

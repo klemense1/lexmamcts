@@ -22,7 +22,6 @@ cc_library(
     name = "crossing_state",
     srcs = [
         "crossing_state.cpp",
-        "crossing_state_parameter.cpp",
     ],
     hdrs = [
         "crossing_state.hpp",

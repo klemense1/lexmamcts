@@ -15,12 +15,6 @@ struct CrossingStateParameter {
   int terminal_depth_;
   int crossing_point;
 
-  size_t depth_prio;
-  size_t speed_deviation_prio;
-  size_t acceleration_prio;
-  size_t potential_prio;
-
-  float depth_weight;
   float speed_deviation_weight;
   float acceleration_weight;
   float potential_weight;

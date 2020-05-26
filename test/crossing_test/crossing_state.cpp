@@ -87,9 +87,9 @@ std::shared_ptr<CrossingState> CrossingState::Execute(
     }
 
     rewards[agent_idx] += GetActionCost(joint_action[agent_idx], agent_idx);
-    agent_terminal[agent_idx] =
-        agent_terminal[agent_idx] || labels[Label("collision")]
-        || (depth_ + 1 >= parameters_.terminal_depth_);
+    agent_terminal[agent_idx] = agent_terminal[agent_idx] ||
+                                labels[Label("collision")] ||
+                                (depth_ + 1 >= parameters_.terminal_depth_);
     labels.clear();
   }  // End for each agent
   return std::make_shared<CrossingState>(
@@ -126,19 +126,17 @@ std::vector<AgentState> CrossingState::Step(
     }
   }
   if (parameters_.merge) {
-    FixCollisionPositions(&next_agent_states);
+    SetCollisionPositions(&next_agent_states);
   }
   return next_agent_states;
 }
 Reward CrossingState::GetActionCost(ActionIdx action,
-                                      AgentIdx agent_idx) const {
+                                    AgentIdx agent_idx) const {
   Reward reward = Reward::Zero(parameters_.reward_vec_size);
-  reward(parameters_.depth_prio) += -1.0f * parameters_.depth_weight;
-  reward(parameters_.speed_deviation_prio) +=
-      -std::abs(parameters_.action_map[action] -
-                static_cast<int>(Actions::FORWARD)) *
-      parameters_.speed_deviation_weight;
-  reward(parameters_.acceleration_prio) +=
+  reward(reward.rows() - 1) += -std::abs(parameters_.action_map[action] -
+                                         static_cast<int>(Actions::FORWARD)) *
+                               parameters_.speed_deviation_weight;
+  reward(reward.rows() - 1) +=
       -std::pow(
           parameters_.action_map[action] - agent_states_[agent_idx].last_action,
           2) *
@@ -148,7 +146,7 @@ Reward CrossingState::GetActionCost(ActionIdx action,
 Reward CrossingState::GetShapingReward(const AgentState &agent_state) const {
   Reward reward = Reward::Zero(parameters_.reward_vec_size);
   // Potential for goal distance
-  reward(parameters_.potential_prio) +=
+  reward(reward.rows() - 1) +=
       -parameters_.potential_weight *
       std::abs(parameters_.ego_goal_reached_position - agent_state.x_pos);
   return reward;
@@ -223,7 +221,7 @@ EvaluationMap CrossingState::GetAgentLabels(AgentIdx agent_idx) const {
   }
   return labels;
 }
-void CrossingState::FixCollisionPositions(
+void CrossingState::SetCollisionPositions(
     std::vector<AgentState> *agent_states) const {
   for (auto it_begin = agent_states->begin(); it_begin != agent_states->end();
        ++it_begin) {

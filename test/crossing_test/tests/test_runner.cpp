@@ -10,7 +10,6 @@ using mcts::evaluation::QValWriter;
 
 TestRunner::Result TestRunner::RunTest(size_t num_iter, int max_steps) {
   // Always recreate test environment to isolate test iterations
-  latest_test_env_ = factory_->MakeTestEnv();
   int steps = 0;
   std::vector<Reward> step_reward(
       latest_test_env_->crossing_state_parameter_.num_other_agents + 1);
