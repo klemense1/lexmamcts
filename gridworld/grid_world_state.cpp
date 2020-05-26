@@ -31,15 +31,15 @@ GridWorldState::GridWorldState(
     std::vector<AgentState> agent_states, const bool terminal,
     RuleStateMap rule_state_map,
     std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> label_evaluator,
-    const GridWorldStateParameter &parameters, int depth,
-    const std::vector<bool> &terminal_agents)
+    GridWorldStateParameter parameters, int depth,
+    std::vector<bool> terminal_agents)
     : agent_states_(std::move(agent_states)),
       terminal_(terminal),
       rule_state_map_(std::move(rule_state_map)),
       label_evaluator_(std::move(label_evaluator)),
       depth_(depth),
-      parameters_(parameters),
-      terminal_agents_(terminal_agents) {}
+      parameters_(std::move(parameters)),
+      terminal_agents_(std::move(terminal_agents)) {}
 
 std::shared_ptr<GridWorldState> GridWorldState::Execute(
     const JointAction &joint_action, std::vector<Reward> &rewards) const {
@@ -168,7 +168,7 @@ ActionIdx GridWorldState::GetNumActions(AgentIdx agent_idx) const {
   }
   return static_cast<ActionIdx>(parameters_.action_map.size());
 }
-const std::vector<AgentIdx> GridWorldState::GetAgentIdx() const {
+std::vector<AgentIdx> GridWorldState::GetAgentIdx() const {
   std::vector<AgentIdx> agent_idx(parameters_.num_other_agents + 1);
   std::iota(agent_idx.begin(), agent_idx.end(), 0);
   return agent_idx;  // adapt to number of agents

@@ -12,13 +12,13 @@ TestRunner::Result TestRunner::RunTest(size_t num_iter, int max_steps) {
   // Always recreate test environment to isolate test iterations
   int steps = 0;
   std::vector<Reward> step_reward(
-      latest_test_env_->grid_world_state_parameter_.num_other_agents + 1);
+      latest_test_env_->grid_world_state_parameter.num_other_agents + 1);
   // Store initial state in history
-  latest_test_env_->state_history_.emplace_back(GetStateVector().transpose());
+  latest_test_env_->state_history.emplace_back(GetStateVector().transpose());
   QValWriter qw(
-      latest_test_env_->mcts_parameters_.thres_uct_statistic_.THRESHOLD,
+      latest_test_env_->mcts_parameters.thres_uct_statistic_.THRESHOLD,
       q_val_fname_,
-      latest_test_env_->grid_world_state_parameter_.action_map.size());
+      latest_test_env_->grid_world_state_parameter.action_map.size());
   while (!latest_test_env_->state->IsTerminal() && steps < max_steps) {
     latest_test_env_->Search(num_iter);
     qw.WriteQVal(latest_test_env_->GetEgoQval(), latest_test_env_->GetJt()[0]);
@@ -31,16 +31,16 @@ TestRunner::Result TestRunner::RunTest(size_t num_iter, int max_steps) {
     PrintLabels();
     PrintRuleStates();
     latest_test_env_->rewards += step_reward;
-    latest_test_env_->state_history_.emplace_back(GetStateVector().transpose());
+    latest_test_env_->state_history.emplace_back(GetStateVector().transpose());
     ++steps;
   }
   latest_test_env_->rewards += latest_test_env_->state->GetTerminalReward();
-  LOG(INFO) << "History:" << latest_test_env_->state_history_;
+  LOG(INFO) << "History:" << latest_test_env_->state_history;
   auto cumulated_ego_reward = latest_test_env_->rewards[0];
   Result r;
   r.collision = cumulated_ego_reward(0) < 0;
   r.violation = cumulated_ego_reward(1) < 0;
-  r.pos = latest_test_env_->state_history_.back()(0);
+  r.pos = latest_test_env_->state_history.back()(0);
   r.value = cumulated_ego_reward(cumulated_ego_reward.size() - 1);
   return r;
 }

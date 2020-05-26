@@ -12,7 +12,7 @@
 
 #include "mcts/state.h"
 
-using mcts::AgentIdx;
+using mcts::ActionIdx;
 
 enum class Actions {
   WAIT = 0,

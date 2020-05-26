@@ -12,15 +12,15 @@
 
 void run(const ObjectiveVec& thres, int test_no) {
   char fname[100];
-  sprintf(fname, "/home/luis/Documents/thesis/data/threshold_compare/threshold_compare_%d.dat", test_no);
+  sprintf(fname, "/tmp/threshold_compare_%d.dat", test_no);
   StateFileWriter sfw(3, std::string(fname));
   auto test_runner = std::make_unique<TestRunner>(std::make_shared<CrossingTestEnv<ThresUCTStatistic>>(thres));
-  sprintf(fname, "/home/luis/Documents/thesis/data/threshold_compare/threshold_compare_q_val_%d.dat", test_no);
+  sprintf(fname, "/tmp/threshold_compare_q_val_%d.dat", test_no);
   test_runner->SetQValFname(std::string(fname));
   auto res = test_runner->RunTest(5000, 16);
   TestRunner::Result::WriteHeader(LOG(INFO));
   LOG(INFO) << res;
-  sfw.write_multi_timestep(test_runner->GetLatestTestEnv()->state_history_);
+  sfw.write_multi_timestep(test_runner->GetLatestTestEnv()->state_history);
 }
 
 int main(int argc, char **argv) {

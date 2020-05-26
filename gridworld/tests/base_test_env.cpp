@@ -9,27 +9,32 @@
 #include "gridworld/label_evaluator/evaluator_label_in_direct_front.h"
 #include "gridworld/label_evaluator/evaluator_label_in_range.h"
 
+const char* BaseTestEnv::ZIP_FORMULA = "(in_direct_front_x#0 & !merged_e & (in_direct_front_x#0 | merged_x#0) U "
+                                                                        "merged_e) -> G(merged_e & merged_x#0 "
+                                                                        "-> !in_direct_front_x#0)";
+
 BaseTestEnv::BaseTestEnv(const ObjectiveVec &thres)
-    : mcts_parameters_(MakeMctsParameters()),
-      grid_world_state_parameter_(MakeGridWorldStateParameters()),
-      label_evaluators_(MakeLabels(grid_world_state_parameter_)),
-      rewards(grid_world_state_parameter_.num_other_agents + 1,
-              Reward::Zero(mcts_parameters_.REWARD_VEC_SIZE)),
-      automata_(MakeAutomata(3)),
-      jt_(3, static_cast<int>(Actions::FORWARD)) {
+    : mcts_parameters(MakeMctsParameters()),
+      grid_world_state_parameter(MakeGridWorldStateParameters()),
+      label_evaluators(MakeLabels(grid_world_state_parameter)),
+      rewards(grid_world_state_parameter.num_other_agents + 1,
+              Reward::Zero(mcts_parameters.REWARD_VEC_SIZE)),
+      automata_(MakeAutomata(NUM_AGENTS)),
+      jt_(NUM_AGENTS, static_cast<int>(Actions::FORWARD)) {
   RuleStateMap aut_v = GetAutomataVec();
   std::vector<AgentState> agent_states;
   agent_states[0].id = 0;
   agent_states[1].id = 1;
   agent_states[2].id = 2;
-  agent_states[0].x_pos = grid_world_state_parameter_.merging_point - 6;
-  agent_states[1].x_pos = grid_world_state_parameter_.merging_point - 2;
-  agent_states[2].x_pos = grid_world_state_parameter_.merging_point - 8;
+  agent_states[0].x_pos = grid_world_state_parameter.merging_point - 6;
+  agent_states[1].x_pos = grid_world_state_parameter.merging_point - 2;
+  agent_states[2].x_pos = grid_world_state_parameter.merging_point - 8;
+  // Set agents 0 and 1 to the same lane
   agent_states[1].lane = agent_states[0].lane;
   agent_states[1].init_lane = agent_states[0].init_lane;
 
   state = std::make_shared<GridWorldState>(
-      agent_states, false, aut_v, label_evaluators_, grid_world_state_parameter_,
+      agent_states, false, aut_v, label_evaluators, grid_world_state_parameter,
       0, std::vector<bool>(agent_states.size(), false));
 }
 MctsParameters BaseTestEnv::MakeMctsParameters() {
@@ -41,6 +46,8 @@ MctsParameters BaseTestEnv::MakeMctsParameters() {
 
   param.uct_statistic.EXPLORATION_CONSTANT =
       Eigen::VectorXd::Zero(param.REWARD_VEC_SIZE);
+  param.uct_statistic.EXPLORATION_CONSTANT << 0.8, 0.8, 0.8;
+
   param.uct_statistic.LOWER_BOUND = ObjectiveVec::Zero(param.REWARD_VEC_SIZE);
   param.uct_statistic.UPPER_BOUND = ObjectiveVec::Zero(param.REWARD_VEC_SIZE);
 
@@ -58,9 +65,6 @@ MctsParameters BaseTestEnv::MakeMctsParameters() {
   param.DISCOUNT_FACTOR = 0.95;
   param.random_heuristic.MAX_SEARCH_TIME_RANDOM_HEURISTIC =
       std::numeric_limits<double>::infinity();
-  param.e_greedy_uct_statistic_.EPSILON = 1.0;
-  param.uct_statistic.EXPLORATION_CONSTANT << 0.8, 0.8, 0.8;
-
   return param;
 }
 GridWorldStateParameter BaseTestEnv::MakeGridWorldStateParameters() {
@@ -79,17 +83,15 @@ GridWorldStateParameter BaseTestEnv::MakeGridWorldStateParameters() {
   p.terminal_depth_ = 8;
   p.acceleration_weight = 1.5f;
   p.speed_deviation_weight = 5.0f;
+
+  return p;
 }
 std::vector<std::map<Rule, RuleMonitorSPtr>> BaseTestEnv::MakeAutomata(
     size_t num_agents) {
-  const std::string zip_formula =
-      "(in_direct_front_x#0 & !merged_e & (in_direct_front_x#0 | merged_x#0) U "
-      "merged_e) -> G(merged_e & merged_x#0 "
-      "-> !in_direct_front_x#0)";
   std::vector<std::map<Rule, RuleMonitorSPtr>> automata(num_agents);
   automata[0].insert(
       {Rule::NO_COLLISION, RuleMonitor::MakeRule("G !collision", -1.0f, 0)});
-  automata[0].insert({Rule::ZIP, RuleMonitor::MakeRule(zip_formula, -1, 1)});
+  automata[0].insert({Rule::ZIP, RuleMonitor::MakeRule(ZIP_FORMULA, -1, 1)});
   // Same default rules for all agents
   for (size_t i = 1; i < automata.size(); ++i) {
     automata[i] = automata[0];

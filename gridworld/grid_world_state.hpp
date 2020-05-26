@@ -36,9 +36,9 @@ class GridWorldState : public mcts::StateInterface<GridWorldState> {
       std::vector<AgentState> agent_states, const bool terminal,
       RuleStateMap rule_state_map,
       std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> label_evaluator,
-      const GridWorldStateParameter &parameters, int depth,
-      const std::vector<bool> &terminal_agents);
-  ~GridWorldState() = default;
+      GridWorldStateParameter parameters, int depth,
+      std::vector<bool> terminal_agents);
+  ~GridWorldState() override = default;
 
   std::shared_ptr<GridWorldState> Clone() const;
 
@@ -54,7 +54,7 @@ class GridWorldState : public mcts::StateInterface<GridWorldState> {
 
   bool IsTerminal() const;
 
-  const std::vector<AgentIdx> GetAgentIdx() const;
+  std::vector<AgentIdx> GetAgentIdx() const;
 
   bool EgoGoalReached() const;
 
@@ -77,6 +77,7 @@ class GridWorldState : public mcts::StateInterface<GridWorldState> {
   Reward GetActionCost(ActionIdx action, AgentIdx agent_idx) const;
   Reward GetShapingReward(const AgentState &agent_state) const;
   void SetCollisionPositions(std::vector<AgentState> *agent_states) const;
+
   std::vector<AgentState> agent_states_;
   bool terminal_;
   RuleStateMap rule_state_map_;

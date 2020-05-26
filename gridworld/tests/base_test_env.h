@@ -39,12 +39,15 @@ class BaseTestEnv {
   const std::deque<JointAction> &GetActionHistory() const;
   void SetJt(const JointAction &jt);
 
-  const MctsParameters mcts_parameters_;
-  const GridWorldStateParameter grid_world_state_parameter_;
-  std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> label_evaluators_;
+  const MctsParameters mcts_parameters;
+  const GridWorldStateParameter grid_world_state_parameter;
+  std::vector<std::shared_ptr<EvaluatorLabelBase<World>>> label_evaluators;
   std::vector<Reward> rewards;
-  std::vector<Eigen::MatrixXi> state_history_;
+  std::vector<Eigen::MatrixXi> state_history;
   std::shared_ptr<GridWorldState> state;
+
+  static const int NUM_AGENTS = 3;
+  static const char*ZIP_FORMULA;
 
  protected:
   RuleStateMap GetAutomataVec() const;

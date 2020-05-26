@@ -17,7 +17,7 @@ template <class Stats = UctStatistic<>, class Heuristic = RandomHeuristic>
 class CrossingTestEnv : public BaseTestEnv {
  public:
   explicit CrossingTestEnv(const ObjectiveVec& thres)
-      : BaseTestEnv(thres), mcts(mcts_parameters_) {}
+      : BaseTestEnv(thres), mcts(mcts_parameters) {}
   JointAction Search(size_t num_iterations) override {
     mcts.Search(*(this->state), std::numeric_limits<unsigned int>::max(),
                 num_iterations);
