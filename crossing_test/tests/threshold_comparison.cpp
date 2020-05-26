@@ -5,10 +5,10 @@
 
 #include <vector>
 
-#include "mcts/statistics/thres_uct_statistic.h"
+#include "crossing_test/state_file_writer.h"
+#include "crossing_test/tests/test_runner.h"
 #include "mcts/statistics/e_greedy_statistic.h"
-#include "test/crossing_test/state_file_writer.h"
-#include "test/crossing_test/tests/test_runner.h"
+#include "mcts/statistics/thres_uct_statistic.h"
 
 void run(const ObjectiveVec& thres, int test_no) {
   char fname[100];

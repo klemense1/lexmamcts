@@ -3,7 +3,7 @@ cc_binary(
     srcs = ["label_test.cpp"],
     copts = ["-Iexternal/gtest/include"],
     deps = [
-        "//test/crossing_test/label_evaluator:label_evaluators",
+        "//crossing_test/label_evaluator:label_evaluators",
         "@gtest//:main",
     ],
 )

@@ -11,13 +11,13 @@
 #include <memory>
 #include <vector>
 
+#include "crossing_test/common.hpp"
+#include "crossing_test/crossing_state.hpp"
+#include "crossing_test/label_evaluator/evaluator_label_at_position.h"
+#include "crossing_test/label_evaluator/evaluator_label_collision.h"
 #include "mcts/mcts.h"
 #include "mcts/random_generator.h"
 #include "mcts/statistics/slack_uct_statistic.h"
-#include "test/crossing_test/common.hpp"
-#include "test/crossing_test/crossing_state.hpp"
-#include "test/crossing_test/label_evaluator/evaluator_label_at_position.h"
-#include "test/crossing_test/label_evaluator/evaluator_label_collision.h"
 
 using namespace mcts;
 using RuleMonitorSPtr = RuleMonitor::RuleMonitorSPtr;

@@ -3,18 +3,18 @@
 // Copyright (c) 2020 Luis Gressenbuch. All rights reserved.
 //
 
-#include "test/crossing_test/tests/base_test_env.h"
+#include "crossing_test/tests/base_test_env.h"
 #include <utility>
-#include "test/crossing_test/label_evaluator/evaluator_label_ego_range.h"
-#include "test/crossing_test/label_evaluator/evaluator_label_in_direct_front.h"
-#include "test/crossing_test/label_evaluator/evaluator_label_in_range.h"
+#include "crossing_test/label_evaluator/evaluator_label_ego_range.h"
+#include "crossing_test/label_evaluator/evaluator_label_in_direct_front.h"
+#include "crossing_test/label_evaluator/evaluator_label_in_range.h"
 
 BaseTestEnv::BaseTestEnv(const ObjectiveVec &thres)
     : mcts_parameters_(MakeDefaultMctsParameters()),
       crossing_state_parameter_(MakeDefaultCrossingStateParameters()),
       label_evaluators_(MakeDefaultLabels(crossing_state_parameter_)),
-      rewards(crossing_state_parameter.num_other_agents + 1,
-              Reward::Zero(mcts_parameters.REWARD_VEC_SIZE)),
+      rewards(crossing_state_parameter_.num_other_agents + 1,
+              Reward::Zero(mcts_parameters_.REWARD_VEC_SIZE)),
       automata_(MakeDefaultAutomata(3)),
       jt_(3, static_cast<int>(Actions::FORWARD)) {
   RuleStateMap aut_v = GetAutomataVec();
@@ -66,12 +66,7 @@ MctsParameters BaseTestEnv::MakeDefaultMctsParameters() {
 CrossingStateParameter BaseTestEnv::MakeDefaultCrossingStateParameters() {
   CrossingStateParameter p;
   p.reward_vec_size = 3;
-  p.depth_prio = 2;
-  p.speed_deviation_prio = 2;
-  p.acceleration_prio = 2;
-  p.potential_prio = 2;
 
-  p.depth_weight = 0.0f;
   p.potential_weight = 0.0f;
   p.action_map = {static_cast<int>(Actions::FORWARD),
                   static_cast<int>(Actions::WAIT),

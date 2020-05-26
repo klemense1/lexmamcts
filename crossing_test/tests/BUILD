@@ -6,7 +6,8 @@ cc_library(
     deps = [
         "//evaluation",
         "//mcts",
-        "//test/crossing_test:crossing_state",
+        "//crossing_test/tests:crossing_test_env",
+        "//crossing_test:crossing_state",
         "@boost//:math",
         "@boost//:multiprecision",
         "@com_github_google_glog//:glog",
@@ -25,7 +26,7 @@ cc_library(
     visibility = ["//visibility:public"],
     deps = [
         "//mcts",
-        "//test/crossing_test:crossing_state",
+        "//crossing_test:crossing_state",
         "@com_github_eigen_eigen//:eigen",
         "@com_github_google_glog//:glog",
     ],
@@ -39,8 +40,8 @@ cc_binary(
     deps = [
         ":test_runner",
         "//mcts",
-        "//test/crossing_test:crossing_state",
-        "//test/crossing_test:state_file_writer",
+        "//crossing_test:crossing_state",
+        "//crossing_test:state_file_writer",
         "@com_github_google_glog//:glog",
     ],
 )

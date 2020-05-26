@@ -4,7 +4,7 @@
 //
 
 #include "evaluator_label_collision.h"
-#include "test/crossing_test/label_evaluator/evaluator_label_at_position.h"
+#include "crossing_test/label_evaluator/evaluator_label_at_position.h"
 
 bool check_collision(const AgentState &a, const AgentState &b) {
   int o_prev = b.x_pos - b.last_action;

@@ -3,9 +3,9 @@
 // Copyright (c) 2020 Luis Gressenbuch. All rights reserved.
 //
 
+#include "crossing_test/label_evaluator/evaluator_label_at_position.h"
+#include "crossing_test/label_evaluator/evaluator_label_collision.h"
 #include "gtest/gtest.h"
-#include "test/crossing_test/label_evaluator/evaluator_label_at_position.h"
-#include "test/crossing_test/label_evaluator/evaluator_label_collision.h"
 
 TEST(label_test, at_position_test) {
   EvaluatorLabelAtPosition evaluator("position", 5);

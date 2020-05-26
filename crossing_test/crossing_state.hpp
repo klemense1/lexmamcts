@@ -13,10 +13,10 @@
 #include <string>
 #include <vector>
 
-#include "label_evaluator/evaluator_label_base.h"
+#include "crossing_test/common.hpp"
+#include "crossing_test/crossing_state_parameter.h"
+#include "crossing_test/label_evaluator/evaluator_label_base.h"
 #include "ltl/rule_monitor.h"
-#include "test/crossing_test/common.hpp"
-#include "test/crossing_test/crossing_state_parameter.h"
 
 using namespace mcts;
 using namespace ltl;

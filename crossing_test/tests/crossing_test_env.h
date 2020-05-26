@@ -8,10 +8,10 @@
 
 #include <utility>
 
+#include "crossing_test/tests/base_test_env.h"
 #include "mcts/heuristics/random_heuristic.h"
 #include "mcts/mcts.h"
 #include "mcts/statistics/uct_statistic.h"
-#include "test/crossing_test/tests/base_test_env.h"
 
 template <class Stats = UctStatistic<>, class Heuristic = RandomHeuristic>
 class CrossingTestEnv : public BaseTestEnv {

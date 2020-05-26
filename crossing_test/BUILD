@@ -32,7 +32,7 @@ cc_library(
         ":common",
         "@rule_monitor_project//ltl:rule_monitor",
         "//mcts",
-        "//test/crossing_test/label_evaluator:label_evaluators",
+        "//crossing_test/label_evaluator:label_evaluators",
         "@com_github_google_glog//:glog",
     ],
 )

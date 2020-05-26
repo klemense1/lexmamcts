@@ -10,7 +10,7 @@
 #include <utility>
 #include "glog/logging.h"
 
-#include "test/crossing_test/tests/crossing_test_env.h"
+#include "crossing_test/tests/crossing_test_env.h"
 
 using std::vector;
 using std::ostream;

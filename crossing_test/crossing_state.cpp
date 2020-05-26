@@ -7,9 +7,9 @@
 #include <tuple>
 #include <utility>
 
+#include "crossing_test/crossing_state.hpp"
+#include "crossing_test/label_evaluator/evaluator_label_collision.h"
 #include "mcts/mcts.h"
-#include "test/crossing_test/crossing_state.hpp"
-#include "test/crossing_test/label_evaluator/evaluator_label_collision.h"
 
 CrossingState::CrossingState(
     RuleStateMap rule_state_map,
