@@ -24,8 +24,6 @@ struct GridWorldStateParameter {
   size_t reward_vec_size;
 
   std::vector<int> action_map;
-
-  bool merge;
 };
 
 #endif  // GRIDWORLD_GRID_WORLD_STATE_PARAMETER_H_

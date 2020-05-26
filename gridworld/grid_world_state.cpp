@@ -110,11 +110,11 @@ std::vector<AgentState> GridWorldState::Step(
       int new_x =
           old_state.x_pos + this->parameters_.action_map[joint_action[i]];
       int new_lane = old_state.lane;
-      if (parameters_.merge && new_x >= parameters_.merging_point) {
-        // If merging is activated, merge all agents to the same lane in and
+      if (new_x >= parameters_.merging_point) {
+        // merge all agents to the same lane in and
         // after merging point.
         new_lane = 0;
-      } else if (parameters_.merge && new_x < parameters_.merging_point) {
+      } else if (new_x < parameters_.merging_point) {
         // When driving backwards, restore the initial lane
         new_lane = old_state.init_lane;
       }
@@ -125,9 +125,7 @@ std::vector<AgentState> GridWorldState::Step(
       next_agent_states[i].lane = new_lane;
     }
   }
-  if (parameters_.merge) {
-    SetCollisionPositions(&next_agent_states);
-  }
+  SetCollisionPositions(&next_agent_states);
   return next_agent_states;
 }
 Reward GridWorldState::GetActionCost(ActionIdx action,

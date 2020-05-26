@@ -77,7 +77,6 @@ GridWorldStateParameter BaseTestEnv::MakeGridWorldStateParameters() {
   p.state_x_length = 1000;
   p.merging_point = 8;
   p.terminal_depth_ = 8;
-  p.merge = true;
   p.acceleration_weight = 1.5f;
   p.speed_deviation_weight = 5.0f;
 }
