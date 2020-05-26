@@ -26,7 +26,7 @@ class BaseTestEnv {
  public:
   explicit BaseTestEnv(const ObjectiveVec &thres);
   ~BaseTestEnv() = default;
-  static MctsParameters MakeMctsParameters();
+  static MctsParameters MakeMctsParameters(const ObjectiveVec &thres);
   static GridWorldStateParameter MakeGridWorldStateParameters();
   static std::vector<std::map<Rule, RuleMonitorSPtr>> MakeAutomata(
       size_t num_agents);

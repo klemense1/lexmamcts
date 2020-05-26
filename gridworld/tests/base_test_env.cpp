@@ -17,7 +17,7 @@ const char *BaseTestEnv::ZIP_FORMULA =
     "-> !in_direct_front_x#0)";
 
 BaseTestEnv::BaseTestEnv(const ObjectiveVec &thres)
-    : mcts_parameters(MakeMctsParameters()),
+    : mcts_parameters(MakeMctsParameters(thres)),
       grid_world_state_parameter(MakeGridWorldStateParameters()),
       label_evaluators(MakeLabels(grid_world_state_parameter)),
       rewards(grid_world_state_parameter.num_other_agents + 1,
@@ -25,7 +25,7 @@ BaseTestEnv::BaseTestEnv(const ObjectiveVec &thres)
       automata_(MakeAutomata(NUM_AGENTS)),
       jt_(NUM_AGENTS, static_cast<int>(Actions::FORWARD)) {
   RuleStateMap aut_v = GetAutomataVec();
-  std::vector<AgentState> agent_states;
+  std::vector<AgentState> agent_states(NUM_AGENTS);
   agent_states[0].id = 0;
   agent_states[1].id = 1;
   agent_states[2].id = 2;
@@ -40,7 +40,7 @@ BaseTestEnv::BaseTestEnv(const ObjectiveVec &thres)
       agent_states, false, aut_v, label_evaluators, grid_world_state_parameter,
       0, std::vector<bool>(agent_states.size(), false));
 }
-MctsParameters BaseTestEnv::MakeMctsParameters() {
+MctsParameters BaseTestEnv::MakeMctsParameters(const ObjectiveVec &thres) {
   MctsParameters param;
 
   param.REWARD_VEC_SIZE = 3;
@@ -58,8 +58,8 @@ MctsParameters BaseTestEnv::MakeMctsParameters() {
 
   param.slack_uct_statistic_.SLACK_FACTOR = 0.2;
 
-  param.thres_uct_statistic_.THRESHOLD =
-      ObjectiveVec::Zero(param.REWARD_VEC_SIZE);
+  assert(thres.size() == param.REWARD_VEC_SIZE);
+  param.thres_uct_statistic_.THRESHOLD = thres;
   param.thres_uct_statistic_.EPSILON = 0.0;
 
   param.uct_statistic.LOWER_BOUND << -1.0f, -1.0f, -100.0f;
