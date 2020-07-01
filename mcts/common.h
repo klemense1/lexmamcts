@@ -46,7 +46,7 @@ class MctsTest;
 #define MCTS_EXPECT_TRUE(cond)
 
   template<typename T>
-  std::ostream& operator<<(std::ostream& os, std::vector<T> const& d) {
+  inline std::ostream& operator<<(std::ostream& os, std::vector<T> const& d) {
     os << "[";
     for(typename std::vector<T>::const_iterator ii = d.begin(); ii != d.end(); ++ii) {
       os << *ii;
