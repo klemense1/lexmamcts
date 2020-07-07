@@ -25,9 +25,12 @@ class EGreedyStatistic : public UctStatistic<EGreedyStatistic> {
                                unsigned int iteration) {
     ActionIdx selected_action;
     // TODO(@cirrostratus1): Parameters
-    const double c = 10.0;
-    const double d = 0.12;
-    const double current_epsilon = std::min(1.0, c /( d * d *
+    const double c = mcts_parameters_.e_greedy_uct_statistic_.DECAY1;
+    const double d = mcts_parameters_.e_greedy_uct_statistic_.DECAY2;
+    const double K = num_actions_;
+    // From P. Auer, N. Cesa-Bianchi, und P. Fischer,
+    // „Finite-time Analysis of the Multiarmed Bandit Problem“
+    const double current_epsilon = std::min(1.0, c * K /( d * d *
                      static_cast<double>(iteration)));
     if (unexpanded_actions.empty()) {
       std::uniform_real_distribution<double> uniform_norm(0.0, 1.0);

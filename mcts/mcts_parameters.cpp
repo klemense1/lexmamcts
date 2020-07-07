@@ -37,16 +37,18 @@ std::ostream& operator<<(std::ostream& os,
 }
 std::ostream& operator<<(std::ostream& os,
                          const MctsParameters::EGreedyUCTStatistic& statistic) {
-  os << "EPSILON: " << statistic.EPSILON;
+  os << "DECAY1: " << statistic.DECAY1 << " DECAY2: " << statistic.DECAY2;
+  return os;
+}
+std::ostream& operator<<(std::ostream& os,
+                         const MctsParameters::SlackUCTStatistic& statistic) {
+  os << "SLACK_FACTOR: " << statistic.SLACK_FACTOR;
   return os;
 }
 std::ostream& operator<<(std::ostream& os,
                          const MctsParameters::ThresUCTStatistic& statistic) {
-  os << "THRESHOLD: " << statistic.THRESHOLD;
-  return os;
-}
-std::ostream& operator<<(std::ostream& os, const MctsParameters::SlackUCTStatistic& statistic) {
-  os << "SLACK_FACTOR: " << statistic.SLACK_FACTOR;
+  os << "THRESHOLD: " << statistic.THRESHOLD
+     << " EPSILON: " << statistic.EPSILON;
   return os;
 }
 } // namespace mcts

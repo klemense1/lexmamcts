@@ -17,7 +17,6 @@ typedef Eigen::VectorXf ObjectiveVec;
 struct MctsParameters {
   friend std::ostream& operator<<(std::ostream& os,
                                   const MctsParameters& parameters);
-
   struct UctStatistic {
     friend std::ostream& operator<<(std::ostream& os,
                                     const UctStatistic& statistic);
@@ -36,14 +35,13 @@ struct MctsParameters {
   struct EGreedyUCTStatistic {
     friend std::ostream& operator<<(std::ostream& os,
                                     const EGreedyUCTStatistic& statistic);
-    /// Probability of random exploration
-    double EPSILON;
-    double MINIMUM_EPSILON;
-    double EPSILON_DECAY;
+    double DECAY1;
+    double DECAY2;
   };
 
   struct SlackUCTStatistic {
-    friend std::ostream& operator<<(std::ostream& os, const SlackUCTStatistic& statistic);
+    friend std::ostream& operator<<(std::ostream& os,
+                                    const SlackUCTStatistic& statistic);
     float SLACK_FACTOR;
   };
 
