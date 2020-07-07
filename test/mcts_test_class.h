@@ -30,7 +30,7 @@ MctsParameters MakeDefaultMctsParameters() {
   param.uct_statistic.UPPER_BOUND = ObjectiveVec::Zero(param.REWARD_VEC_SIZE);
   param.uct_statistic.UPPER_BOUND << 95.0f;
 
-  //  param.e_greedy_uct_statistic_.DECAY1 = 0.1;
+  //  param.thres_greedy_statistic_.DECAY1 = 0.1;
   //
   //  param.slack_uct_statistic_.ALPHA = 0.05;
   //

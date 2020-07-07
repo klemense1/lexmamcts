@@ -3,8 +3,8 @@
 // Copyright (c) 2019 Luis Gressenbuch. All rights reserved.
 //
 
-#ifndef MCTS_STATISTICS_E_GREEDY_STATISTIC_H_
-#define MCTS_STATISTICS_E_GREEDY_STATISTIC_H_
+#ifndef MCTS_STATISTICS_THRES_GREEDY_STATISTIC_H_
+#define MCTS_STATISTICS_THRES_GREEDY_STATISTIC_H_
 
 #include <random>
 #include <vector>
@@ -14,10 +14,10 @@
 #include "mcts/statistics/uct_statistic.h"
 
 namespace mcts {
-class EGreedyStatistic : public UctStatistic<EGreedyStatistic> {
+class ThresGreedyStatistic : public UctStatistic<ThresGreedyStatistic> {
  public:
-  EGreedyStatistic(ActionIdx num_actions, MctsParameters const &mcts_parameters)
-      : UctStatistic<EGreedyStatistic>(num_actions, mcts_parameters) {}
+  ThresGreedyStatistic(ActionIdx num_actions, MctsParameters const &mcts_parameters)
+      : UctStatistic<ThresGreedyStatistic>(num_actions, mcts_parameters) {}
 
   template <class S>
   ActionIdx ChooseNextAction(const S &state,
@@ -25,8 +25,8 @@ class EGreedyStatistic : public UctStatistic<EGreedyStatistic> {
                                unsigned int iteration) {
     ActionIdx selected_action;
     // TODO(@cirrostratus1): Parameters
-    const double c = mcts_parameters_.e_greedy_uct_statistic_.DECAY1;
-    const double d = mcts_parameters_.e_greedy_uct_statistic_.DECAY2;
+    const double c = mcts_parameters_.thres_greedy_statistic_.DECAY1;
+    const double d = mcts_parameters_.thres_greedy_statistic_.DECAY2;
     const double K = num_actions_;
     // From P. Auer, N. Cesa-Bianchi, und P. Fischer,
     // „Finite-time Analysis of the Multiarmed Bandit Problem“
@@ -76,4 +76,4 @@ class EGreedyStatistic : public UctStatistic<EGreedyStatistic> {
 };
 }  // namespace mcts
 
-#endif  // MCTS_STATISTICS_E_GREEDY_STATISTIC_H_
+#endif  // MCTS_STATISTICS_THRES_GREEDY_STATISTIC_H_

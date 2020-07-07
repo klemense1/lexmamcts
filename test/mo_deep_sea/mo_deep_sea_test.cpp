@@ -7,7 +7,7 @@
 #define PLAN_DEBUG_INFO
 
 #include "gtest/gtest.h"
-#include "mcts/statistics/e_greedy_statistic.h"
+#include "mcts/statistics/thres_greedy_statistic.h"
 #include "test/mo_deep_sea/mo_deep_sea_state.hpp"
 
 using namespace mcts;
@@ -163,7 +163,7 @@ TEST_F(DeepSeaTest, general) {
 
 TEST_F(DeepSeaTest, e_greedy) {
   FLAGS_v = 1;
-  Mcts<MoDeepSeaState, EGreedyStatistic, EGreedyStatistic, RandomHeuristic> mcts(
+  Mcts<MoDeepSeaState, ThresGreedyStatistic, ThresGreedyStatistic, RandomHeuristic> mcts(
       mcts_parameters_);
   auto state = std::make_shared<MoDeepSeaState>(sea_map_, init_pos);
   std::vector<Reward> rewards(1,

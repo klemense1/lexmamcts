@@ -16,7 +16,7 @@ std::ostream& operator<<(std::ostream& os, const MctsParameters& parameters) {
      << " DISCOUNT_FACTOR: " << parameters.DISCOUNT_FACTOR
      << " random_heuristic: " << parameters.random_heuristic
      << " uct_statistic: " << parameters.uct_statistic
-     << " e_greedy_uct_statistic_: " << parameters.e_greedy_uct_statistic_
+     << " thres_greedy_statistic_: " << parameters.thres_greedy_statistic_
      << " slack_uct_statistic_: " << parameters.slack_uct_statistic_
      << " thres_uct_statistic_: " << parameters.thres_uct_statistic_;
   return os;
@@ -36,7 +36,7 @@ std::ostream& operator<<(std::ostream& os,
   return os;
 }
 std::ostream& operator<<(std::ostream& os,
-                         const MctsParameters::EGreedyUCTStatistic& statistic) {
+                         const MctsParameters::ThresGreedyStatistic& statistic) {
   os << "DECAY1: " << statistic.DECAY1 << " DECAY2: " << statistic.DECAY2;
   return os;
 }

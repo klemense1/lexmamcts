@@ -32,9 +32,9 @@ struct MctsParameters {
     double MAX_SEARCH_TIME_RANDOM_HEURISTIC;
   };
 
-  struct EGreedyUCTStatistic {
+  struct ThresGreedyStatistic {
     friend std::ostream& operator<<(std::ostream& os,
-                                    const EGreedyUCTStatistic& statistic);
+                                    const ThresGreedyStatistic& statistic);
     double DECAY1;
     double DECAY2;
   };
@@ -59,7 +59,7 @@ struct MctsParameters {
 
   RandomHeuristic random_heuristic;
   UctStatistic uct_statistic;
-  EGreedyUCTStatistic e_greedy_uct_statistic_;
+  ThresGreedyStatistic thres_greedy_statistic_;
   SlackUCTStatistic slack_uct_statistic_;
   ThresUCTStatistic thres_uct_statistic_;
 };
