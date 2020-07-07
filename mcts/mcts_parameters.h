@@ -1,11 +1,11 @@
 // Copyright (c) 2019 Julian Bernhard
-// 
+//
 // This work is licensed under the terms of the MIT license.
 // For a copy, see <https://opensource.org/licenses/MIT>.
 // ========================================================
 
-#ifndef MCTS_PARAMETERS_H
-#define MCTS_PARAMETERS_H
+#ifndef MCTS_MCTS_PARAMETERS_H_
+#define MCTS_MCTS_PARAMETERS_H_
 
 #include <ostream>
 #include "Eigen/Core"
@@ -64,7 +64,6 @@ struct MctsParameters {
   ThresUCTStatistic thres_uct_statistic_;
 };
 
-} // namespace mcts
+}  // namespace mcts
 
-
-#endif 
+#endif  // MCTS_MCTS_PARAMETERS_H_

@@ -27,8 +27,8 @@ MctsParameters MakeDefaultMctsParameters() {
   param.uct_statistic.LOWER_BOUND = ObjectiveVec::Zero(param.REWARD_VEC_SIZE);
   param.uct_statistic.UPPER_BOUND = ObjectiveVec::Zero(param.REWARD_VEC_SIZE);
 
-  param.thres_uct_statistic_.THRESHOLD =
-  ObjectiveVec::Constant(param.REWARD_VEC_SIZE, std::numeric_limits<ObjectiveVec::Scalar>::max());
+  param.thres_uct_statistic_.THRESHOLD = ObjectiveVec::Constant(
+      param.REWARD_VEC_SIZE, std::numeric_limits<ObjectiveVec::Scalar>::max());
 
   return param;
 }
@@ -155,7 +155,7 @@ TEST_F(DeepSeaTest, general) {
   std::cout << std::endl;
   std::cout << "END" << std::endl;
   PrintSolution(pos_history, sea_map_);
-//  std::cout << mcts.GetRoot()->PrintNode();
+  //  std::cout << mcts.GetRoot()->PrintNode();
   EXPECT_EQ(pos_history.size(), 20);
   EXPECT_EQ((pos_history.end() - 1)->operator()(0), 10);
   EXPECT_EQ((pos_history.end() - 1)->operator()(1), 9);
@@ -163,8 +163,9 @@ TEST_F(DeepSeaTest, general) {
 
 TEST_F(DeepSeaTest, e_greedy) {
   FLAGS_v = 1;
-  Mcts<MoDeepSeaState, ThresGreedyStatistic, ThresGreedyStatistic, RandomHeuristic> mcts(
-      mcts_parameters_);
+  Mcts<MoDeepSeaState, ThresGreedyStatistic, ThresGreedyStatistic,
+       RandomHeuristic>
+      mcts(mcts_parameters_);
   auto state = std::make_shared<MoDeepSeaState>(sea_map_, init_pos);
   std::vector<Reward> rewards(1,
                               Reward::Zero(mcts_parameters_.REWARD_VEC_SIZE));

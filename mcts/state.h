@@ -1,23 +1,23 @@
 // Copyright (c) 2019 Julian Bernhard
-// 
+//
 // This work is licensed under the terms of the MIT license.
 // For a copy, see <https://opensource.org/licenses/MIT>.
 // ========================================================
 
-#ifndef MCTS_STATE_H
-#define MCTS_STATE_H
+#ifndef MCTS_STATE_H_
+#define MCTS_STATE_H_
 
-#include <memory>
-#include <vector>
 #include <algorithm>
 #include <functional>
 #include <iostream>
+#include <memory>
+#include <string>
+#include <vector>
 #include "Eigen/Core"
-#include "common.h"
-#include "mcts_parameters.h"
+#include "mcts/common.h"
+#include "mcts/mcts_parameters.h"
 
 namespace mcts {
-
 
 typedef std::size_t ActionIdx;
 typedef unsigned char AgentIdx;
@@ -26,40 +26,38 @@ typedef std::vector<ActionIdx> JointAction;
 typedef Eigen::VectorXf Reward;
 typedef std::vector<Reward> JointReward;
 
-    template <typename T>
-inline std::vector<T> operator+(const std::vector<T>& a, const std::vector<T>& b)
-    {
-        MCTS_EXPECT_TRUE(a.size() == b.size());
-        std::vector<T> result;
-        result.reserve(a.size());
+template <typename T>
+inline std::vector<T> operator+(const std::vector<T>& a,
+                                const std::vector<T>& b) {
+  MCTS_EXPECT_TRUE(a.size() == b.size());
+  std::vector<T> result;
+  result.reserve(a.size());
 
-        std::transform(a.begin(), a.end(), b.begin(),
-                       std::back_inserter(result), std::plus<T>());
-        return result;
-    }
+  std::transform(a.begin(), a.end(), b.begin(), std::back_inserter(result),
+                 std::plus<T>());
+  return result;
+}
 
-    template <typename T>
-inline std::vector<T>& operator+=(std::vector<T>& a, const std::vector<T>& b)
-    {
-        assert(a.size() == b.size());
-        for(uint i=0; i<b.size(); i++){
-            a[i] = a[i] + b[i];
-        }
-        return a;
-    }
+template <typename T>
+inline std::vector<T>& operator+=(std::vector<T>& a, const std::vector<T>& b) {
+  assert(a.size() == b.size());
+  for (uint i = 0; i < b.size(); i++) {
+    a[i] = a[i] + b[i];
+  }
+  return a;
+}
 
-inline std::ostream& operator<<(std::ostream& os, const JointAction& a)
-    {
-        os << "[";
-        for (auto it = a.begin(); it != a.end(); ++it)
-            os << (int)(*it) << " ";
-        os << "]";
-        return os;
-    }
-
-inline std::ostream &operator<<(std::ostream &os, JointReward const &d) {
+inline std::ostream& operator<<(std::ostream& os, const JointAction& a) {
   os << "[";
-  for (JointReward::const_iterator ii = d.begin(); ii != d.end(); ++ii) {
+  for (auto it = a.begin(); it != a.end(); ++it)
+    os << static_cast<int>(*it) << " ";
+  os << "]";
+  return os;
+}
+
+inline std::ostream& operator<<(std::ostream& os, JointReward const& d) {
+  os << "[";
+  for (auto ii = d.begin(); ii != d.end(); ++ii) {
     os << ii->transpose();
     if (ii >= d.end() - 1) {
       break;
@@ -70,77 +68,76 @@ inline std::ostream &operator<<(std::ostream &os, JointReward const &d) {
   return os;
 }
 
-template<typename Implementation>
+template <typename Implementation>
 class StateInterface {
-public:
+ public:
+  std::shared_ptr<Implementation> Execute(const JointAction& joint_action,
+                                          std::vector<Reward>& rewards) const;
 
-    std::shared_ptr<Implementation> Execute(const JointAction &joint_action, std::vector<Reward>& rewards) const;
+  std::vector<Reward> GetTerminalReward() const;
 
-    std::vector<Reward> GetTerminalReward() const;
+  std::shared_ptr<Implementation> Clone() const;
 
-    std::shared_ptr<Implementation> Clone() const;
+  ActionIdx GetNumActions(AgentIdx agent_idx) const;
 
-    ActionIdx GetNumActions(AgentIdx agent_idx) const;
+  bool IsTerminal() const;
 
-    bool IsTerminal() const;
+  const std::vector<AgentIdx> GetAgentIdx() const;
 
-    const std::vector<AgentIdx> GetAgentIdx() const;
+  static const AgentIdx ego_agent_idx;
 
-    static const AgentIdx ego_agent_idx;
+  std::string PrintState() const;
 
-    std::string PrintState() const;
+  virtual ~StateInterface() = default;
 
-    virtual ~StateInterface() {};
-
-private:
-    CRTP_INTERFACE(Implementation)
-    CRTP_CONST_INTERFACE(Implementation)
-
-
+ private:
+  CRTP_INTERFACE(Implementation)
+  CRTP_CONST_INTERFACE(Implementation)
 };
 
-template<typename Implementation>
-inline std::shared_ptr<Implementation> StateInterface<Implementation>::Execute(const JointAction &joint_action, std::vector<Reward>& rewards) const {
-   return impl().Execute(joint_action, rewards);
+template <typename Implementation>
+inline std::shared_ptr<Implementation> StateInterface<Implementation>::Execute(
+    const JointAction& joint_action, std::vector<Reward>& rewards) const {
+  return impl().Execute(joint_action, rewards);
 }
 
-template<typename Implementation>
-inline std::shared_ptr<Implementation> StateInterface<Implementation>::Clone() const {
- return impl().Clone();
+template <typename Implementation>
+inline std::shared_ptr<Implementation> StateInterface<Implementation>::Clone()
+    const {
+  return impl().Clone();
 }
 
-template<typename Implementation>
-inline ActionIdx StateInterface<Implementation>::GetNumActions(AgentIdx agent_idx) const {
-    return impl().GetNumActions(agent_idx);
+template <typename Implementation>
+inline ActionIdx StateInterface<Implementation>::GetNumActions(
+    AgentIdx agent_idx) const {
+  return impl().GetNumActions(agent_idx);
 }
 
-template<typename Implementation>
+template <typename Implementation>
 inline bool StateInterface<Implementation>::IsTerminal() const {
-    return impl().IsTerminal();
+  return impl().IsTerminal();
 }
 
-template<typename Implementation>
-inline const std::vector<AgentIdx> StateInterface<Implementation>::GetAgentIdx() const {
-    return impl().GetAgentIdx();
+template <typename Implementation>
+inline const std::vector<AgentIdx> StateInterface<Implementation>::GetAgentIdx()
+    const {
+  return impl().GetAgentIdx();
 }
 
-
-template<typename Implementation>
+template <typename Implementation>
 inline std::string StateInterface<Implementation>::PrintState() const {
-    return impl().PrintState();
+  return impl().PrintState();
 }
 
-template<typename Implementation>
-inline std::vector<Reward> StateInterface<Implementation>::GetTerminalReward() const {
-    return impl().GetTerminalReward();
+template <typename Implementation>
+inline std::vector<Reward> StateInterface<Implementation>::GetTerminalReward()
+    const {
+  return impl().GetTerminalReward();
 }
 
-
-template<typename Implementation>
+template <typename Implementation>
 const AgentIdx StateInterface<Implementation>::ego_agent_idx = 0;
 
+}  // namespace mcts
 
-
-} // namespace mcts
-
-#endif
+#endif  // MCTS_STATE_H_

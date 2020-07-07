@@ -1,12 +1,11 @@
 // Copyright (c) 2019 Julian Bernhard
-// 
+//
 // This work is licensed under the terms of the MIT license.
 // For a copy, see <https://opensource.org/licenses/MIT>.
 // ========================================================
 
-#ifndef MCTS_COMMON_H
-#define MCTS_COMMON_H
-
+#ifndef MCTS_COMMON_H_
+#define MCTS_COMMON_H_
 
 namespace mcts {
 
@@ -18,32 +17,33 @@ class MctsTest;
 #define MCTS_TEST
 #endif
 
-
 #ifdef CRTP_DYNAMIC_INTERFACE
-#define CRTP_INTERFACE(type) inline Implementation& impl()  { \
-        auto derivedptr = dynamic_cast<type*>(this); \
-        MCTS_EXPECT_TRUE(derivedptr!=nullptr); \
-        return *derivedptr; \
-        }
+#define CRTP_INTERFACE(type)                     \
+  inline Implementation& impl() {                \
+    auto derivedptr = dynamic_cast<type*>(this); \
+    MCTS_EXPECT_TRUE(derivedptr != nullptr);     \
+    return *derivedptr;                          \
+  }
 #else
-#define CRTP_INTERFACE(type) inline Implementation& impl() {\
-        return *static_cast<type*>(this); \
-        }
+#define CRTP_INTERFACE(type) \
+  inline Implementation& impl() { return *static_cast<type*>(this); }
 #endif
 
 #ifdef CRTP_DYNAMIC_INTERFACE
-#define CRTP_CONST_INTERFACE(type) inline const Implementation& impl() const { \
-        auto const derivedptr = dynamic_cast<const type*>(this); \
-        MCTS_EXPECT_TRUE(derivedptr!=nullptr); \
-        return *derivedptr; \
-    }
+#define CRTP_CONST_INTERFACE(type)                           \
+  inline const Implementation& impl() const {                \
+    auto const derivedptr = dynamic_cast<const type*>(this); \
+    MCTS_EXPECT_TRUE(derivedptr != nullptr);                 \
+    return *derivedptr;                                      \
+  }
 #else
-#define CRTP_CONST_INTERFACE(type) inline const Implementation& impl() const { \
-        return *static_cast<const type*>(this); \
-        }
+#define CRTP_CONST_INTERFACE(type)            \
+  inline const Implementation& impl() const { \
+    return *static_cast<const type*>(this);   \
+  }
 #endif
 
 #define MCTS_EXPECT_TRUE(cond)
 
-} // namespace mcts
-#endif
+}  // namespace mcts
+#endif  // MCTS_COMMON_H_

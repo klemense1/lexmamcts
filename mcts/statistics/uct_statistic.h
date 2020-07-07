@@ -4,14 +4,17 @@
 // For a copy, see <https://opensource.org/licenses/MIT>.
 // ========================================================
 
-#ifndef UCT_STATISTIC_H
-#define UCT_STATISTIC_H
+#ifndef MCTS_STATISTICS_UCT_STATISTIC_H_
+#define MCTS_STATISTICS_UCT_STATISTIC_H_
 
 #include <cfloat>
 #include <cmath>
 #include <iomanip>
 #include <iostream>
+#include <map>
+#include <string>
 #include <type_traits>
+#include <vector>
 #include "mcts/mcts.h"
 #include "mcts/statistics/lexicographical_comperator.h"
 
@@ -19,7 +22,7 @@ namespace mcts {
 
 typedef struct UcbPair {
   UcbPair(size_t reward_vec_size)
-      : action_count_(0), action_value_(ObjectiveVec::Zero(reward_vec_size)){};
+      : action_count_(0), action_value_(ObjectiveVec::Zero(reward_vec_size)) {}
   unsigned action_count_;
   ObjectiveVec action_value_;
 } UcbPair;
@@ -56,14 +59,14 @@ class UctStatistic
           }
           return map;
         }()),
-        total_node_visits_(0){};
+        total_node_visits_(0) {}
 
-  ~UctStatistic(){};
+  ~UctStatistic() {}
 
   template <class S>
   ActionIdx ChooseNextAction(const S &state,
-                               std::vector<int> &unexpanded_actions,
-                               unsigned int iteration) {
+                             std::vector<int> &unexpanded_actions,
+                             unsigned int iteration) {
     if (unexpanded_actions.empty()) {
       // Select an action based on the UCB formula
       std::vector<Eigen::VectorXd> values;
@@ -166,7 +169,7 @@ class UctStatistic
 
  protected:
   void CalculateUcbValues(const ActionUCBMap &ucb_statistics,
-                            std::vector<Eigen::VectorXd> &values) const {
+                          std::vector<Eigen::VectorXd> &values) const {
     values.resize(ucb_statistics.size());
     Eigen::MatrixXd action_val_mat(this->mcts_parameters_.REWARD_VEC_SIZE,
                                    ucb_statistics.size());
@@ -206,4 +209,4 @@ class UctStatistic
 
 }  // namespace mcts
 
-#endif
+#endif  // MCTS_STATISTICS_UCT_STATISTIC_H_

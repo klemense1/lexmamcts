@@ -6,6 +6,7 @@
 #ifndef MCTS_STATISTICS_THRES_GREEDY_STATISTIC_H_
 #define MCTS_STATISTICS_THRES_GREEDY_STATISTIC_H_
 
+#include <algorithm>
 #include <random>
 #include <vector>
 
@@ -16,13 +17,14 @@
 namespace mcts {
 class ThresGreedyStatistic : public UctStatistic<ThresGreedyStatistic> {
  public:
-  ThresGreedyStatistic(ActionIdx num_actions, MctsParameters const &mcts_parameters)
+  ThresGreedyStatistic(ActionIdx num_actions,
+                       MctsParameters const &mcts_parameters)
       : UctStatistic<ThresGreedyStatistic>(num_actions, mcts_parameters) {}
 
   template <class S>
   ActionIdx ChooseNextAction(const S &state,
-                               std::vector<int> &unexpanded_actions,
-                               unsigned int iteration) {
+                             std::vector<int> &unexpanded_actions,
+                             unsigned int iteration) {
     ActionIdx selected_action;
     // TODO(@cirrostratus1): Parameters
     const double c = mcts_parameters_.thres_greedy_statistic_.DECAY1;
@@ -30,8 +32,8 @@ class ThresGreedyStatistic : public UctStatistic<ThresGreedyStatistic> {
     const double K = num_actions_;
     // From P. Auer, N. Cesa-Bianchi, und P. Fischer,
     // „Finite-time Analysis of the Multiarmed Bandit Problem“
-    const double current_epsilon = std::min(1.0, c * K /( d * d *
-                     static_cast<double>(iteration)));
+    const double current_epsilon =
+        std::min(1.0, c * K / (d * d * static_cast<double>(iteration)));
     if (unexpanded_actions.empty()) {
       std::uniform_real_distribution<double> uniform_norm(0.0, 1.0);
       std::vector<Eigen::VectorXd> values;

@@ -11,7 +11,7 @@
 
 namespace mcts {
 struct LexicographicalComperator {
-  LexicographicalComperator(const double eps = 1e-5) : eps_(eps) {}
+  explicit LexicographicalComperator(const double eps = 1e-5) : eps_(eps) {}
   template <class T>
   bool operator()(const T &a, const T &b) const {
     return std::lexicographical_compare(

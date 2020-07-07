@@ -1,5 +1,5 @@
 // Copyright (c) 2019 Julian Bernhard
-// 
+//
 // This work is licensed under the terms of the MIT license.
 // For a copy, see <https://opensource.org/licenses/MIT>.
 // ========================================================
@@ -35,8 +35,8 @@ std::ostream& operator<<(std::ostream& os,
      << heuristic.MAX_SEARCH_TIME_RANDOM_HEURISTIC;
   return os;
 }
-std::ostream& operator<<(std::ostream& os,
-                         const MctsParameters::ThresGreedyStatistic& statistic) {
+std::ostream& operator<<(
+    std::ostream& os, const MctsParameters::ThresGreedyStatistic& statistic) {
   os << "DECAY1: " << statistic.DECAY1 << " DECAY2: " << statistic.DECAY2;
   return os;
 }
@@ -51,4 +51,4 @@ std::ostream& operator<<(std::ostream& os,
      << " EPSILON: " << statistic.EPSILON;
   return os;
 }
-} // namespace mcts
+}  // namespace mcts

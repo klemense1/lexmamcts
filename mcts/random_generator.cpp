@@ -1,9 +1,9 @@
+// Copyright (c) 2020 fortiss GmbH
 //
-// Created by luis on 19.10.19.
-//
+// This work is licensed under the terms of the MIT license.
+// For a copy, see <https://opensource.org/licenses/MIT>.
+// ========================================================
 
-#include "random_generator.h"
+#include "mcts/random_generator.h"
 
-using namespace mcts;
-
-std::mt19937 RandomGenerator::random_generator_ = std::mt19937(1000);
+std::mt19937 mcts::RandomGenerator::random_generator_ = std::mt19937(1000);
