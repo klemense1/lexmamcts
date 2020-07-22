@@ -4,8 +4,8 @@
 // For a copy, see <https://opensource.org/licenses/MIT>.
 // ========================================================
 
-#ifndef MCTS_MCTS_H_
-#define MCTS_MCTS_H_
+#ifndef MVMCTS_MVMCTS_H_
+#define MVMCTS_MVMCTS_H_
 
 #ifdef DUMP_Q_VAL
 extern std::string Q_VAL_DUMPFILE;
@@ -20,10 +20,10 @@ extern std::string Q_VAL_DUMPFILE;
 #include <string>
 #include <vector>
 
-#include "mcts/common.h"
-#include "mcts/heuristic.h"
-#include "mcts/stage_node.h"
-namespace mcts {
+#include "mvmcts/common.h"
+#include "mvmcts/heuristic.h"
+#include "mvmcts/stage_node.h"
+namespace mvmcts {
 
 /*
  * @tparam S State Interface
@@ -33,20 +33,20 @@ namespace mcts {
  */
 
 template <class S, class SE, class SO, class H>
-class Mcts {
+class Mvmcts {
  public:
   using StageNodeSPtr = std::shared_ptr<StageNode<S, SE, SO, H>>;
   using StageNodeWPtr = std::weak_ptr<StageNode<S, SE, SO, H>>;
 
-  explicit Mcts(MctsParameters const &mcts_parameters)
+  explicit Mvmcts(MvmctsParameters const mvmcts_parameters)
       : root_(),
         num_iterations(0),
-        heuristic_(mcts_parameters),
-        mcts_parameters_(mcts_parameters) {
-    DVLOG(2) << mcts_parameters_;
+        heuristic_(mvmcts_parameters),
+       mvmcts_parameters_(mvmcts_parameters) {
+    DVLOG(2) <<mvmcts_parameters_;
   }
 
-  ~Mcts() {}
+  ~Mvmcts() {}
 
   void Search(const S &current_state, unsigned int max_search_time_ms,
               unsigned int max_iterations);
@@ -69,13 +69,13 @@ class Mcts {
 
   H heuristic_;
 
-  MctsParameters const mcts_parameters_;
+  MvmctsParameters mvmcts_parameters_;
 
-  MCTS_TEST
+  MVMCTS_TEST
 };
 
 template <class S, class SE, class SO, class H>
-void Mcts<S, SE, SO, H>::Search(const S &current_state,
+void Mvmcts<S, SE, SO, H>::Search(const S &current_state,
                                 unsigned int max_search_time_ms,
                                 unsigned int max_iterations) {
   EASY_FUNCTION();
@@ -93,7 +93,7 @@ void Mcts<S, SE, SO, H>::Search(const S &current_state,
   root_ = std::make_shared<StageNode<S, SE, SO, H>, StageNodeSPtr,
                            std::shared_ptr<S>, const JointAction &,
                            const unsigned int &>(
-      nullptr, current_state.Clone(), JointAction(), 0, mcts_parameters_);
+      nullptr, current_state.Clone(), JointAction(), 0, mvmcts_parameters_);
 
   num_iterations = 0;
 #ifdef DUMP_Q_VAL
@@ -130,7 +130,7 @@ void Mcts<S, SE, SO, H>::Search(const S &current_state,
 }
 
 template <class S, class SE, class SO, class H>
-void Mcts<S, SE, SO, H>::Iterate(const StageNodeSPtr &root_node) {
+void Mvmcts<S, SE, SO, H>::Iterate(const StageNodeSPtr &root_node) {
   EASY_FUNCTION();
   StageNodeSPtr node = root_node;
   StageNodeSPtr node_p;
@@ -167,36 +167,36 @@ void Mcts<S, SE, SO, H>::Iterate(const StageNodeSPtr &root_node) {
 }
 
 template <class S, class SE, class SO, class H>
-std::string Mcts<S, SE, SO, H>::Print(const StageNodeSPtr &root_node) const {
+std::string Mvmcts<S, SE, SO, H>::Print(const StageNodeSPtr &root_node) const {
   std::stringstream ss;
   return ss.str();
 }
 
 template <class S, class SE, class SO, class H>
-int Mcts<S, SE, SO, H>::NumIterations() {
+int Mvmcts<S, SE, SO, H>::NumIterations() {
   return this->num_iterations;
 }
 
 template <class S, class SE, class SO, class H>
-std::string Mcts<S, SE, SO, H>::NodeInfo() {
+std::string Mvmcts<S, SE, SO, H>::NodeInfo() {
   return Print(root_);
 }
 
 template <class S, class SE, class SO, class H>
-JointAction Mcts<S, SE, SO, H>::ReturnBestAction() {
+JointAction Mvmcts<S, SE, SO, H>::ReturnBestAction() {
   return root_->GetBestAction();
 }
 
 template <class S, class SE, class SO, class H>
-void Mcts<S, SE, SO, H>::PrintTreeToDotFile(std::string filename) {
+void Mvmcts<S, SE, SO, H>::PrintTreeToDotFile(std::string filename) {
   root_->PrintTree(filename, 100);
 }
 template <class S, class SE, class SO, class H>
-const std::shared_ptr<StageNode<S, SE, SO, H>> &Mcts<S, SE, SO, H>::GetRoot()
+const std::shared_ptr<StageNode<S, SE, SO, H>> &Mvmcts<S, SE, SO, H>::GetRoot()
     const {
   return root_;
 }
 
-}  // namespace mcts
+}  // namespace mvmcts
 
-#endif  // MCTS_MCTS_H_
+#endif  // MVMCTS_MVMCTS_H_

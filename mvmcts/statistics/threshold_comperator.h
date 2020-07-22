@@ -3,10 +3,10 @@
 // Copyright (c) 2020 Luis Gressenbuch. All rights reserved.
 //
 
-#ifndef MCTS_STATISTICS_THRESHOLD_COMPERATOR_H_
-#define MCTS_STATISTICS_THRESHOLD_COMPERATOR_H_
+#ifndef MVMCTS_STATISTICS_THRESHOLD_COMPERATOR_H_
+#define MVMCTS_STATISTICS_THRESHOLD_COMPERATOR_H_
 
-namespace mcts {
+namespace mvmcts {
 template <class T>
 struct ThresholdComparator {
   explicit ThresholdComparator(const T &threshold) : threshold_(threshold) {}
@@ -26,6 +26,6 @@ struct ThresholdComparator {
     return false;
   }
 };
-}  // namespace mcts
+}  // namespace mvmcts
 
-#endif  //  MCTS_STATISTICS_THRESHOLD_COMPERATOR_H_
+#endif  //  MVMCTS_STATISTICS_THRESHOLD_COMPERATOR_H_

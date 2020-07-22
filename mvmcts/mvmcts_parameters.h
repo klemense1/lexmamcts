@@ -4,19 +4,19 @@
 // For a copy, see <https://opensource.org/licenses/MIT>.
 // ========================================================
 
-#ifndef MCTS_MCTS_PARAMETERS_H_
-#define MCTS_MCTS_PARAMETERS_H_
+#ifndef MVMCTS_MVMCTS_PARAMETERS_H_
+#define MVMCTS_MVMCTS_PARAMETERS_H_
 
 #include <ostream>
 #include "Eigen/Core"
 
-namespace mcts {
+namespace mvmcts {
 
 typedef Eigen::VectorXf ObjectiveVec;
 
-struct MctsParameters {
+struct MvmctsParameters {
   friend std::ostream& operator<<(std::ostream& os,
-                                  const MctsParameters& parameters);
+                                  const MvmctsParameters& parameters);
   struct UctStatistic {
     friend std::ostream& operator<<(std::ostream& os,
                                     const UctStatistic& statistic);
@@ -64,6 +64,6 @@ struct MctsParameters {
   ThresUCTStatistic thres_uct_statistic_;
 };
 
-}  // namespace mcts
+}  // namespace mvmcts
 
-#endif  // MCTS_MCTS_PARAMETERS_H_
+#endif  // MVMCTS_MVMCTS_PARAMETERS_H_

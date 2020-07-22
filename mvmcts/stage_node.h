@@ -4,8 +4,8 @@
 // For a copy, see <https://opensource.org/licenses/MIT>.
 // ========================================================
 
-#ifndef MCTS_STAGE_NODE_H_
-#define MCTS_STAGE_NODE_H_
+#ifndef MVMCTS_STAGE_NODE_H_
+#define MVMCTS_STAGE_NODE_H_
 
 #include <easy/profiler.h>
 #include <fstream>
@@ -18,13 +18,13 @@
 #include "boost/functional/hash.hpp"
 #include "glog/logging.h"
 
-#include "mcts/common.h"
-#include "mcts/intermediate_node.h"
-#include "mcts/mcts_parameters.h"
-#include "mcts/node_statistic.h"
-#include "mcts/state.h"
+#include "mvmcts/common.h"
+#include "mvmcts/intermediate_node.h"
+#include "mvmcts/mvmcts_parameters.h"
+#include "mvmcts/node_statistic.h"
+#include "mvmcts/state.h"
 
-namespace mcts {
+namespace mvmcts {
 
 // hash function to use JoinAction as std::unordered map key
 template <typename Container>
@@ -75,14 +75,14 @@ class StageNode : public std::enable_shared_from_this<StageNode<S, SE, SO, H>> {
   const unsigned int id_;
   const unsigned int depth_;
 
-  MctsParameters const &mcts_parameters_;
+  MvmctsParameters mvmcts_parameters_;
 
   static unsigned int num_nodes_;
 
  public:
   StageNode(const StageNodeSPtr &parent, std::shared_ptr<S> state,
             const JointAction &joint_action, const unsigned int &depth,
-            MctsParameters const &mcts_parameters);
+            MvmctsParameters const mvmcts_parameters);
   ~StageNode();
   bool SelectOrExpand(StageNodeSPtr &next_node, unsigned int iteration);
   void UpdateStatistics(const std::vector<SE> &heuristic_estimates);
@@ -106,7 +106,7 @@ class StageNode : public std::enable_shared_from_this<StageNode<S, SE, SO, H>> {
   static void ResetCounter();
   const IntermediateNode<S, SE> &GetEgoIntNode() const;
 
-  MCTS_TEST
+  MVMCTS_TEST
 };
 
 template <class S, class SE, class SO, class H>
@@ -117,21 +117,21 @@ StageNode<S, SE, SO, H>::StageNode(const StageNodeSPtr &parent,
                                    std::shared_ptr<S> state,
                                    const JointAction &joint_action,
                                    const unsigned int &depth,
-                                   MctsParameters const &mcts_parameters)
+                                   MvmctsParameters const mvmcts_parameters)
     : state_(state),
       parent_(parent),
       children_(),
       joint_rewards_(),
       ego_int_node_(*state_, S::ego_agent_idx,
-                    state_->GetNumActions(S::ego_agent_idx), mcts_parameters),
-      other_int_nodes_([this, mcts_parameters]() -> InterNodeVector {
+                    state_->GetNumActions(S::ego_agent_idx),mvmcts_parameters),
+      other_int_nodes_([this,mvmcts_parameters]() -> InterNodeVector {
         // Initialize the intermediate nodes of other agents
         InterNodeVector vec;
         // vec.resize(state_.GetAgentIdx().size()-1);
         for (AgentIdx ai = S::ego_agent_idx + 1;
              ai < AgentIdx(state_->GetAgentIdx().size()); ++ai) {
           vec.emplace_back(*state_, ai, state_->GetNumActions(ai),
-                           mcts_parameters);
+                          mvmcts_parameters);
         }
         return vec;
       }()),
@@ -146,7 +146,7 @@ StageNode<S, SE, SO, H>::StageNode(const StageNodeSPtr &parent,
       }()),
       id_(++num_nodes_),
       depth_(depth),
-      mcts_parameters_(mcts_parameters) {}
+     mvmcts_parameters_(mvmcts_parameters) {}
 
 template <class S, class SE, class SO, class H>
 StageNode<S, SE, SO, H>::~StageNode() = default;
@@ -165,16 +165,16 @@ bool StageNode<S, SE, SO, H>::SelectOrExpand(StageNodeSPtr &next_node,
   // helper function to fill rewards
   auto FillRewards = [this](const std::vector<Reward> &reward_list,
                             const JointAction &ja) {
-    Reward coop_sum = Reward::Zero(mcts_parameters_.REWARD_VEC_SIZE);
+    Reward coop_sum = Reward::Zero(mvmcts_parameters_.REWARD_VEC_SIZE);
     coop_sum =
         std::accumulate(reward_list.begin(), reward_list.end(), coop_sum);
-    coop_sum = coop_sum * mcts_parameters_.COOP_FACTOR;
-    ego_int_node_.CollectReward((coop_sum + (1 - mcts_parameters_.COOP_FACTOR) *
+    coop_sum = coop_sum * mvmcts_parameters_.COOP_FACTOR;
+    ego_int_node_.CollectReward((coop_sum + (1 -mvmcts_parameters_.COOP_FACTOR) *
                                                 reward_list[S::ego_agent_idx]),
                                 ja[S::ego_agent_idx]);
     for (auto it = other_int_nodes_.begin(); it != other_int_nodes_.end();
          ++it) {
-      it->CollectReward((coop_sum + (1 - mcts_parameters_.COOP_FACTOR) *
+      it->CollectReward((coop_sum + (1 -mvmcts_parameters_.COOP_FACTOR) *
                                         reward_list[it->GetAgentIdx()]),
                         ja[it->GetAgentIdx()]);
     }
@@ -207,12 +207,12 @@ bool StageNode<S, SE, SO, H>::SelectOrExpand(StageNodeSPtr &next_node,
   } else {  // EXPAND NEW NODE BASED ON NEW JOINT ACTION
     EASY_BLOCK("expand");
     std::vector<Reward> rewards(state_->GetAgentIdx().size(),
-                                Reward::Zero(mcts_parameters_.REWARD_VEC_SIZE));
+                                Reward::Zero(mvmcts_parameters_.REWARD_VEC_SIZE));
     next_node = std::make_shared<StageNode<S, SE, SO, H>, StageNodeSPtr,
                                  std::shared_ptr<S>, const JointAction &,
                                  const unsigned int &>(
         GetShared(), state_->Execute(joint_action, rewards), joint_action,
-        depth_ + 1, mcts_parameters_);
+        depth_ + 1,mvmcts_parameters_);
     EASY_END_BLOCK;
     children_[joint_action] = next_node;
     joint_action_counter_[joint_action] = 0;
@@ -335,7 +335,7 @@ void StageNode<S, SE, SO, H>::PrintTree(std::string filename,
   std::ofstream outfile(filename + ".gv");
   outfile << "digraph G {" << std::endl;
   outfile << "label = \"MCTS with Exploration constant = "
-          << mcts_parameters_.uct_statistic.EXPLORATION_CONSTANT << "\";"
+          <<mvmcts_parameters_.uct_statistic.EXPLORATION_CONSTANT << "\";"
           << std::endl;
   outfile << "labelloc = \"t\";" << std::endl;
   outfile.close();
@@ -410,7 +410,7 @@ const std::unordered_map<JointAction, std::shared_ptr<StageNode<S, SE, SO, H>>,
 template <class S, class SE, class SO, class H>
 JointReward StageNode<S, SE, SO, H>::GetQFunc(JointAction const &joint_action) {
   JointReward v(state_->get_agent_idx().size(),
-                Reward::Zero(mcts_parameters_.REWARD_VEC_SIZE));
+                Reward::Zero(mvmcts_parameters_.REWARD_VEC_SIZE));
   ActionIdx action = joint_action.at(0);
   v.at(0) = ego_int_node_.get_expected_rewards().at(action);
   for (size_t i = 1; i < v.size(); ++i) {
@@ -437,6 +437,6 @@ const IntermediateNode<S, SE> &StageNode<S, SE, SO, H>::GetEgoIntNode() const {
   return ego_int_node_;
 }
 
-}  // namespace mcts
+}  // namespace mvmcts
 
-#endif  // MCTS_STAGE_NODE_H_
+#endif  // MVMCTS_STAGE_NODE_H_

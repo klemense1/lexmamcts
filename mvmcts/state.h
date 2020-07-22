@@ -4,8 +4,8 @@
 // For a copy, see <https://opensource.org/licenses/MIT>.
 // ========================================================
 
-#ifndef MCTS_STATE_H_
-#define MCTS_STATE_H_
+#ifndef MVMCTS_STATE_H_
+#define MVMCTS_STATE_H_
 
 #include <algorithm>
 #include <functional>
@@ -14,10 +14,10 @@
 #include <string>
 #include <vector>
 #include "Eigen/Core"
-#include "mcts/common.h"
-#include "mcts/mcts_parameters.h"
+#include "mvmcts/common.h"
+#include "mvmcts/mvmcts_parameters.h"
 
-namespace mcts {
+namespace mvmcts {
 
 typedef std::size_t ActionIdx;
 typedef unsigned char AgentIdx;
@@ -29,7 +29,7 @@ typedef std::vector<Reward> JointReward;
 template <typename T>
 inline std::vector<T> operator+(const std::vector<T>& a,
                                 const std::vector<T>& b) {
-  MCTS_EXPECT_TRUE(a.size() == b.size());
+  MVMCTS_EXPECT_TRUE(a.size() == b.size());
   std::vector<T> result;
   result.reserve(a.size());
 
@@ -138,6 +138,6 @@ inline std::vector<Reward> StateInterface<Implementation>::GetTerminalReward()
 template <typename Implementation>
 const AgentIdx StateInterface<Implementation>::ego_agent_idx = 0;
 
-}  // namespace mcts
+}  // namespace mvmcts
 
-#endif  // MCTS_STATE_H_
+#endif  // MVMCTS_STATE_H_

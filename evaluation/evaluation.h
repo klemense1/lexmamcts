@@ -13,7 +13,7 @@
 #include <vector>
 #include "Eigen/Core"
 
-namespace mcts {
+namespace mvmcts {
 namespace evaluation {
 class QValWriter {
  public:
@@ -37,6 +37,6 @@ void setup();
 void shutdown(char* file_dump_name = "/tmp/easy_profiler.prof");
 #endif
 }  // namespace evaluation
-}  // namespace mcts
+}  // namespace mvmcts
 
 #endif  //  EVALUATION_EVALUATION_H_

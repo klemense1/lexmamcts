@@ -4,12 +4,12 @@
 // For a copy, see <https://opensource.org/licenses/MIT>.
 // ========================================================
 
-#ifndef MCTS_RANDOM_GENERATOR_H_
-#define MCTS_RANDOM_GENERATOR_H_
+#ifndef MVMCTS_RANDOM_GENERATOR_H_
+#define MVMCTS_RANDOM_GENERATOR_H_
 
 #include <random>
 
-namespace mcts {
+namespace mvmcts {
 
 class RandomGenerator {
  public:
@@ -20,6 +20,6 @@ class RandomGenerator {
 
   ~RandomGenerator() {}
 };
-}  // namespace mcts
+}  // namespace mvmcts
 
-#endif  // MCTS_RANDOM_GENERATOR_H_
+#endif  // MVMCTS_RANDOM_GENERATOR_H_

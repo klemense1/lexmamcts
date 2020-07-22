@@ -10,10 +10,10 @@
 #include <vector>
 #include "Eigen/Core"
 
-#include "mcts/heuristics/random_heuristic.h"
-#include "mcts/statistics/uct_statistic.h"
+#include "mvmcts/heuristics/random_heuristic.h"
+#include "mvmcts/statistics/uct_statistic.h"
 
-using namespace mcts;
+using namespace mvmcts;
 
 struct MODSMapElement {
   int row;
@@ -22,7 +22,7 @@ struct MODSMapElement {
 
 typedef std::vector<MODSMapElement> SeaMap;
 
-class MoDeepSeaState : public mcts::StateInterface<MoDeepSeaState> {
+class MoDeepSeaState : public mvmcts::StateInterface<MoDeepSeaState> {
  public:
   MoDeepSeaState(const std::vector<MODSMapElement> &sea_map,
                  const Eigen::Vector2i &ego_pos, int step_counter = 0);

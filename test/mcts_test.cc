@@ -10,19 +10,19 @@
 #define DEBUG
 #define PLAN_DEBUG_INFO
 #include <cstdio>
-#include "mcts/heuristics/random_heuristic.h"
-#include "mcts/statistics/uct_statistic.h"
+#include "mvmcts/heuristics/random_heuristic.h"
+#include "mvmcts/statistics/uct_statistic.h"
 #include "test/mcts_test_class.h"
 #include "test/simple_state.h"
 
 using namespace std;
-using namespace mcts;
+using namespace mvmcts;
 
-std::mt19937 mcts::RandomGenerator::random_generator_;
+std::mt19937 mvmcts::RandomGenerator::random_generator_;
 
 TEST(test_mcts, verify_uct) {
   RandomGenerator::random_generator_ = std::mt19937(1000);
-  Mcts<SimpleState, UctStatistic<>, UctStatistic<>, RandomHeuristic> mcts(
+  Mvmcts<SimpleState, UctStatistic<>, UctStatistic<>, RandomHeuristic> mcts(
       MakeDefaultMctsParameters());
   SimpleState state(4);
 
@@ -34,7 +34,7 @@ TEST(test_mcts, verify_uct) {
 
 TEST(test_mcts, generate_dot_file) {
   RandomGenerator::random_generator_ = std::mt19937(1000);
-  Mcts<SimpleState, UctStatistic<>, UctStatistic<>, RandomHeuristic> mcts(
+  Mvmcts<SimpleState, UctStatistic<>, UctStatistic<>, RandomHeuristic> mcts(
       MakeDefaultMctsParameters());
   SimpleState state(4);
 

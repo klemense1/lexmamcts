@@ -4,24 +4,24 @@
 // For a copy, see <https://opensource.org/licenses/MIT>.
 // ========================================================
 
-#ifndef MCTS_HEURISTICS_RANDOM_HEURISTIC_H_
-#define MCTS_HEURISTICS_RANDOM_HEURISTIC_H_
+#ifndef MVMCTS_HEURISTICS_RANDOM_HEURISTIC_H_
+#define MVMCTS_HEURISTICS_RANDOM_HEURISTIC_H_
 
 #include <chrono>
 #include <iostream>
 #include <memory>
 #include <vector>
 
-#include "mcts/mcts.h"
-#include "mcts/mcts_parameters.h"
+#include "mvmcts/mvmcts.h"
+#include "mvmcts/mvmcts_parameters.h"
 
-namespace mcts {
+namespace mvmcts {
 // assumes all agents have equal number of actions and the same node statistic
-class RandomHeuristic : public mcts::Heuristic<RandomHeuristic>,
-                        mcts::RandomGenerator {
+class RandomHeuristic : public mvmcts::Heuristic<RandomHeuristic>,
+                        mvmcts::RandomGenerator {
  public:
-  explicit RandomHeuristic(MctsParameters const &mcts_parameters)
-      : Heuristic<RandomHeuristic>(mcts_parameters) {}
+  explicit RandomHeuristic(MvmctsParameters const mvmcts_parameters)
+      : Heuristic<RandomHeuristic>(mvmcts_parameters) {}
 
   template <class S, class SE, class SO, class H>
   std::vector<SE> GetHeuristicValues(
@@ -35,9 +35,9 @@ class RandomHeuristic : public mcts::Heuristic<RandomHeuristic>,
       std::vector<SE> statistics;
       for (AgentIdx ai = 0; ai < num_agents; ++ai) {
         statistics.emplace_back(node->GetState()->GetNumActions(ai),
-                                mcts_parameters_);
+                               mvmcts_parameters_);
         statistics.at(ai).SetHeuristicEstimate(
-            Reward::Zero(mcts_parameters_.REWARD_VEC_SIZE));
+            Reward::Zero(mvmcts_parameters_.REWARD_VEC_SIZE));
       }
       return statistics;
     }
@@ -48,20 +48,20 @@ class RandomHeuristic : public mcts::Heuristic<RandomHeuristic>,
     const AgentIdx num_agents = node->GetState()->GetAgentIdx().size();
 
     std::vector<Reward> accum_rewards(
-        num_agents, Reward::Zero(mcts_parameters_.REWARD_VEC_SIZE));
+        num_agents, Reward::Zero(mvmcts_parameters_.REWARD_VEC_SIZE));
     std::vector<Reward> step_rewards(
-        num_agents, Reward::Zero(mcts_parameters_.REWARD_VEC_SIZE));
-    const double k_discount_factor = mcts_parameters_.DISCOUNT_FACTOR;
+        num_agents, Reward::Zero(mvmcts_parameters_.REWARD_VEC_SIZE));
+    const double k_discount_factor =mvmcts_parameters_.DISCOUNT_FACTOR;
     double modified_discount_factor = k_discount_factor;
     int num_iterations = 0;
     while (
         (!state->IsTerminal()) &&
         (num_iterations <
-         mcts_parameters_.random_heuristic.MAX_NUMBER_OF_ITERATIONS) &&
+        mvmcts_parameters_.random_heuristic.MAX_NUMBER_OF_ITERATIONS) &&
         (std::chrono::duration_cast<std::chrono::milliseconds>(
              std::chrono::high_resolution_clock::now() - start)
              .count() <
-         mcts_parameters_.random_heuristic.MAX_SEARCH_TIME_RANDOM_HEURISTIC)) {
+        mvmcts_parameters_.random_heuristic.MAX_SEARCH_TIME_RANDOM_HEURISTIC)) {
       auto new_state =
           state->Execute(RandomJointAction(state, num_agents), step_rewards);
       state = new_state->Clone();
@@ -76,18 +76,18 @@ class RandomHeuristic : public mcts::Heuristic<RandomHeuristic>,
 
     accum_rewards += state->GetTerminalReward();
 
-    Reward coop_sum = Reward::Zero(mcts_parameters_.REWARD_VEC_SIZE);
+    Reward coop_sum = Reward::Zero(mvmcts_parameters_.REWARD_VEC_SIZE);
     coop_sum =
         std::accumulate(accum_rewards.begin(), accum_rewards.end(), coop_sum);
-    coop_sum = coop_sum * mcts_parameters_.COOP_FACTOR;
+    coop_sum = coop_sum *mvmcts_parameters_.COOP_FACTOR;
     // generate an extra node statistic for each agent
     std::vector<SE> statistics;
     for (AgentIdx ai = 0; ai < num_agents; ++ai) {
       statistics.emplace_back(node->GetState()->GetNumActions(ai),
-                              mcts_parameters_);
+                             mvmcts_parameters_);
       statistics.at(ai).SetHeuristicEstimate(
           (coop_sum +
-           (1.0f - mcts_parameters_.COOP_FACTOR) * accum_rewards.at(ai)));
+           (1.0f -mvmcts_parameters_.COOP_FACTOR) * accum_rewards.at(ai)));
     }
 
     return statistics;
@@ -106,6 +106,6 @@ class RandomHeuristic : public mcts::Heuristic<RandomHeuristic>,
   }
 };
 
-}  // namespace mcts
+}  // namespace mvmcts
 
-#endif  // MCTS_HEURISTICS_RANDOM_HEURISTIC_H_
+#endif  // MVMCTS_HEURISTICS_RANDOM_HEURISTIC_H_

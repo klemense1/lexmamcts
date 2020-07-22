@@ -4,24 +4,24 @@
 // For a copy, see <https://opensource.org/licenses/MIT>.
 // ========================================================
 
-#ifndef MCTS_COMMON_H_
-#define MCTS_COMMON_H_
+#ifndef MVMCTS_COMMON_H_
+#define MVMCTS_COMMON_H_
 
-namespace mcts {
+namespace mvmcts {
 
 class MctsTest;
 
 #ifdef UNIT_TESTING
-#define MCTS_TEST friend class MctsTest;
+#define MVMCTS_TEST friend class MctsTest;
 #else
-#define MCTS_TEST
+#define MVMCTS_TEST
 #endif
 
 #ifdef CRTP_DYNAMIC_INTERFACE
 #define CRTP_INTERFACE(type)                     \
   inline Implementation& impl() {                \
     auto derivedptr = dynamic_cast<type*>(this); \
-    MCTS_EXPECT_TRUE(derivedptr != nullptr);     \
+    MVMCTS_EXPECT_TRUE(derivedptr != nullptr);     \
     return *derivedptr;                          \
   }
 #else
@@ -33,7 +33,7 @@ class MctsTest;
 #define CRTP_CONST_INTERFACE(type)                           \
   inline const Implementation& impl() const {                \
     auto const derivedptr = dynamic_cast<const type*>(this); \
-    MCTS_EXPECT_TRUE(derivedptr != nullptr);                 \
+    MVMCTS_EXPECT_TRUE(derivedptr != nullptr);                 \
     return *derivedptr;                                      \
   }
 #else
@@ -43,7 +43,7 @@ class MctsTest;
   }
 #endif
 
-#define MCTS_EXPECT_TRUE(cond)
+#define MVMCTS_EXPECT_TRUE(cond)
 
-}  // namespace mcts
-#endif  // MCTS_COMMON_H_
+}  // namespace mvmcts
+#endif  // MVMCTS_COMMON_H_

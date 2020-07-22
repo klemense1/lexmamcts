@@ -4,16 +4,16 @@
 // For a copy, see <https://opensource.org/licenses/MIT>.
 // ========================================================
 
-#ifndef MCTS_HEURISTIC_H_
-#define MCTS_HEURISTIC_H_
+#ifndef MVMCTS_HEURISTIC_H_
+#define MVMCTS_HEURISTIC_H_
 
 #include <memory>
 #include <string>
 #include <vector>
-#include "mcts/node_statistic.h"
-#include "mcts/state.h"
+#include "mvmcts/node_statistic.h"
+#include "mvmcts/state.h"
 
-namespace mcts {
+namespace mvmcts {
 
 template <class S, class SE, class SO, class H>
 class StageNode;
@@ -21,8 +21,8 @@ class StageNode;
 template <class Implementation>
 class Heuristic {
  public:
-  explicit Heuristic(MctsParameters const &mcts_parameters)
-      : mcts_parameters_(mcts_parameters) {}
+  explicit Heuristic(MvmctsParameters const mvmcts_parameters)
+      :mvmcts_parameters_(mvmcts_parameters) {}
 
   template <class S, class SE, class SO, class H>
   std::vector<SE> GetHeuristicValues(
@@ -31,7 +31,7 @@ class Heuristic {
   std::string PrintState() const;
 
  protected:
-  MctsParameters mcts_parameters_;
+  MvmctsParameters mvmcts_parameters_;
 
  private:
   Implementation &Impl();
@@ -61,6 +61,6 @@ std::string Heuristic<Implementation>::PrintState() const {
   return Impl().sprintf();
 }
 
-}  // namespace mcts
+}  // namespace mvmcts
 
-#endif  // MCTS_HEURISTIC_H_
+#endif  // MVMCTS_HEURISTIC_H_

@@ -4,18 +4,18 @@
 // For a copy, see <https://opensource.org/licenses/MIT>.
 // ========================================================
 
-#ifndef MCTS_INTERMEDIATE_NODE_H_
-#define MCTS_INTERMEDIATE_NODE_H_
+#ifndef MVMCTS_INTERMEDIATE_NODE_H_
+#define MVMCTS_INTERMEDIATE_NODE_H_
 
 #include <algorithm>
 #include <memory>
 #include <numeric>
 #include <vector>
-#include "mcts/node_statistic.h"
-#include "mcts/random_generator.h"
-#include "mcts/state.h"
+#include "mvmcts/node_statistic.h"
+#include "mvmcts/random_generator.h"
+#include "mvmcts/state.h"
 
-namespace mcts {
+namespace mvmcts {
 
 /*
  * @tparam S State Model
@@ -33,7 +33,7 @@ class IntermediateNode : public Stats {
  public:
   IntermediateNode(const StateInterface<S> &state, AgentIdx agent_idx,
                    ActionIdx num_actions,
-                   const MctsParameters &mcts_parameters);
+                   const MvmctsParameters mvmcts_parameters);
 
   ~IntermediateNode();
 
@@ -43,7 +43,7 @@ class IntermediateNode : public Stats {
 
   AgentIdx GetAgentIdx() const;
 
-  MCTS_TEST
+  MVMCTS_TEST
 };
 
 template <class S, class Stats>
@@ -52,8 +52,8 @@ using IntermediateNodePtr = std::shared_ptr<IntermediateNode<S, Stats>>;
 template <class S, class Stats>
 IntermediateNode<S, Stats>::IntermediateNode(
     const StateInterface<S> &state, AgentIdx agent_idx, ActionIdx num_actions,
-    const MctsParameters &mcts_parameters)
-    : Stats(num_actions, mcts_parameters),
+    const MvmctsParameters mvmcts_parameters)
+    : Stats(num_actions,mvmcts_parameters),
       unexpanded_actions_(num_actions),
       agent_idx_(agent_idx),
       state_(state) {
@@ -79,6 +79,6 @@ inline AgentIdx IntermediateNode<S, Stats>::GetAgentIdx() const {
   return agent_idx_;
 }
 
-}  // namespace mcts
+}  // namespace mvmcts
 
-#endif  // MCTS_INTERMEDIATE_NODE_H_
+#endif  // MVMCTS_INTERMEDIATE_NODE_H_

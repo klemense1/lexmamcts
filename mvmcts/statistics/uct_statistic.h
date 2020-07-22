@@ -4,8 +4,8 @@
 // For a copy, see <https://opensource.org/licenses/MIT>.
 // ========================================================
 
-#ifndef MCTS_STATISTICS_UCT_STATISTIC_H_
-#define MCTS_STATISTICS_UCT_STATISTIC_H_
+#ifndef MVMCTS_STATISTICS_UCT_STATISTIC_H_
+#define MVMCTS_STATISTICS_UCT_STATISTIC_H_
 
 #include <cfloat>
 #include <cmath>
@@ -15,10 +15,10 @@
 #include <string>
 #include <type_traits>
 #include <vector>
-#include "mcts/mcts.h"
-#include "mcts/statistics/lexicographical_comperator.h"
+#include "mvmcts/mvmcts.h"
+#include "mvmcts/statistics/lexicographical_comperator.h"
 
-namespace mcts {
+namespace mvmcts {
 
 typedef struct UcbPair {
   UcbPair(size_t reward_vec_size)
@@ -36,7 +36,7 @@ class UctStatistic
     : public std::conditional<
           std::is_same<IMPL, NodeStatistic_Final_Impl>::value,
           NodeStatistic<UctStatistic<>>, NodeStatistic<IMPL>>::type,
-      public mcts::RandomGenerator {
+      public mvmcts::RandomGenerator {
  private:
   typedef typename std::conditional<
       std::is_same<IMPL, NodeStatistic_Final_Impl>::value, UctStatistic<>,
@@ -46,16 +46,16 @@ class UctStatistic
       NodeStatistic<UctStatistic<>>, NodeStatistic<IMPL>>::type ParentType;
 
  public:
-  MCTS_TEST
+  MVMCTS_TEST
 
-  UctStatistic(ActionIdx num_actions, MctsParameters const &mcts_parameters)
-      : ParentType(num_actions, mcts_parameters),
-        value_(ObjectiveVec::Zero(mcts_parameters.REWARD_VEC_SIZE)),
-        latest_return_(ObjectiveVec::Zero(mcts_parameters.REWARD_VEC_SIZE)),
+  UctStatistic(ActionIdx num_actions, MvmctsParameters const mvmcts_parameters)
+      : ParentType(num_actions,mvmcts_parameters),
+        value_(ObjectiveVec::Zero(mvmcts_parameters.REWARD_VEC_SIZE)),
+        latest_return_(ObjectiveVec::Zero(mvmcts_parameters.REWARD_VEC_SIZE)),
         ucb_statistics_([&]() -> ActionUCBMap {
           ActionUCBMap map;
           for (ActionIdx ai = 0; ai < num_actions; ++ai) {
-            map.insert({ai, UcbPair(mcts_parameters.REWARD_VEC_SIZE)});
+            map.insert({ai, UcbPair(mvmcts_parameters.REWARD_VEC_SIZE)});
           }
           return map;
         }()),
@@ -109,7 +109,7 @@ class UctStatistic
     const ThisType &heuristic_statistic_impl = heuristic_statistic.Impl();
     value_ = heuristic_statistic_impl.value_;
     latest_return_ = value_;
-    MCTS_EXPECT_TRUE(total_node_visits_ ==
+    MVMCTS_EXPECT_TRUE(total_node_visits_ ==
                      0);  // This should be the first visit
     total_node_visits_ += 1;
   }
@@ -125,7 +125,7 @@ class UctStatistic
                       // and childs correctly
     // action value: Q'(s,a) = Q'(s,a) + (latest_return - Q'(s,a))/N
     latest_return_ = this->collected_reward_.second +
-                     this->mcts_parameters_.DISCOUNT_FACTOR *
+                     this->mvmcts_parameters_.DISCOUNT_FACTOR *
                          changed_uct_statistic.latest_return_;
     ucb_pair->second.action_count_ += 1;
     ucb_pair->second.action_value_ =
@@ -171,7 +171,7 @@ class UctStatistic
   void CalculateUcbValues(const ActionUCBMap &ucb_statistics,
                           std::vector<Eigen::VectorXd> &values) const {
     values.resize(ucb_statistics.size());
-    Eigen::MatrixXd action_val_mat(this->mcts_parameters_.REWARD_VEC_SIZE,
+    Eigen::MatrixXd action_val_mat(this->mvmcts_parameters_.REWARD_VEC_SIZE,
                                    ucb_statistics.size());
     size_t i = 0;
     for (const auto &stat : ucb_statistics) {
@@ -180,8 +180,8 @@ class UctStatistic
     }
     double max_coeff = action_val_mat.row(action_val_mat.rows() - 1).maxCoeff();
     Eigen::VectorXd upper_bound =
-        Eigen::VectorXd::Constant(this->mcts_parameters_.REWARD_VEC_SIZE, 0.0);
-    Eigen::VectorXd lower_bound = this->mcts_parameters_.uct_statistic
+        Eigen::VectorXd::Constant(this->mvmcts_parameters_.REWARD_VEC_SIZE, 0.0);
+    Eigen::VectorXd lower_bound = this->mvmcts_parameters_.uct_statistic
                                       .LOWER_BOUND.template cast<double>();
     upper_bound(upper_bound.rows() - 1) = max_coeff;
     const auto scale = upper_bound - lower_bound;
@@ -190,7 +190,7 @@ class UctStatistic
     Eigen::VectorXd exploration_offset;
     for (size_t idx = 0; idx < ucb_statistics.size(); ++idx) {
       exploration_term =
-          this->mcts_parameters_.uct_statistic.EXPLORATION_CONSTANT *
+          this->mvmcts_parameters_.uct_statistic.EXPLORATION_CONSTANT *
           sqrt((2.0 * log(total_node_visits_)) /
                (ucb_statistics.at(idx).action_count_));
       normalized_mean =
@@ -207,6 +207,6 @@ class UctStatistic
   unsigned int total_node_visits_;
 };
 
-}  // namespace mcts
+}  // namespace mvmcts
 
-#endif  // MCTS_STATISTICS_UCT_STATISTIC_H_
+#endif  // MVMCTS_STATISTICS_UCT_STATISTIC_H_

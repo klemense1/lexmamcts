@@ -7,7 +7,7 @@ cc_test(
     ],
     copts = ["-Iexternal/gtest/include"],
     deps = [
-        "//mcts",
+        "//mvmcts",
         "@gtest//:main",
     ],
 )

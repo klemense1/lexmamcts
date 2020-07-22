@@ -1,45 +1,54 @@
 //
-// Created by Luis Gressenbuch on 04.11.19.
+// Created by Luis Gressenbuch on 07.11.19.
 // Copyright (c) 2019 Luis Gressenbuch. All rights reserved.
 //
 
-#ifndef MCTS_STATISTICS_THRES_GREEDY_STATISTIC_H_
-#define MCTS_STATISTICS_THRES_GREEDY_STATISTIC_H_
+#ifndef MVMVMCTS_STATISTICS_THRES_UCT_STATISTIC_H_
+#define MVMVMCTS_STATISTICS_THRES_UCT_STATISTIC_H_
 
-#include <algorithm>
-#include <random>
+#include <limits>
+#include <string>
 #include <vector>
 
-#include "mcts/mcts_parameters.h"
-#include "mcts/statistics/threshold_comperator.h"
-#include "mcts/statistics/uct_statistic.h"
+#include "glog/logging.h"
 
-namespace mcts {
-class ThresGreedyStatistic : public UctStatistic<ThresGreedyStatistic> {
+#include "mvmcts/statistics/threshold_comperator.h"
+#include "mvmcts/statistics/uct_statistic.h"
+
+namespace mvmcts {
+
+class ThresUCTStatistic : public UctStatistic<ThresUCTStatistic> {
+  typedef NodeStatistic<ThresUCTStatistic> ParentType;
+
  public:
-  ThresGreedyStatistic(ActionIdx num_actions,
-                       MctsParameters const &mcts_parameters)
-      : UctStatistic<ThresGreedyStatistic>(num_actions, mcts_parameters) {}
+  ThresUCTStatistic(ActionIdx num_actions,
+                    MvmctsParameters const mvmcts_parameters)
+      : UctStatistic<ThresUCTStatistic>(num_actions,mvmcts_parameters) {}
 
   template <class S>
   ActionIdx ChooseNextAction(const S &state,
                              std::vector<int> &unexpanded_actions,
                              unsigned int iteration) {
     ActionIdx selected_action;
-    // TODO(@cirrostratus1): Parameters
-    const double c = mcts_parameters_.thres_greedy_statistic_.DECAY1;
-    const double d = mcts_parameters_.thres_greedy_statistic_.DECAY2;
-    const double K = num_actions_;
-    // From P. Auer, N. Cesa-Bianchi, und P. Fischer,
-    // „Finite-time Analysis of the Multiarmed Bandit Problem“
-    const double current_epsilon =
-        std::min(1.0, c * K / (d * d * static_cast<double>(iteration)));
     if (unexpanded_actions.empty()) {
       std::uniform_real_distribution<double> uniform_norm(0.0, 1.0);
       std::vector<Eigen::VectorXd> values;
-      selected_action = GetBestAction();
+      auto thres =
+         mvmcts_parameters_.thres_uct_statistic_.THRESHOLD.cast<double>();
+      auto lower =mvmcts_parameters_.uct_statistic.LOWER_BOUND.cast<double>();
+      auto upper =mvmcts_parameters_.uct_statistic.UPPER_BOUND.cast<double>();
+      Eigen::VectorXd normalized_thresholds =
+          (thres - lower).cwiseQuotient(upper - lower);
+      normalized_thresholds(normalized_thresholds.rows() - 1) =
+          std::numeric_limits<double>::max();
+      CalculateUcbValues(ucb_statistics_, values);
+      selected_action = std::distance(
+          values.begin(), std::max_element(values.begin(), values.end(),
+                                           ThresholdComparator<Eigen::VectorXd>(
+                                               normalized_thresholds)));
       const double p = uniform_norm(random_generator_);
-      if (p < current_epsilon && num_actions_ >= 2) {
+      if (p <mvmcts_parameters_.thres_uct_statistic_.EPSILON &&
+          num_actions_ >= 2) {
         std::uniform_int_distribution<ActionIdx> uniform_action(
             0, num_actions_ - 2);
         ActionIdx random_action = uniform_action(random_generator_);
@@ -58,7 +67,7 @@ class ThresGreedyStatistic : public UctStatistic<ThresGreedyStatistic> {
   }
 
   ActionIdx GetBestAction() {
-    Reward thr = mcts_parameters_.thres_uct_statistic_.THRESHOLD;
+    Reward thr =mvmcts_parameters_.thres_uct_statistic_.THRESHOLD;
     DVLOG(2) << "Thresholds:" << thr.transpose();
     auto max = std::max_element(
         ucb_statistics_.begin(), ucb_statistics_.end(),
@@ -76,6 +85,6 @@ class ThresGreedyStatistic : public UctStatistic<ThresGreedyStatistic> {
     return max->first;
   }
 };
-}  // namespace mcts
+}  // namespace mvmcts
 
-#endif  // MCTS_STATISTICS_THRES_GREEDY_STATISTIC_H_
+#endif  // MVMVMCTS_STATISTICS_THRES_UCT_STATISTIC_H_

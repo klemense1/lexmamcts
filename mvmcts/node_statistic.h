@@ -4,25 +4,25 @@
 // For a copy, see <https://opensource.org/licenses/MIT>.
 // ========================================================
 
-#ifndef MCTS_NODE_STATISTIC_H_
-#define MCTS_NODE_STATISTIC_H_
+#ifndef MVMCTS_NODE_STATISTIC_H_
+#define MVMCTS_NODE_STATISTIC_H_
 
 #include <map>
 #include <string>
 #include <utility>
 #include <vector>
-#include "mcts/common.h"
-#include "mcts/state.h"
+#include "mvmcts/common.h"
+#include "mvmcts/state.h"
 
-namespace mcts {
+namespace mvmcts {
 
 template <class Implementation>
 class NodeStatistic {
  public:
-  MCTS_TEST;
+  MVMCTS_TEST;
 
-  NodeStatistic(ActionIdx num_actions, MctsParameters const& mcts_parameters)
-      : num_actions_(num_actions), mcts_parameters_(mcts_parameters) {}
+  NodeStatistic(ActionIdx num_actions, const MvmctsParameters& mvmcts_parameters)
+      : num_actions_(num_actions),mvmcts_parameters_(mvmcts_parameters) {}
   template <class S>
   ActionIdx ChooseNextAction(const StateInterface<S>& state,
                              std::vector<int>& unexpanded_actions,
@@ -52,7 +52,7 @@ class NodeStatistic {
  public:
   std::pair<ActionIdx, Reward> collected_reward_;
   ActionIdx num_actions_;
-  MctsParameters const mcts_parameters_;
+  MvmctsParameters mvmcts_parameters_;
 };
 
 template <class Implementation>
@@ -102,7 +102,7 @@ void NodeStatistic<Implementation>::UpdateFromHeuristic(
 }
 
 template <class Implementation>
-void NodeStatistic<Implementation>::CollectReward(const mcts::Reward& reward,
+void NodeStatistic<Implementation>::CollectReward(const mvmcts::Reward& reward,
                                                   const ActionIdx& action_idx) {
   collected_reward_ = std::pair<ActionIdx, Reward>(action_idx, reward);
 }
@@ -118,6 +118,6 @@ std::map<ActionIdx, Reward> NodeStatistic<Implementation>::GetExpectedRewards()
   return Impl().get_expected_rewards();
 }
 
-}  // namespace mcts
+}  // namespace mvmcts
 
-#endif  // MCTS_NODE_STATISTIC_H_
+#endif  // MVMCTS_NODE_STATISTIC_H_

@@ -3,7 +3,7 @@ cc_library(
     srcs = ["mo_deep_sea_state.cpp"],
     hdrs = ["mo_deep_sea_state.hpp"],
     deps = [
-        "//mcts",
+        "//mvmcts",
         "@com_github_eigen_eigen//:eigen",
     ],
 )
@@ -16,7 +16,7 @@ cc_test(
     copts = ["-Iexternal/gtest/include"],
     deps = [
         ":mo_deep_sea",
-        "//mcts",
+        "//mvmcts",
         "@gtest//:main",
     ],
 )

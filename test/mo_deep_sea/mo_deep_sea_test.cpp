@@ -7,13 +7,13 @@
 #define PLAN_DEBUG_INFO
 
 #include "gtest/gtest.h"
-#include "mcts/statistics/thres_greedy_statistic.h"
+#include "mvmcts/statistics/thres_greedy_statistic.h"
 #include "test/mo_deep_sea/mo_deep_sea_state.hpp"
 
-using namespace mcts;
+using namespace mvmcts;
 
-MctsParameters MakeDefaultMctsParameters() {
-  MctsParameters param;
+MvmctsParameters MakeDefaultMctsParameters() {
+  MvmctsParameters param;
 
   param.REWARD_VEC_SIZE = 2;
 
@@ -47,17 +47,17 @@ class DeepSeaTest : public ::testing::Test {
     sea_map_.emplace_back(MODSMapElement{8, 74.0f});
     sea_map_.emplace_back(MODSMapElement{10, 124.0f});
     init_pos << 0, 0;
-    mcts_parameters_ = MakeDefaultMctsParameters();
-    mcts_parameters_.REWARD_VEC_SIZE = 2;
-    mcts_parameters_.uct_statistic.LOWER_BOUND = ObjectiveVec::Zero(2);
-    mcts_parameters_.uct_statistic.UPPER_BOUND = ObjectiveVec::Zero(2);
-    mcts_parameters_.uct_statistic.LOWER_BOUND << 0.0f, -20.0f;
-    mcts_parameters_.uct_statistic.UPPER_BOUND << 124.0f, 0.0f;
+   mvmcts_parameters_ = MakeDefaultMctsParameters();
+   mvmcts_parameters_.REWARD_VEC_SIZE = 2;
+   mvmcts_parameters_.uct_statistic.LOWER_BOUND = ObjectiveVec::Zero(2);
+   mvmcts_parameters_.uct_statistic.UPPER_BOUND = ObjectiveVec::Zero(2);
+   mvmcts_parameters_.uct_statistic.LOWER_BOUND << 0.0f, -20.0f;
+   mvmcts_parameters_.uct_statistic.UPPER_BOUND << 124.0f, 0.0f;
   }
 
   SeaMap sea_map_;
   Eigen::Vector2i init_pos;
-  MctsParameters mcts_parameters_;
+  MvmctsParameters mvmcts_parameters_;
 };
 
 void PrintSolution(std::vector<Eigen::Vector2i> &pos_history, SeaMap &sea_map) {
@@ -99,7 +99,7 @@ void PrintSolution(std::vector<Eigen::Vector2i> &pos_history, SeaMap &sea_map) {
 TEST_F(DeepSeaTest, move) {
   MoDeepSeaState init_state(sea_map_, init_pos);
   std::vector<Reward> rewards(1,
-                              Reward::Zero(mcts_parameters_.REWARD_VEC_SIZE));
+                              Reward::Zero(mvmcts_parameters_.REWARD_VEC_SIZE));
   JointAction jt;
   jt.resize(1);
   jt[0] = 3;  // Right
@@ -132,11 +132,11 @@ TEST_F(DeepSeaTest, move) {
 
 TEST_F(DeepSeaTest, general) {
   FLAGS_v = 1;
-  Mcts<MoDeepSeaState, UctStatistic<>, UctStatistic<>, RandomHeuristic> mcts(
-      mcts_parameters_);
+  Mvmcts<MoDeepSeaState, UctStatistic<>, UctStatistic<>, RandomHeuristic> mcts(
+     mvmcts_parameters_);
   auto state = std::make_shared<MoDeepSeaState>(sea_map_, init_pos);
   std::vector<Reward> rewards(1,
-                              Reward::Zero(mcts_parameters_.REWARD_VEC_SIZE));
+                              Reward::Zero(mvmcts_parameters_.REWARD_VEC_SIZE));
   JointAction jt;
   jt.resize(1);
   std::vector<Eigen::Vector2i> pos_history;
@@ -163,12 +163,12 @@ TEST_F(DeepSeaTest, general) {
 
 TEST_F(DeepSeaTest, e_greedy) {
   FLAGS_v = 1;
-  Mcts<MoDeepSeaState, ThresGreedyStatistic, ThresGreedyStatistic,
+  Mvmcts<MoDeepSeaState, ThresGreedyStatistic, ThresGreedyStatistic,
        RandomHeuristic>
-      mcts(mcts_parameters_);
+      mcts(mvmcts_parameters_);
   auto state = std::make_shared<MoDeepSeaState>(sea_map_, init_pos);
   std::vector<Reward> rewards(1,
-                              Reward::Zero(mcts_parameters_.REWARD_VEC_SIZE));
+                              Reward::Zero(mvmcts_parameters_.REWARD_VEC_SIZE));
   JointAction jt;
   jt.resize(1);
   std::vector<Eigen::Vector2i> pos_history;

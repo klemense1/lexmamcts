@@ -6,11 +6,11 @@
 
 #include "glog/logging.h"
 
-#include "mcts/mcts_parameters.h"
+#include "mvmcts/mvmcts_parameters.h"
 
-namespace mcts {
+namespace mvmcts {
 
-std::ostream& operator<<(std::ostream& os, const MctsParameters& parameters) {
+std::ostream& operator<<(std::ostream& os, const MvmctsParameters& parameters) {
   os << "REWARD_VEC_SIZE: " << parameters.REWARD_VEC_SIZE
      << " COOP_FACTOR: " << parameters.COOP_FACTOR
      << " DISCOUNT_FACTOR: " << parameters.DISCOUNT_FACTOR
@@ -22,33 +22,33 @@ std::ostream& operator<<(std::ostream& os, const MctsParameters& parameters) {
   return os;
 }
 std::ostream& operator<<(std::ostream& os,
-                         const MctsParameters::UctStatistic& statistic) {
+                         const MvmctsParameters::UctStatistic& statistic) {
   os << "EXPLORATION_CONSTANT: " << statistic.EXPLORATION_CONSTANT
      << " LOWER_BOUND: " << statistic.LOWER_BOUND
      << " UPPER_BOUND: " << statistic.UPPER_BOUND;
   return os;
 }
 std::ostream& operator<<(std::ostream& os,
-                         const MctsParameters::RandomHeuristic& heuristic) {
+                         const MvmctsParameters::RandomHeuristic& heuristic) {
   os << "MAX_NUMBER_OF_ITERATIONS: " << heuristic.MAX_NUMBER_OF_ITERATIONS
      << " MAX_SEARCH_TIME_RANDOM_HEURISTIC: "
      << heuristic.MAX_SEARCH_TIME_RANDOM_HEURISTIC;
   return os;
 }
 std::ostream& operator<<(
-    std::ostream& os, const MctsParameters::ThresGreedyStatistic& statistic) {
+    std::ostream& os, const MvmctsParameters::ThresGreedyStatistic& statistic) {
   os << "DECAY1: " << statistic.DECAY1 << " DECAY2: " << statistic.DECAY2;
   return os;
 }
 std::ostream& operator<<(std::ostream& os,
-                         const MctsParameters::SlackUCTStatistic& statistic) {
+                         const MvmctsParameters::SlackUCTStatistic& statistic) {
   os << "SLACK_FACTOR: " << statistic.SLACK_FACTOR;
   return os;
 }
 std::ostream& operator<<(std::ostream& os,
-                         const MctsParameters::ThresUCTStatistic& statistic) {
+                         const MvmctsParameters::ThresUCTStatistic& statistic) {
   os << "THRESHOLD: " << statistic.THRESHOLD
      << " EPSILON: " << statistic.EPSILON;
   return os;
 }
-}  // namespace mcts
+}  // namespace mvmcts

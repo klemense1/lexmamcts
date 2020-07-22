@@ -7,15 +7,15 @@
 #ifndef MCTSTEST_H
 #define MCTSTEST_H
 
-#include "mcts/heuristics/random_heuristic.h"
-#include "mcts/mcts.h"
-#include "mcts/statistics/uct_statistic.h"
+#include "mvmcts/heuristics/random_heuristic.h"
+#include "mvmcts/mvmcts.h"
+#include "mvmcts/statistics/uct_statistic.h"
 #include "test/simple_state.h"
 
-using namespace mcts;
+using namespace mvmcts;
 using namespace std;
-MctsParameters MakeDefaultMctsParameters() {
-  MctsParameters param;
+MvmctsParameters MakeDefaultMctsParameters() {
+  MvmctsParameters param;
 
   param.REWARD_VEC_SIZE = 1;
 
@@ -43,10 +43,10 @@ MctsParameters MakeDefaultMctsParameters() {
   return param;
 }
 
-class mcts::MctsTest {
+class mvmcts::MctsTest {
  public:
   template <class S, class SE, class SO, class H>
-  void verify_uct(const Mcts<S, SE, SO, H>& mcts, unsigned int depth) {
+  void verify_uct(const Mvmcts<S, SE, SO, H>& mcts, unsigned int depth) {
     std::vector<UctStatistic<>> expected_root_statistics =
         verify_uct(mcts.root_, depth);
   }
@@ -208,7 +208,7 @@ class mcts::MctsTest {
         ->second.action_value_ +=
         1 / float(total_action_count) * child_action_count *
         (rewards[agent_idx] +
-         parent_stat.mcts_parameters_.DISCOUNT_FACTOR * child_stat.value_);
+         parent_stat.mvmcts_parameters_.DISCOUNT_FACTOR * child_stat.value_);
 
     return expected_statistics;
   }

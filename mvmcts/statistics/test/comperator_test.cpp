@@ -5,10 +5,10 @@
 
 #include "gtest/gtest.h"
 
-#include "mcts/statistics/slack_uct_statistic.h"
-#include "mcts/statistics/threshold_comperator.h"
+#include "mvmcts/statistics/slack_uct_statistic.h"
+#include "mvmcts/statistics/threshold_comperator.h"
 
-using namespace mcts;
+using namespace mvmcts;
 
 TEST(ComperatorTest, threshold_comperator_random) {
   const size_t reward_vec_size = 5;

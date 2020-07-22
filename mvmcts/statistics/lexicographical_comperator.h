@@ -3,13 +3,13 @@
 // Copyright (c) 2020 Luis Gressenbuch. All rights reserved.
 //
 
-#ifndef MCTS_STATISTICS_LEXICOGRAPHICAL_COMPERATOR_H_
-#define MCTS_STATISTICS_LEXICOGRAPHICAL_COMPERATOR_H_
+#ifndef MVMCTS_STATISTICS_LEXICOGRAPHICAL_COMPERATOR_H_
+#define MVMCTS_STATISTICS_LEXICOGRAPHICAL_COMPERATOR_H_
 
 #include <algorithm>
 #include <cmath>
 
-namespace mcts {
+namespace mvmcts {
 struct LexicographicalComperator {
   explicit LexicographicalComperator(const double eps = 1e-5) : eps_(eps) {}
   template <class T>
@@ -24,6 +24,6 @@ struct LexicographicalComperator {
   }
   const double eps_;
 };
-}  // namespace mcts
+}  // namespace mvmcts
 
-#endif  //  MCTS_STATISTICS_LEXICOGRAPHICAL_COMPERATOR_H_
+#endif  //  MVMCTS_STATISTICS_LEXICOGRAPHICAL_COMPERATOR_H_

@@ -3,8 +3,8 @@
 // Copyright (c) 2019 Luis Gressenbuch. All rights reserved.
 //
 
-#ifndef MCTS_STATISTICS_SLACK_UCT_STATISTIC_H_
-#define MCTS_STATISTICS_SLACK_UCT_STATISTIC_H_
+#ifndef MVMCTS_STATISTICS_SLACK_UCT_STATISTIC_H_
+#define MVMCTS_STATISTICS_SLACK_UCT_STATISTIC_H_
 
 #include <algorithm>
 #include <limits>
@@ -14,18 +14,18 @@
 
 #include "glog/logging.h"
 
-#include "mcts/statistics/threshold_comperator.h"
-#include "mcts/statistics/uct_statistic.h"
+#include "mvmcts/statistics/threshold_comperator.h"
+#include "mvmcts/statistics/uct_statistic.h"
 
-namespace mcts {
+namespace mvmcts {
 
 class SlackUCTStatistic : public UctStatistic<SlackUCTStatistic> {
   typedef NodeStatistic<SlackUCTStatistic> ParentType;
 
  public:
   SlackUCTStatistic(ActionIdx num_actions,
-                    MctsParameters const &mcts_parameters)
-      : UctStatistic<SlackUCTStatistic>(num_actions, mcts_parameters) {}
+                    MvmctsParameters const mvmcts_parameters)
+      : UctStatistic<SlackUCTStatistic>(num_actions,mvmcts_parameters) {}
 
   ActionIdx GetBestAction() {
     ObjectiveVec slack;
@@ -69,7 +69,7 @@ class SlackUCTStatistic : public UctStatistic<SlackUCTStatistic> {
           std::max_element(values.begin(), values.end(),
                            ThresholdComparator<Eigen::VectorXd>(slack)));
       const double p = uniform_norm(random_generator_);
-      if (p < mcts_parameters_.thres_uct_statistic_.EPSILON &&
+      if (p <mvmcts_parameters_.thres_uct_statistic_.EPSILON &&
           num_actions_ >= 2) {
         std::uniform_int_distribution<ActionIdx> uniform_action(
             0, num_actions_ - 2);
@@ -92,16 +92,16 @@ class SlackUCTStatistic : public UctStatistic<SlackUCTStatistic> {
   template <class T>
   void CalculateSlackValues(const std::vector<T> &qval, T *values) const {
     values->resize(qval.size());
-    *values = T::Constant(mcts_parameters_.REWARD_VEC_SIZE,
+    *values = T::Constant(mvmcts_parameters_.REWARD_VEC_SIZE,
                           -std::numeric_limits<typename T::Scalar>::infinity());
     for (ActionIdx idx = 0; idx < qval.size(); ++idx) {
       *values = values->cwiseMax(qval.at(idx));
     }
     // After C. Li and K. Czarnecki, “Urban Driving with Multi-Objective Deep
     // Reinforcement Learning,” arXiv:1811.08586 [cs], Nov. 2018.
-    *values = (1.0 - mcts_parameters_.slack_uct_statistic_.SLACK_FACTOR) *
+    *values = (1.0 -mvmcts_parameters_.slack_uct_statistic_.SLACK_FACTOR) *
               values->cwiseAbs();
   }
 };
-}  // namespace mcts
-#endif  // MCTS_STATISTICS_SLACK_UCT_STATISTIC_H_
+}  // namespace mvmcts
+#endif  // MVMCTS_STATISTICS_SLACK_UCT_STATISTIC_H_

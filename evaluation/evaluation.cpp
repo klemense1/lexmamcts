@@ -8,7 +8,7 @@
 #include <utility>
 #include "glog/logging.h"
 
-namespace mcts {
+namespace mvmcts {
 namespace evaluation {
 
 struct ThresholdComparator {
@@ -82,4 +82,4 @@ void shutdown(char* file_dump_name) {
 #endif
 
 }  // namespace evaluation
-}  // namespace mcts
+}  // namespace mvmcts

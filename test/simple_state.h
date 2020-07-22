@@ -9,11 +9,11 @@
 
 #include <iostream>
 
-using namespace mcts;
+using namespace mvmcts;
 
 // A simple environment with a 1D state, only if both agents select different
 // actions, they get nearer to the terminal state
-class SimpleState : public mcts::StateInterface<SimpleState> {
+class SimpleState : public mvmcts::StateInterface<SimpleState> {
  public:
   SimpleState(int length)
       : state_length_(length),
