@@ -13,7 +13,9 @@ extern std::string Q_VAL_DUMPFILE;
 
 #define PLAN_DEBUG_INFO
 
+#ifdef PROFILING
 #include <easy/profiler.h>
+#endif
 #include <chrono>  // for high_resolution_clock
 #include <iostream>
 #include <memory>
@@ -78,7 +80,9 @@ template <class S, class SE, class SO, class H>
 void Mvmcts<S, SE, SO, H>::Search(const S &current_state,
                                 unsigned int max_search_time_ms,
                                 unsigned int max_iterations) {
+#ifdef PROFILING
   EASY_FUNCTION();
+#endif
   namespace chr = std::chrono;
   DLOG(INFO) << "Max search samples: " << max_iterations;
   auto start = std::chrono::high_resolution_clock::now();
@@ -131,20 +135,28 @@ void Mvmcts<S, SE, SO, H>::Search(const S &current_state,
 
 template <class S, class SE, class SO, class H>
 void Mvmcts<S, SE, SO, H>::Iterate(const StageNodeSPtr &root_node) {
+#ifdef PROFILING
   EASY_FUNCTION();
+#endif
   StageNodeSPtr node = root_node;
   StageNodeSPtr node_p;
 
   // --------------Select & Expand  -----------------
   // We descend the tree for all joint actions already available -> last node is
   // the newly expanded one
+#ifdef PROFILING
   EASY_BLOCK("selection");
+#endif
   while (node->SelectOrExpand(node, num_iterations)) {}
+#ifdef PROFILING
   EASY_END_BLOCK;
+#endif
   // -------------- Heuristic Update ----------------
   // Heuristic until terminal node
   std::vector<SE> calculated_heuristic = heuristic_.GetHeuristicValues(node);
+#ifdef PROFILING
   EASY_BLOCK("backpropagation");
+#endif
   node->UpdateStatistics(calculated_heuristic);
 
   // --------------- Backpropagation ----------------
@@ -159,7 +171,9 @@ void Mvmcts<S, SE, SO, H>::Iterate(const StageNodeSPtr &root_node) {
       node_p = node_p->GetParent().lock();
     }
   }
+#ifdef PROFILING
   EASY_END_BLOCK;
+#endif
 
 #ifdef PLAN_DEBUG_INFO
   Print(root_node);

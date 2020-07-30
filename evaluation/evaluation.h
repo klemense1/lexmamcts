@@ -6,7 +6,9 @@
 #ifndef EVALUATION_EVALUATION_H_
 #define EVALUATION_EVALUATION_H_
 
+#ifdef PROFILING
 #include <easy/profiler.h>
+#endif
 #include <fstream>
 #include <map>
 #include <string>
