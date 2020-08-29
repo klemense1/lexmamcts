@@ -26,9 +26,6 @@ class RandomHeuristic : public mvmcts::Heuristic<RandomHeuristic>,
   template <class S, class SE, class SO, class H>
   std::vector<SE> GetHeuristicValues(
       const std::shared_ptr<StageNode<S, SE, SO, H>> &node) {
-#ifdef PROFILING
-    EASY_FUNCTION();
-#endif
     // catch case where newly expanded state is terminal
     if (node->GetState()->IsTerminal()) {
       const AgentIdx num_agents = node->GetState()->GetAgentIdx().size();

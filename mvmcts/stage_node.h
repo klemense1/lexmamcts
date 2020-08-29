@@ -7,9 +7,6 @@
 #ifndef MVMCTS_STAGE_NODE_H_
 #define MVMCTS_STAGE_NODE_H_
 
-#ifdef PROFILING
-#include <easy/profiler.h>
-#endif
 #include <fstream>
 #include <iostream>
 #include <memory>
@@ -161,9 +158,6 @@ StageNodeSPtr<S, SE, SO, H> StageNode<S, SE, SO, H>::GetShared() {
 template <class S, class SE, class SO, class H>
 bool StageNode<S, SE, SO, H>::SelectOrExpand(StageNodeSPtr &next_node,
                                              unsigned int iteration) {
-#ifdef PROFILING
-  EASY_FUNCTION();
-#endif
   // helper function to fill rewards
   auto FillRewards = [this](const std::vector<Reward> &reward_list,
                             const JointAction &ja) {
@@ -201,17 +195,11 @@ bool StageNode<S, SE, SO, H>::SelectOrExpand(StageNodeSPtr &next_node,
   auto it = children_.find(joint_action);
   if (it != children_.end()) {
     // SELECT EXISTING NODE
-#ifdef PROFILING
-    EASY_EVENT("select");
-#endif
     next_node = it->second;
     FillRewards(joint_rewards_[joint_action], joint_action);
     ++joint_action_counter_[joint_action];
     return true;
   } else {  // EXPAND NEW NODE BASED ON NEW JOINT ACTION
-#ifdef PROFILING
-    EASY_BLOCK("expand");
-#endif
     std::vector<Reward> rewards(state_->GetAgentIdx().size(),
                                 Reward::Zero(mvmcts_parameters_.REWARD_VEC_SIZE));
     next_node = std::make_shared<StageNode<S, SE, SO, H>, StageNodeSPtr,
@@ -219,9 +207,6 @@ bool StageNode<S, SE, SO, H>::SelectOrExpand(StageNodeSPtr &next_node,
                                  const unsigned int &>(
         GetShared(), state_->Execute(joint_action, rewards), joint_action,
         depth_ + 1,mvmcts_parameters_);
-#ifdef PROFILING
-    EASY_END_BLOCK;
-#endif
     children_[joint_action] = next_node;
     joint_action_counter_[joint_action] = 0;
 #ifdef PLAN_DEBUG_INFO

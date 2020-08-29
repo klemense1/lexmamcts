@@ -6,9 +6,6 @@
 #ifndef EVALUATION_EVALUATION_H_
 #define EVALUATION_EVALUATION_H_
 
-#ifdef PROFILING
-#include <easy/profiler.h>
-#endif
 #include <fstream>
 #include <map>
 #include <string>
@@ -34,10 +31,6 @@ class QValWriter {
   std::ofstream ofstream_;
   std::string filename_;
 };
-#ifdef PROFILING
-void setup();
-void shutdown(char* file_dump_name = "/tmp/easy_profiler.prof");
-#endif
 }  // namespace evaluation
 }  // namespace mvmcts
 

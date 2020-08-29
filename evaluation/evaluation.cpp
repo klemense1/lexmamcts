@@ -73,13 +73,5 @@ int QValWriter::FindLexMax(
   return decision_level;
 }
 
-#ifdef PROFILING
-void setup() { EASY_PROFILER_ENABLE; }
-void shutdown(char* file_dump_name) {
-  auto blocks_written = profiler::dumpBlocksToFile(file_dump_name);
-  LOG(INFO) << "Easy profiler blocks written: " << blocks_written;
-}
-#endif
-
 }  // namespace evaluation
 }  // namespace mvmcts
