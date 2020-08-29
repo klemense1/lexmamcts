@@ -7,10 +7,6 @@
 #ifndef MVMCTS_MVMCTS_H_
 #define MVMCTS_MVMCTS_H_
 
-#ifdef DUMP_Q_VAL
-extern std::string Q_VAL_DUMPFILE;
-#endif
-
 #define PLAN_DEBUG_INFO
 
 #include <chrono>  // for high_resolution_clock
@@ -94,31 +90,13 @@ void Mvmcts<S, SE, SO, H>::Search(const S &current_state,
       nullptr, current_state.Clone(), JointAction(), 0, mvmcts_parameters_);
 
   num_iterations = 0;
-#ifdef DUMP_Q_VAL
-  std::ofstream ofs;
-  ofs.open(Q_VAL_DUMPFILE);
-  Eigen::IOFormat fmt(Eigen::StreamPrecision, Eigen::DontAlignCols, "\t");
-#endif
   while (std::chrono::duration_cast<std::chrono::milliseconds>(
              std::chrono::high_resolution_clock::now() - start)
                  .count() < max_search_time_ms &&
          num_iterations < max_iterations) {
     Iterate(root_);
     num_iterations += 1;
-#ifdef DUMP_Q_VAL
-    if (num_iterations % 1 == 0) {
-      ofs << num_iterations << "\t";
-      for (auto const &pair :
-           root_->get_ego_int_node().get_expected_rewards()) {
-        ofs << pair.second.transpose().format(fmt) << "\t";
-      }
-      ofs << root_->get_best_action()[0] << "\n";
-    }
-#endif
   }
-#ifdef DUMP_Q_VAL
-  ofs.close();
-#endif
   VLOG(1) << "Search time: "
           << std::chrono::duration_cast<std::chrono::milliseconds>(
                  std::chrono::high_resolution_clock::now() - start)
