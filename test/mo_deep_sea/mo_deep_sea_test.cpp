@@ -35,6 +35,10 @@ MvmctsParameters MakeDefaultMctsParameters() {
 
 class DeepSeaTest : public ::testing::Test {
  protected:
+  // Deep sea treasure environment taken from P. Vamplew, R. Dazeley, A. Berry,
+  // R. Issabekov, und E. Dekker, „Empirical evaluation methods for
+  // multiobjective reinforcement learning algorithms“, Mach Learn, Bd. 84, Nr.
+  // 1, S. 51–80, Juli 2011, doi: 10.1007/s10994-010-5232-5.
   void SetUp() override {
     sea_map_.emplace_back(MODSMapElement{1, 1.0f});
     sea_map_.emplace_back(MODSMapElement{2, 2.0f});
@@ -47,12 +51,12 @@ class DeepSeaTest : public ::testing::Test {
     sea_map_.emplace_back(MODSMapElement{8, 74.0f});
     sea_map_.emplace_back(MODSMapElement{10, 124.0f});
     init_pos << 0, 0;
-   mvmcts_parameters_ = MakeDefaultMctsParameters();
-   mvmcts_parameters_.REWARD_VEC_SIZE = 2;
-   mvmcts_parameters_.uct_statistic.LOWER_BOUND = ObjectiveVec::Zero(2);
-   mvmcts_parameters_.uct_statistic.UPPER_BOUND = ObjectiveVec::Zero(2);
-   mvmcts_parameters_.uct_statistic.LOWER_BOUND << 0.0f, -20.0f;
-   mvmcts_parameters_.uct_statistic.UPPER_BOUND << 124.0f, 0.0f;
+    mvmcts_parameters_ = MakeDefaultMctsParameters();
+    mvmcts_parameters_.REWARD_VEC_SIZE = 2;
+    mvmcts_parameters_.uct_statistic.LOWER_BOUND = ObjectiveVec::Zero(2);
+    mvmcts_parameters_.uct_statistic.UPPER_BOUND = ObjectiveVec::Zero(2);
+    mvmcts_parameters_.uct_statistic.LOWER_BOUND << 0.0f, -20.0f;
+    mvmcts_parameters_.uct_statistic.UPPER_BOUND << 124.0f, 0.0f;
   }
 
   SeaMap sea_map_;
@@ -133,7 +137,7 @@ TEST_F(DeepSeaTest, move) {
 TEST_F(DeepSeaTest, general) {
   FLAGS_v = 1;
   Mvmcts<MoDeepSeaState, UctStatistic<>, UctStatistic<>, RandomHeuristic> mcts(
-     mvmcts_parameters_);
+      mvmcts_parameters_);
   auto state = std::make_shared<MoDeepSeaState>(sea_map_, init_pos);
   std::vector<Reward> rewards(1,
                               Reward::Zero(mvmcts_parameters_.REWARD_VEC_SIZE));
@@ -164,7 +168,7 @@ TEST_F(DeepSeaTest, general) {
 TEST_F(DeepSeaTest, e_greedy) {
   FLAGS_v = 1;
   Mvmcts<MoDeepSeaState, ThresGreedyStatistic, ThresGreedyStatistic,
-       RandomHeuristic>
+         RandomHeuristic>
       mcts(mvmcts_parameters_);
   auto state = std::make_shared<MoDeepSeaState>(sea_map_, init_pos);
   std::vector<Reward> rewards(1,
