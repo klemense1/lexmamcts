@@ -1,0 +1,14 @@
+name: CI
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    container:
+      image: docker://barksim/bark:latest
+    steps:
+      - uses: actions/checkout@v1
+      - name: Runing bazel test
+        run: bazel test //...

@@ -1,3 +1,5 @@
+![CI Build](https://github.com/klemense1/lexmamcts/workflows/CI/badge.svg)
+
 # Lexicographic Multi-Agent MCTS
 Multi-agent Monte Carlo Tree Search with thresholded lexicographic order implementation in C++.
 
