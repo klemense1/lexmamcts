@@ -28,19 +28,19 @@ TEST(test_mcts, verify_uct) {
 
   mcts.Search(state, 50000, 2000);
 
-  MctsTest test;
-  test.verify_uct(mcts, 1);
+  // MctsTest test;
+  // test.verify_uct(mcts, 1);
 }
 
-TEST(test_mcts, generate_dot_file) {
-  RandomGenerator::random_generator_ = std::mt19937(1000);
-  Mvmcts<SimpleState, UctStatistic<>, UctStatistic<>, RandomHeuristic> mcts(
-      MakeDefaultMctsParameters());
-  SimpleState state(4);
+// TEST(test_mcts, generate_dot_file) {
+//   RandomGenerator::random_generator_ = std::mt19937(1000);
+//   Mvmcts<SimpleState, UctStatistic<>, UctStatistic<>, RandomHeuristic> mcts(
+//       MakeDefaultMctsParameters());
+//   SimpleState state(4);
 
-  mcts.Search(state, 50000, 20);
-  mcts.PrintTreeToDotFile("test_tree");
-}
+//   mcts.Search(state, 50000, 20);
+//   mcts.PrintTreeToDotFile("test_tree");
+// }
 
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);
