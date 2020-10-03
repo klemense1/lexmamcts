@@ -47,14 +47,6 @@ def momamcts_dependencies():
         shallow_since = "1549788893 +0100",
     )
 
-    _maybe(
-        git_repository,
-        name = "rule_monitor_project",
-        branch = "master",
-        remote = "https://github.com/bark-simulator/rule-monitoring",
-    )
-
-
 def _maybe(repo_rule, name, **kwargs):
     if name not in native.existing_rules():
         repo_rule(name = name, **kwargs)
