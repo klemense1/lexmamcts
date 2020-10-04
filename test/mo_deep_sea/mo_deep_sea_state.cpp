@@ -1,6 +1,8 @@
+// Copyright (c) 2019 Luis Gressenbuch
 //
-// Created by luis on 08.10.19.
-//
+// This work is licensed under the terms of the MIT license.
+// For a copy, see <https://opensource.org/licenses/MIT>.
+// ========================================================
 
 #include <algorithm>
 #include <memory>
