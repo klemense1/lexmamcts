@@ -1,7 +1,8 @@
+// Copyright (c) 2019 Luis Gressenbuch
 //
-// Created by Luis Gressenbuch on 18.02.20.
-// Copyright (c) 2020 Luis Gressenbuch. All rights reserved.
-//
+// This work is licensed under the terms of the MIT license.
+// For a copy, see <https://opensource.org/licenses/MIT>.
+// ========================================================
 
 #ifndef EVALUATION_EVALUATION_H_
 #define EVALUATION_EVALUATION_H_

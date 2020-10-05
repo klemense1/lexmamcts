@@ -1,7 +1,8 @@
+// Copyright (c) 2019 Luis Gressenbuch
 //
-// Created by Luis Gressenbuch on 07.11.19.
-// Copyright (c) 2019 Luis Gressenbuch. All rights reserved.
-//
+// This work is licensed under the terms of the MIT license.
+// For a copy, see <https://opensource.org/licenses/MIT>.
+// ========================================================
 
 #ifndef MVMVMCTS_STATISTICS_THRES_UCT_STATISTIC_H_
 #define MVMVMCTS_STATISTICS_THRES_UCT_STATISTIC_H_
