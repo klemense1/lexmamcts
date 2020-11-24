@@ -25,7 +25,7 @@ typedef std::size_t ActionIdx;
 typedef unsigned char AgentIdx;
 typedef std::vector<ActionIdx> JointAction;
 
-typedef Eigen::VectorXf Reward;
+typedef Eigen::VectorXd Reward;
 typedef std::vector<Reward> JointReward;
 
 template <typename T>

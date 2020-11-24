@@ -78,7 +78,7 @@ class ThresUCTStatistic : public UctStatistic<ThresUCTStatistic> {
           } else if (b.second.action_count_ == 0) {
             return false;
           } else {
-            return (ThresholdComparator<Eigen::VectorXf>(thr))(
+            return (ThresholdComparator<Eigen::VectorXd>(thr))(
                 a.second.action_value_, b.second.action_value_);
           }
         });

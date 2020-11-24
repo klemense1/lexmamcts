@@ -17,7 +17,7 @@ using namespace mvmcts;
 
 struct MODSMapElement {
   int row;
-  float reward;
+  double reward;
 };
 
 typedef std::vector<MODSMapElement> SeaMap;

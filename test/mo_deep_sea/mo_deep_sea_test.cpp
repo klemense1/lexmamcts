@@ -165,34 +165,34 @@ TEST_F(DeepSeaTest, general) {
   EXPECT_EQ((pos_history.end() - 1)->operator()(1), 9);
 }
 
-TEST_F(DeepSeaTest, e_greedy) {
-  FLAGS_v = 1;
-  Mvmcts<MoDeepSeaState, ThresGreedyStatistic, ThresGreedyStatistic,
-         RandomHeuristic>
-      mcts(mvmcts_parameters_);
-  auto state = std::make_shared<MoDeepSeaState>(sea_map_, init_pos);
-  std::vector<Reward> rewards(1,
-                              Reward::Zero(mvmcts_parameters_.REWARD_VEC_SIZE));
-  JointAction jt;
-  jt.resize(1);
-  std::vector<Eigen::Vector2i> pos_history;
-  pos_history.clear();
-  pos_history.emplace_back(state->GetEgoPos());
-  while (!state->IsTerminal()) {
-    mcts.Search(*state, 10000, 5000);
-    jt[0] = mcts.ReturnBestAction()[0];
-    state = state->Execute(jt, rewards);
-    pos_history.emplace_back(state->GetEgoPos());
-  }
-  std::cout << "Positions:" << std::endl;
-  for (auto p : pos_history) {
-    std::cout << p << ", ";
-  }
-  std::cout << std::endl;
-  std::cout << "END" << std::endl;
-  PrintSolution(pos_history, sea_map_);
-  //  std::cout << mcts.GetRoot()->PrintNode();
-  EXPECT_EQ(pos_history.size(), 20);
-  EXPECT_EQ((pos_history.end() - 1)->operator()(0), 10);
-  EXPECT_EQ((pos_history.end() - 1)->operator()(1), 9);
-}
+// TEST_F(DeepSeaTest, e_greedy) {
+//   FLAGS_v = 1;
+//   Mvmcts<MoDeepSeaState, ThresGreedyStatistic, ThresGreedyStatistic,
+//          RandomHeuristic>
+//       mcts(mvmcts_parameters_);
+//   auto state = std::make_shared<MoDeepSeaState>(sea_map_, init_pos);
+//   std::vector<Reward> rewards(1,
+//                               Reward::Zero(mvmcts_parameters_.REWARD_VEC_SIZE));
+//   JointAction jt;
+//   jt.resize(1);
+//   std::vector<Eigen::Vector2i> pos_history;
+//   pos_history.clear();
+//   pos_history.emplace_back(state->GetEgoPos());
+//   while (!state->IsTerminal()) {
+//     mcts.Search(*state, 10000, 5000);
+//     jt[0] = mcts.ReturnBestAction()[0];
+//     state = state->Execute(jt, rewards);
+//     pos_history.emplace_back(state->GetEgoPos());
+//   }
+//   std::cout << "Positions:" << std::endl;
+//   for (auto p : pos_history) {
+//     std::cout << p << ", ";
+//   }
+//   std::cout << std::endl;
+//   std::cout << "END" << std::endl;
+//   PrintSolution(pos_history, sea_map_);
+//   //  std::cout << mcts.GetRoot()->PrintNode();
+//   EXPECT_EQ(pos_history.size(), 20);
+//   EXPECT_EQ((pos_history.end() - 1)->operator()(0), 10);
+//   EXPECT_EQ((pos_history.end() - 1)->operator()(1), 9);
+// }

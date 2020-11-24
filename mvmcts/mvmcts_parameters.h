@@ -14,7 +14,7 @@
 
 namespace mvmcts {
 
-typedef Eigen::VectorXf ObjectiveVec;
+typedef Eigen::VectorXd ObjectiveVec;
 
 struct MvmctsParameters {
   friend std::ostream& operator<<(std::ostream& os,
@@ -44,7 +44,7 @@ struct MvmctsParameters {
   struct SlackUCTStatistic {
     friend std::ostream& operator<<(std::ostream& os,
                                     const SlackUCTStatistic& statistic);
-    float SLACK_FACTOR;
+    double SLACK_FACTOR;
   };
 
   struct ThresUCTStatistic {

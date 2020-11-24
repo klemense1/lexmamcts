@@ -12,9 +12,9 @@ namespace mvmcts {
 namespace evaluation {
 
 struct ThresholdComparator {
-  explicit ThresholdComparator(Eigen::VectorXf thr) : thr_(std::move(thr)) {}
-  const Eigen::VectorXf thr_;
-  int operator()(Eigen::VectorXf const& a, Eigen::VectorXf const& b) const {
+  explicit ThresholdComparator(Eigen::VectorXd thr) : thr_(std::move(thr)) {}
+  const Eigen::VectorXd thr_;
+  int operator()(Eigen::VectorXd const& a, Eigen::VectorXd const& b) const {
     assert(a.rows() == b.rows() && a.rows() == thr_.rows());
     int i = 0;
     for (auto ai = a.begin(), bi = b.begin(), thri = thr_.begin();
@@ -29,7 +29,7 @@ struct ThresholdComparator {
   }
 };
 
-QValWriter::QValWriter(Eigen::VectorXf thres, const std::string& filename,
+QValWriter::QValWriter(Eigen::VectorXd thres, const std::string& filename,
                        unsigned long num_actions)
     : thres_(std::move(thres)), timestamp_(0) {
   ofstream_.open(filename);
@@ -44,7 +44,7 @@ QValWriter::QValWriter(Eigen::VectorXf thres, const std::string& filename,
 }
 
 void QValWriter::WriteQVal(
-    const std::map<unsigned long, Eigen::VectorXf>& action_val_map,
+    const std::map<unsigned long, Eigen::VectorXd>& action_val_map,
     unsigned long best_action) {
   Eigen::IOFormat fmt(Eigen::StreamPrecision, Eigen::DontAlignCols, "\t");
   ofstream_ << timestamp_ << "\t";
@@ -59,7 +59,7 @@ void QValWriter::WriteQVal(
 QValWriter::~QValWriter() { ofstream_.close(); }
 
 int QValWriter::FindLexMax(
-    const std::map<unsigned long, Eigen::VectorXf>& action_val_map,
+    const std::map<unsigned long, Eigen::VectorXd>& action_val_map,
     unsigned long best_action) {
   ThresholdComparator comp(thres_);
   int decision_level = -1;

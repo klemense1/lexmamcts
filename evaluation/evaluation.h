@@ -16,17 +16,17 @@ namespace mvmcts {
 namespace evaluation {
 class QValWriter {
  public:
-  QValWriter(Eigen::VectorXf thres,
+  QValWriter(Eigen::VectorXd thres,
              const std::string& filename = "/tmp/q_val.dat",
              unsigned long num_actions = 4);
   virtual ~QValWriter();
-  void WriteQVal(const std::map<unsigned long, Eigen::VectorXf>& action_val_map,
+  void WriteQVal(const std::map<unsigned long, Eigen::VectorXd>& action_val_map,
                  unsigned long best_action);
 
  private:
-  int FindLexMax(const std::map<unsigned long, Eigen::VectorXf>& action_val_map,
+  int FindLexMax(const std::map<unsigned long, Eigen::VectorXd>& action_val_map,
                  unsigned long best_action);
-  Eigen::VectorXf thres_;
+  Eigen::VectorXd thres_;
   int timestamp_;
   std::ofstream ofstream_;
   std::string filename_;
