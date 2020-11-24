@@ -1,6 +1,8 @@
+// Copyright (c) 2019 Luis Gressenbuch
 //
-// Created by luis on 08.10.19.
-//
+// This work is licensed under the terms of the MIT license.
+// For a copy, see <https://opensource.org/licenses/MIT>.
+// ========================================================
 
 #ifndef TEST_MO_DEEP_SEA_MO_DEEP_SEA_STATE_HPP_
 #define TEST_MO_DEEP_SEA_MO_DEEP_SEA_STATE_HPP_
