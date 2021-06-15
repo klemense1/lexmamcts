@@ -11,6 +11,6 @@ cc_library(
         "@boost//:math",
         "@boost//:multiprecision",
         "@com_github_eigen_eigen//:eigen",
-        "@com_github_google_glog//:glog",
+        "@com_github_glog_glog//:glog",
     ],
 )
